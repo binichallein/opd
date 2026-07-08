@@ -1,0 +1,4 @@
+[submodule "external/revisiting_opd"]
+	path = external/revisiting_opd
+	url = https://github.com/hhh675597/revisiting_opd.git
+	ignore = dirty

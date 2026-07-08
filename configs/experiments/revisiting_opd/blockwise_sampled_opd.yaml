@@ -1,0 +1,54 @@
+name: revisiting_opd_blockwise_sampled_opd
+date: 2026-07-08
+upstream:
+  repo: https://github.com/hhh675597/revisiting_opd
+  path: external/revisiting_opd
+  commit: f32f284f25bae5b16d2d44ee336b52851dccc736
+  patch: patches/revisiting_opd/blockwise_sampled_opd.patch
+
+idea:
+  summary: >
+    在 revisiting_opd 的 sampled-token OPD 上，把连续 k 个 sampled tokens
+    聚合成一个 block action。old/current logprob 在 block 内求和，teacher-vs-old
+    advantage 在 block 内按 sum/mean/mixed 聚合，再用 block-level PPO ratio 更新学生。
+  default_comparison:
+    - token_opd: actor_rollout_ref.actor.opd_block_size=1
+    - block3_sum: actor_rollout_ref.actor.opd_block_size=3; actor_rollout_ref.actor.opd_block_advantage_mode=sum
+    - block3_mean: actor_rollout_ref.actor.opd_block_size=3; actor_rollout_ref.actor.opd_block_advantage_mode=mean
+
+recommended_data:
+  train: DAPO-Math-17K train parquet converted to revisiting_opd math format
+  eval:
+    - MATH500
+    - AIME24
+    - AIME25
+    - AMC23
+  note: >
+    为了和 Rethinking OPD、Blockwise Policy-Drift Gating 对齐，论文级实验建议切到
+    DAPO-Math-17K。当前仓库不提交 parquet、rollout、checkpoint 或完整 jsonl 预测。
+
+baseline_matrix:
+  required:
+    - base student
+    - standard sampled-token OPD
+    - Teacher-TopK / Local Support Matching from revisiting_opd
+    - block3_sum
+    - block3_mean
+  optional:
+    - Blockwise Policy-Drift Gating
+    - FiRe-OPD
+    - TOPD
+
+hydra_overrides:
+  token_opd:
+    - actor_rollout_ref.actor.opd_block_size=1
+  block3_sum:
+    - actor_rollout_ref.actor.opd_block_size=3
+    - actor_rollout_ref.actor.opd_block_advantage_mode=sum
+  block3_mean:
+    - actor_rollout_ref.actor.opd_block_size=3
+    - actor_rollout_ref.actor.opd_block_advantage_mode=mean
+  block3_mixed_lam05:
+    - actor_rollout_ref.actor.opd_block_size=3
+    - actor_rollout_ref.actor.opd_block_advantage_mode=mixed
+    - actor_rollout_ref.actor.opd_block_mix_lambda=0.5

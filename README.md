@@ -6,6 +6,8 @@ reverse-KL 目标。
 
 当前仓库包含 clean-room OPD 训练与评测脚本、block supervision 单测、
 整理后的结果摘要，以及 block reverse-KL 实验的 HTML 报告。
+同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
+用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
 ## 仓库里保存什么
 
@@ -17,6 +19,8 @@ reverse-KL 目标。
 - `figures/`：论文或汇报用 SVG 图
 - `docs/`：实验协议、数据策略、模型策略、结果记录
 - `configs/`：可复现实验配置
+- `external/revisiting_opd`：公开 `revisiting_opd` submodule
+- `patches/revisiting_opd/`：我们对外部 baseline codebase 的最小补丁
 - `AGENTS.md`：给 AI coding agent 看的项目规则
 
 ## 仓库里不保存什么
@@ -67,6 +71,28 @@ python -m pytest tests/test_block_supervision.py -q
 ```
 
 当前实验机上使用的是 `vllm` conda 环境。
+
+## revisiting_opd 基线代码
+
+准备外部 baseline 代码：
+
+```bash
+bash scripts/setup_revisiting_opd.sh
+```
+
+这会初始化 `external/revisiting_opd` submodule，并应用
+`patches/revisiting_opd/blockwise_sampled_opd.patch`。补丁默认不改变上游行为：
+`actor_rollout_ref.actor.opd_block_size=1` 时仍是标准 sampled-token OPD。
+
+开启我们的 block-level sampled OPD：
+
+```text
+actor_rollout_ref.actor.opd_block_size=3
+actor_rollout_ref.actor.opd_block_advantage_mode=mean
+```
+
+推荐论文级比较矩阵见
+`configs/experiments/revisiting_opd/blockwise_sampled_opd.yaml`。
 
 ## 远端训练规范
 
