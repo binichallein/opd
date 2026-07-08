@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blockwise Policy-Drift Gating 论文解读</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #617083;
+      --line: #dce2ea;
+      --blue: #2563eb;
+      --green: #168457;
+      --amber: #b7791f;
+      --red: #bf3f3f;
+      --slate: #243447;
+      --code: #111827;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.58 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+    }
+    header {
+      background: #101827;
+      color: white;
+      padding: 32px 40px 28px;
+      border-bottom: 1px solid #0b1020;
+    }
+    main { max-width: 1180px; margin: 0 auto; padding: 24px 24px 48px; }
+    h1 { margin: 0 0 10px; font-size: 30px; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 20px; letter-spacing: 0; }
+    h3 { margin: 14px 0 8px; font-size: 16px; letter-spacing: 0; }
+    p { margin: 0 0 12px; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
+    pre {
+      margin: 10px 0 0;
+      padding: 14px;
+      border-radius: 8px;
+      background: var(--code);
+      color: #eef2ff;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .subtitle { color: #cbd5e1; max-width: 980px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 6px;
+      padding: 4px 9px;
+      color: #e5e7eb;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: white;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 9px;
+      text-align: right;
+      vertical-align: middle;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    th {
+      color: #334155;
+      background: #f3f5f8;
+      font-weight: 650;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .left td, .left th { text-align: left; }
+    .muted { color: var(--muted); }
+    .best { color: var(--green); font-weight: 700; }
+    .risk { color: var(--red); font-weight: 700; }
+    .callout {
+      border-left: 4px solid var(--blue);
+      background: #eef4ff;
+      padding: 13px 15px;
+      border-radius: 6px;
+      margin: 12px 0 0;
+    }
+    .good { border-left-color: var(--green); background: #edf8f3; }
+    .warn { border-left-color: var(--amber); background: #fff7e8; }
+    .bad { border-left-color: var(--red); background: #fff1f0; }
+    .eq {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 15px;
+      overflow-x: auto;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+    .kpi-label { color: var(--muted); font-size: 12px; }
+    .kpi-value { margin-top: 4px; font-size: 22px; font-weight: 750; color: var(--slate); }
+    @media (max-width: 850px) {
+      header { padding: 26px 22px; }
+      main { padding: 18px 14px 36px; }
+      .span-4, .span-5, .span-6, .span-7, .span-8, .span-12 { grid-column: span 12; }
+      .kpis { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Blockwise Policy-Drift Gating for OPD：论文解读</h1>
+    <p class="subtitle">这篇论文和我们的 block OPD 很接近：都用 block 粒度和 mean-normalized weighting。但它的 block 信号来自 old-current student drift，不来自 teacher-vs-old block advantage。</p>
+    <div class="meta">
+      <span class="pill">arXiv:2606.24084</span>
+      <span class="pill">Liwen Zheng, Haiyun Jiang</span>
+      <span class="pill">提交：2026-06-23</span>
+      <span class="pill">任务：数学推理 OPD</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid">
+      <div class="card span-8">
+        <h2>一句话概括</h2>
+        <p>论文提出的不是新的 teacher target，也不是新的 reverse-KL 形式，而是一个 <strong>detached loss weighting rule</strong>：在 rollout reuse 时，计算 behavior student 和 current student 对同一 sampled token path 的 logprob drift，把 drift 按 block 或 span 聚合，再变成 gate 去重加权原本的 OPD token loss。</p>
+        <div class="callout good">
+          主要结果：固定 64-token block gate 把 sampled-token OPD 的四项数学 benchmark 平均 pass@8 从 <strong>49.8</strong> 提到 <strong>51.6</strong>；加到 Teacher-TopK/LSM 上后平均 pass@8 达到 <strong>53.3</strong>。
+        </div>
+      </div>
+      <div class="card span-4">
+        <h2>来源</h2>
+        <p><a href="https://arxiv.org/abs/2606.24084">arXiv abstract</a></p>
+        <p><a href="https://arxiv.org/pdf/2606.24084">PDF</a></p>
+        <p><a href="https://arxiv.org/html/2606.24084v1">HTML version</a></p>
+        <p><a href="https://huggingface.co/datasets/BytedTsinghua-SIA/DAPO-Math-17k">DAPO-Math-17k dataset</a></p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>方法：Policy-Drift Gate 怎么算</h2>
+        <p>给定 student rollout 中的 sampled response token <code>y_{i,t}</code>，它先计算 current student 和 behavior/old student 对同一个 token 的 logprob 差：</p>
+        <div class="eq">d<sub>i,t</sub> = log π<sub>θ</sub>(y<sub>i,t</sub> | x<sub>i</sub>, y<sub>i,&lt;t</sub>) − log π<sub>old</sub>(y<sub>i,t</sub> | x<sub>i</sub>, y<sub>i,&lt;t</sub>)</div>
+        <p>这里的 <code>d</code> 不是完整 KL，只是 sampled path 上的 old-current student logprob shift。论文强调：这个 gate 不使用 teacher；teacher top-K、teacher target 和 rollout policy 都不变。</p>
+        <div class="eq">g = exp(−τ |s|), &nbsp; τ = 1</div>
+        <p>其中 <code>s</code> 是聚合后的 drift score。gate 会在 valid response tokens 上做 mean normalization，目的是保持平均 loss scale，同时改变不同位置的相对权重。</p>
+        <div class="eq">L<sub>gate</sub> = Σ m<sub>i,t</sub> · stopgrad(g̃<sub>i,t</sub>) · ℓ<sup>base</sup><sub>i,t</sub> / (Σ m<sub>i,t</sub> + ε)</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-6">
+        <h2>两种粒度</h2>
+        <table class="left">
+          <thead>
+            <tr><th>Gate</th><th>做法</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Block64-Gate</td>
+              <td>把 response 切成固定 64-token blocks；block 内平均 <code>d_{i,t}</code>，再把 gate broadcast 到 block 内所有 token。</td>
+            </tr>
+            <tr>
+              <td>NewlineSpan-Gate</td>
+              <td>按换行符切 span；太短的 span 合并，太长的 span 再切；没有 delimiter 时 fallback 到固定 chunk。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card span-6">
+        <h2>为什么要 block</h2>
+        <p>论文的直觉是：token-level old-current drift 太噪，sequence-level 平均又太粗。64-token block 是中间尺度：能平滑单 token spike，又能保留长推理链中局部 stale 区域的信息。</p>
+        <div class="callout">
+          这个问题设定和我们的 block OPD 很像，但它解决的是 rollout reuse 下的 stale / drift weighting；我们解决的是 teacher-derived advantage 的 temporal aggregation。
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>训练数据和训练配置</h2>
+        <table class="left">
+          <tbody>
+            <tr><th>Student</th><td>Qwen3-1.7B-Base</td></tr>
+            <tr><th>Teacher</th><td>Qwen3-4B-Base-GRPO，数学推理 GRPO 后训练 teacher</td></tr>
+            <tr><th>代码基础</th><td>基于 public <code>revisiting_opd</code> codebase，并加入 policy-drift-gating 修改</td></tr>
+            <tr><th>训练数据</th><td>公共 <code>DAPO-Math-17k</code> corpus 的 released parquet；论文把它转成 revisiting_opd 的 math environment 格式。</td></tr>
+            <tr><th>训练表规模</th><td>prepared training table 为 <strong>1,791,700 rows</strong>；论文特别说明这是 parquet row count，不等价于 unique prompt 数。</td></tr>
+            <tr><th>数据处理</th><td>每行变成 single user-turn prompt、rule-based ground-truth answer field、normalized question hash metadata。</td></tr>
+            <tr><th>去重/污染检查</th><td>做 exact normalized-question hash 检查；没有移除训练行。论文提醒这不是 semantic decontamination。</td></tr>
+            <tr><th>teacher traces</th><td>不额外加入 teacher-written solution traces；teacher signal 在线计算在 student-sampled rollout prefixes 上。</td></tr>
+            <tr><th>训练预算</th><td>所有 trained variants 固定 200 steps；不是 early stopping 或按方法调步数。</td></tr>
+            <tr><th>训练超参</th><td>max prompt 2048，max response 16384，rollout group size 8，top-p 0.9，temperature 1.0，LR 2e-6，2 PPO epochs。</td></tr>
+            <tr><th>LSM 设置</th><td>Teacher-TopK K = 32。</td></tr>
+            <tr><th>硬件</th><td>每个 individual run 使用 A800 80GB；train batch size 4。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>它是怎么测试的</h2>
+        <p>训练结束后，所有 trained students 都用外部 vLLM 做评测。每道题采样 <code>n=8</code> 个答案，temperature 1.0，top-p 0.9，max new tokens 16384。</p>
+        <div class="kpis">
+          <div class="kpi"><div class="kpi-label">主指标</div><div class="kpi-value">pass@8</div></div>
+          <div class="kpi"><div class="kpi-label">生成数</div><div class="kpi-value">8 / 题</div></div>
+          <div class="kpi"><div class="kpi-label">训练步数</div><div class="kpi-value">200</div></div>
+          <div class="kpi"><div class="kpi-label">Eval sets</div><div class="kpi-value">4</div></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>评测集</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>MATH500</td><td>数学推理标准评测集之一</td></tr>
+            <tr><td>AIME24</td><td>2024 AIME I/II problems</td></tr>
+            <tr><td>AIME25</td><td>MathArena AIME 2025</td></tr>
+            <tr><td>AMC23</td><td>2023 AMC 12A/12B 的 40 道题，带 AoPS source URL</td></tr>
+          </tbody>
+        </table>
+        <div class="callout warn">
+          主排名看 pass@8：只要 8 个 sampled generations 中有一个正确，该题算 solved。avg@8 只作为辅助 sanity check，不作为主排名。
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>六组实验矩阵和结果</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Base loss</th>
+              <th>Gate</th>
+              <th>MATH500</th>
+              <th>AIME24</th>
+              <th>AIME25</th>
+              <th>AMC23</th>
+              <th>Avg.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Base student</td><td>-</td><td>-</td><td>77.2</td><td>13.3</td><td>10.0</td><td>60.0</td><td>40.1</td></tr>
+            <tr><td>Sampled-token OPD</td><td>sampled-token OPD</td><td>none</td><td>85.8</td><td>20.0</td><td>13.3</td><td>80.0</td><td>49.8</td></tr>
+            <tr><td>+ Block64 gate</td><td>sampled-token OPD</td><td>64-token block</td><td>86.4</td><td>20.0</td><td>20.0</td><td>80.0</td><td><span class="best">51.6</span></td></tr>
+            <tr><td>+ NewlineSpan gate</td><td>sampled-token OPD</td><td>newline span</td><td>86.0</td><td>26.7</td><td>16.7</td><td>75.0</td><td>51.1</td></tr>
+            <tr><td>Teacher-TopK/LSM</td><td>Teacher-TopK</td><td>none</td><td>86.0</td><td>23.3</td><td>20.0</td><td>70.0</td><td>49.8</td></tr>
+            <tr><td>+ Block64 gate</td><td>Teacher-TopK</td><td>64-token block</td><td>86.4</td><td>20.0</td><td>26.7</td><td>80.0</td><td><span class="best">53.3</span></td></tr>
+            <tr><td>+ NewlineSpan gate</td><td>Teacher-TopK</td><td>newline span</td><td>86.2</td><td>20.0</td><td>26.7</td><td>80.0</td><td>53.2</td></tr>
+            <tr><td>Teacher reference</td><td>larger 4B teacher</td><td>-</td><td>90.8</td><td>46.7</td><td>33.3</td><td>90.0</td><td>65.2</td></tr>
+          </tbody>
+        </table>
+        <p class="muted">分数是 pass@8 百分比。Avg. 是 MATH500、AIME24、AIME25、AMC23 的 unweighted mean。Teacher reference 是 4B，不是 size-matched baseline。</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-6">
+        <h2>论文结论</h2>
+        <p>Block64 对 sampled-token OPD 和 LSM 都有正向 aggregate gain。作者认为 local old-current policy drift 是 rollout reuse 时有用的控制信号，block-level gate 是一个简单实用的 robustness default。</p>
+        <p>NewlineSpan 也能提升 aggregate，但不如 Block64 稳定。论文猜测它对模型格式行为和 underlying loss 更敏感。</p>
+      </div>
+      <div class="card span-6">
+        <h2>我对这篇的评价</h2>
+        <p>这篇对我们威胁很大，因为它已经把“block + mean-normalized weighting + OPD”这几个关键词占住了。但它的创新点和我们的方向仍然不同。</p>
+        <div class="callout">
+          它是 <strong>student drift gate</strong>；我们是 <strong>teacher-derived block advantage aggregation</strong>。
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>和我们方法的关键区别</h2>
+        <table class="left">
+          <thead>
+            <tr><th>维度</th><th>Blockwise Policy-Drift Gating</th><th>我们的 mean block OPD</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>block 信号</td><td>old-current student drift：log πθ − log πold</td><td>teacher-vs-old advantage：log πT − log πold</td></tr>
+            <tr><td>teacher 参与</td><td>gate 不用 teacher；teacher target 不变</td><td>teacher 直接决定 block advantage</td></tr>
+            <tr><td>监督单位</td><td>仍是 token-level base loss，只是乘 block gate</td><td>把连续 token 变成 block-level supervision unit</td></tr>
+            <tr><td>研究问题</td><td>rollout reuse 时哪些位置 stale，需要降权</td><td>连续 token 是否应该共享 teacher-derived reverse-KL signal</td></tr>
+            <tr><td>与 LSM 的关系</td><td>可直接加到 LSM 外面</td><td>目前还没和 LSM 组合；这是我们下一步重要 baseline</td></tr>
+          </tbody>
+        </table>
+        <div class="callout warn">
+          写论文时不要说“我们首次提出 blockwise OPD”。更稳的 novelty 是：我们研究 <strong>temporal aggregation of teacher-derived reverse-KL advantages</strong>，而不是 student-only policy-drift gate。
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>对我们下一步实验的启发</h2>
+        <table class="left">
+          <thead>
+            <tr><th>启发</th><th>对我们该做什么</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>他们用 200-step fixed budget</td><td>我们的 50-step 结果只能算 early evidence，需要补 200-step 对齐实验。</td></tr>
+            <tr><td>他们主指标是 pass@8</td><td>如果要和它正面对比，我们也应加 pass@k，至少 pass@8 或 pass@4。</td></tr>
+            <tr><td>他们用了 DAPO-Math-17k</td><td>我们的 public_math 3400 prompts 更小。要做强比较，应复现 DAPO-Math-17k 子集或全量流程。</td></tr>
+            <tr><td>他们比较 OPD 和 LSM</td><td>我们至少要补 sampled-token OPD、Teacher-TopK/LSM、LSM + our mean block。</td></tr>
+            <tr><td>他们只 gate，不改 teacher target</td><td>我们可以做组合实验：mean block OPD × policy-drift gate，验证二者是否正交。</td></tr>
+            <tr><td>他们提出要 sweep block sizes</td><td>我们也应 sweep block size 2/3/4/8 或更长 block，并加 grad norm tail diagnostics。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
