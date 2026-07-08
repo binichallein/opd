@@ -582,6 +582,79 @@
 
     <section class="grid">
       <div class="card span-12">
+        <h2>论文级 Baseline 设计</h2>
+        <p>当前实验主要是内部 ablation：token OPD、naive block、mean block、mixed block 都在同一 trainer、同一官方 student/teacher、同一数据和 seed 下比较。这可以证明 block objective 内部哪个设计更合理，但如果要写论文，还需要和社区认可的方法对齐。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Baseline</th>
+              <th>作用</th>
+              <th>与本 idea 的关系</th>
+              <th>优先级</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Base model</td>
+              <td>官方 Qwen3-0.6B 不训练</td>
+              <td>证明后训练本身带来增益</td>
+              <td><span class="best">必须</span></td>
+            </tr>
+            <tr>
+              <td>SFT / off-policy KD</td>
+              <td>teacher 生成解答，student 做监督微调</td>
+              <td>证明 on-policy/block OPD 不是被简单 SFT 打败</td>
+              <td><span class="best">必须</span></td>
+            </tr>
+            <tr>
+              <td>Standard sampled-token OPD</td>
+              <td>每个位置只用 student 实际采样 token 的 log-ratio 监督</td>
+              <td>这是本方法直接改造的对象；可按 GKD / MiniLLM / Rethinking OPD 的定义实现</td>
+              <td><span class="best">必须</span></td>
+            </tr>
+            <tr>
+              <td>Student-TopK OPD</td>
+              <td>在 student top-k token 上做 OPD，而不是只看 sampled token</td>
+              <td>回答“同一 prefix 上看更多 vocab token 是否更好”；与我们的“沿时间看多个 token”互补</td>
+              <td><span class="best">必须</span></td>
+            </tr>
+            <tr>
+              <td>Teacher-TopK / Local Support Matching</td>
+              <td>在 teacher 支持集上做 truncated reverse-KL，并配合 top-p rollout / special-token masking</td>
+              <td>来自 Revisiting OPD，是当前很强的稳定性 baseline</td>
+              <td><span class="best">强烈建议</span></td>
+            </tr>
+            <tr>
+              <td>FiRe-OPD</td>
+              <td>trajectory-level filter + token-level soft reweighting</td>
+              <td>和我们同属“重新分配 OPD supervision granularity / weight”的路线</td>
+              <td>建议</td>
+            </tr>
+            <tr>
+              <td>TOPD</td>
+              <td>用 near-future trajectory 判断真实分叉，并把 guidance 分配到未来多个 token</td>
+              <td>动机非常接近：都认为 isolated token-level correction 不够</td>
+              <td>建议</td>
+            </tr>
+            <tr>
+              <td>Blockwise Policy-Drift Gating</td>
+              <td>把 old-current student logprob shift 按 block 聚合，mean-normalized 后作为 loss gate</td>
+              <td>名字和机制都最接近“block + weight”，但它不改 teacher block logprob，只做 blockwise reweighting</td>
+              <td><span class="best">相关工作必须讨论</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout">
+          推荐论文表述：不要写“我们只和自己的变体比较”。更合适的是：<strong>We compare against standard sampled-token OPD and Student-TopK OPD following the OPD formulation and recipe in Li et al. (2026), and include stronger stability/reweighting baselines such as Teacher-TopK/LSM, FiRe-OPD, TOPD, and blockwise policy-drift gating when compute allows.</strong>
+        </div>
+        <div class="callout warn">
+          最小可接受 baseline 组合：<code>Base</code> + <code>SFT/KD</code> + <code>sampled-token OPD</code> + <code>Student-TopK OPD</code> + <code>Teacher-TopK/LSM</code> + <code>naive block</code> + <code>mean block</code>。其中 naive block 是内部 ablation，不是外部方法 baseline。
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
         <h2>这次实验说明了什么</h2>
         <div class="two-col">
           <div>
