@@ -655,6 +655,59 @@
 
     <section class="grid">
       <div class="card span-12">
+        <h2>与 Blockwise Policy-Drift Gating 的关系</h2>
+        <p><strong>这是目前最接近我们的相关工作，必须重点对比。</strong>它同样使用 block 粒度、mean-normalized weighting，并试图缓解 token-level OPD 的局部噪声。但它和我们的核心信号来源不同，因此不是同一个方法。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>Blockwise Policy-Drift Gating</th>
+              <th>我们的 mean block OPD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>block 信号来源</td>
+              <td>old student 与 current student 在 sampled path 上的 logprob drift</td>
+              <td>teacher 与 old student 的 teacher-derived advantage</td>
+            </tr>
+            <tr>
+              <td>是否改变 teacher supervision</td>
+              <td>不改变 teacher target，只给原有 token OPD loss 乘 gate</td>
+              <td>改变监督单位，把连续 token 的 teacher-vs-old advantage 聚合成 block signal</td>
+            </tr>
+            <tr>
+              <td>block 的作用</td>
+              <td>blockwise reweighting / gating</td>
+              <td>block-level reverse-KL / block advantage aggregation</td>
+            </tr>
+            <tr>
+              <td>teacher 是否参与 block signal</td>
+              <td>不参与；gate 是 student-only drift controller</td>
+              <td>直接参与；block advantage 来自 teacher logprob 与 old student logprob</td>
+            </tr>
+            <tr>
+              <td>本质问题</td>
+              <td>哪些 token loss 在 rollout reuse 时更 stale / 更该被重加权</td>
+              <td>连续几个 token 是否应该共享一个 teacher-derived supervision signal</td>
+            </tr>
+            <tr>
+              <td>能否组合</td>
+              <td colspan="2">可以组合：policy-drift gate 可以作为外层权重，乘在 mean block OPD 的 loss 上。</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout warn">
+          Novelty 写法要收窄：不要声称“首次提出 blockwise OPD”。更稳妥的表述是：<strong>we study temporal aggregation of teacher-derived reverse-KL advantages over consecutive sampled tokens, and show that mean-normalized block advantage can stabilize sampled-token OPD.</strong>
+        </div>
+        <div class="callout">
+          Related work 可写：<strong>Closest to our work, Blockwise Policy-Drift Gating aggregates old-current student log-probability shifts over fixed blocks and uses the resulting mean-normalized gates to reweight existing OPD token losses. Our method differs in that the block signal is teacher-derived: we aggregate teacher-vs-behavior advantages over consecutive sampled tokens, thereby changing the reverse-KL supervision unit itself rather than only reweighting token-local OPD losses.</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
         <h2>这次实验说明了什么</h2>
         <div class="two-col">
           <div>
