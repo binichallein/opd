@@ -1,0 +1,138 @@
+[
+  {
+    "model": "seed7_outcome_reweight",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_outcome_reweight/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.33358605003790753,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.33358605003790753,
+      "numeric_boxed_or_last": 0.378316906747536,
+      "primary_correct": 0.378316906747536
+    },
+    "disagreements": {
+      "original_vs_primary": 59,
+      "strict_exact_vs_primary": 499
+    }
+  },
+  {
+    "model": "seed7_outcome_topk_router",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_outcome_topk_router/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.33206974981046244,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.33206974981046244,
+      "numeric_boxed_or_last": 0.38514025777103866,
+      "primary_correct": 0.38514025777103866
+    },
+    "disagreements": {
+      "original_vs_primary": 70,
+      "strict_exact_vs_primary": 507
+    }
+  },
+  {
+    "model": "seed7_standard",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_standard/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.3214556482183472,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.3214556482183472,
+      "numeric_boxed_or_last": 0.3616376042456406,
+      "primary_correct": 0.3616376042456406
+    },
+    "disagreements": {
+      "original_vs_primary": 53,
+      "strict_exact_vs_primary": 477
+    }
+  },
+  {
+    "model": "seed7_topk_router",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_topk_router/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.3388931008339651,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.3388931008339651,
+      "numeric_boxed_or_last": 0.38817285822592873,
+      "primary_correct": 0.38817285822592873
+    },
+    "disagreements": {
+      "original_vs_primary": 65,
+      "strict_exact_vs_primary": 512
+    }
+  },
+  {
+    "model": "seed7_outcome_reweight",
+    "dataset": "math500",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_outcome_reweight/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.126,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.128,
+      "numeric_boxed_or_last": 0.188,
+      "primary_correct": 0.166
+    },
+    "disagreements": {
+      "original_vs_primary": 20,
+      "strict_exact_vs_primary": 83
+    }
+  },
+  {
+    "model": "seed7_outcome_topk_router",
+    "dataset": "math500",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_outcome_topk_router/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.122,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.124,
+      "numeric_boxed_or_last": 0.182,
+      "primary_correct": 0.164
+    },
+    "disagreements": {
+      "original_vs_primary": 21,
+      "strict_exact_vs_primary": 81
+    }
+  },
+  {
+    "model": "seed7_standard",
+    "dataset": "math500",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_standard/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.118,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.12,
+      "numeric_boxed_or_last": 0.172,
+      "primary_correct": 0.148
+    },
+    "disagreements": {
+      "original_vs_primary": 15,
+      "strict_exact_vs_primary": 74
+    }
+  },
+  {
+    "model": "seed7_topk_router",
+    "dataset": "math500",
+    "preds_jsonl": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_topk_router/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.132,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.134,
+      "numeric_boxed_or_last": 0.178,
+      "primary_correct": 0.162
+    },
+    "disagreements": {
+      "original_vs_primary": 15,
+      "strict_exact_vs_primary": 80
+    }
+  }
+]

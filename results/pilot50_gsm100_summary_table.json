@@ -1,0 +1,37 @@
+[
+  {
+    "variant": "base",
+    "mean_score": 0.43,
+    "pass_at_k": 0.43,
+    "avg_completion_tokens": 214.35,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/models/official/Qwen__Qwen3-0.6B"
+  },
+  {
+    "variant": "standard",
+    "mean_score": 0.46,
+    "pass_at_k": 0.46,
+    "avg_completion_tokens": 213.82,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/pilot50_20260707_230404/standard/checkpoint-step-00050"
+  },
+  {
+    "variant": "topk_router",
+    "mean_score": 0.44,
+    "pass_at_k": 0.44,
+    "avg_completion_tokens": 215.34,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/pilot50_20260707_230404/topk_router/checkpoint-step-00050"
+  },
+  {
+    "variant": "adaptive_exopd",
+    "mean_score": 0.39,
+    "pass_at_k": 0.39,
+    "avg_completion_tokens": 219.61,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/pilot50_20260707_230404/adaptive_exopd/checkpoint-step-00050"
+  },
+  {
+    "variant": "routed_adaptive",
+    "mean_score": 0.4,
+    "pass_at_k": 0.4,
+    "avg_completion_tokens": 219.38,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/pilot50_20260707_230404/routed_adaptive/checkpoint-step-00050"
+  }
+]

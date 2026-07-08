@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Local secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Large or private experiment artifacts
+data/raw/
+data/processed/
+data/cache/
+runs/
+outputs/
+checkpoints/
+models/
+wandb/
+tensorboard/
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.onnx
+
+# Full generated predictions/logs are not versioned.
+*.jsonl
+*.log
+
+# Keep curated summaries and reports.
+!results/*.json
+!reports/*.html
+!figures/*.svg
+!configs/**/*.yaml
+!docs/**/*.md

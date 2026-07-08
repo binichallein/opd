@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="330" viewBox="0 0 960 330">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222} .title{font-size:15px;font-weight:700} .label{font-size:12px} .tick{font-size:10px;fill:#555} .legend{font-size:11px}</style>
+<text class="title" x="34" y="48">A. GSM8K robust early-stopping curve</text>
+<line x1="78" y1="272" x2="452" y2="272" stroke="#222" stroke-width="1"/>
+<line x1="78" y1="60" x2="78" y2="272" stroke="#222" stroke-width="1"/>
+<line x1="78" y1="272.0" x2="452" y2="272.0" stroke="#ddd"/>
+<text class="tick" x="70" y="275.0" text-anchor="end">0.29</text>
+<line x1="78" y1="166.0" x2="452" y2="166.0" stroke="#ddd"/>
+<text class="tick" x="70" y="169.0" text-anchor="end">0.39</text>
+<line x1="78" y1="60.0" x2="452" y2="60.0" stroke="#ddd"/>
+<text class="tick" x="70" y="63.0" text-anchor="end">0.49</text>
+<text class="tick" x="78.0" y="289" text-anchor="middle">0</text>
+<text class="tick" x="171.5" y="289" text-anchor="middle">50</text>
+<text class="tick" x="265.0" y="289" text-anchor="middle">100</text>
+<text class="tick" x="358.5" y="289" text-anchor="middle">150</text>
+<text class="tick" x="452.0" y="289" text-anchor="middle">200</text>
+<text class="label" x="265.0" y="301" text-anchor="middle">training step</text>
+<text class="label" transform="translate(46,166.0) rotate(-90)" text-anchor="middle">accuracy</text>
+<polyline points="78.0,88.4 171.5,89.2 265.0,155.8 358.5,176.1 452.0,196.4" fill="none" stroke="#0072B2" stroke-width="2"/>
+<circle cx="78.0" cy="88.4" r="3.2" fill="#0072B2"/>
+<circle cx="171.5" cy="89.2" r="3.2" fill="#0072B2"/>
+<circle cx="265.0" cy="155.8" r="3.2" fill="#0072B2"/>
+<circle cx="358.5" cy="176.1" r="3.2" fill="#0072B2"/>
+<circle cx="452.0" cy="196.4" r="3.2" fill="#0072B2"/>
+<polyline points="78.0,88.4 171.5,89.2 265.0,152.5 358.5,163.1 452.0,168.0" fill="none" stroke="#D55E00" stroke-width="2"/>
+<circle cx="78.0" cy="88.4" r="3.2" fill="#D55E00"/>
+<circle cx="171.5" cy="89.2" r="3.2" fill="#D55E00"/>
+<circle cx="265.0" cy="152.5" r="3.2" fill="#D55E00"/>
+<circle cx="358.5" cy="163.1" r="3.2" fill="#D55E00"/>
+<circle cx="452.0" cy="168.0" r="3.2" fill="#D55E00"/>
+<line x1="369" y1="54" x2="383" y2="54" stroke="#0072B2" stroke-width="2"/>
+<text class="legend" x="387" y="58">standard</text>
+<line x1="369" y1="69" x2="383" y2="69" stroke="#D55E00" stroke-width="2"/>
+<text class="legend" x="387" y="73">top-k</text>
+<text class="title" x="500" y="48">B. MATH500 robust early-stopping curve</text>
+<line x1="544" y1="272" x2="918" y2="272" stroke="#222" stroke-width="1"/>
+<line x1="544" y1="60" x2="544" y2="272" stroke="#222" stroke-width="1"/>
+<line x1="544" y1="272.0" x2="918" y2="272.0" stroke="#ddd"/>
+<text class="tick" x="536" y="275.0" text-anchor="end">0.12</text>
+<line x1="544" y1="166.0" x2="918" y2="166.0" stroke="#ddd"/>
+<text class="tick" x="536" y="169.0" text-anchor="end">0.16</text>
+<line x1="544" y1="60.0" x2="918" y2="60.0" stroke="#ddd"/>
+<text class="tick" x="536" y="63.0" text-anchor="end">0.21</text>
+<text class="tick" x="544.0" y="289" text-anchor="middle">0</text>
+<text class="tick" x="637.5" y="289" text-anchor="middle">50</text>
+<text class="tick" x="731.0" y="289" text-anchor="middle">100</text>
+<text class="tick" x="824.5" y="289" text-anchor="middle">150</text>
+<text class="tick" x="918.0" y="289" text-anchor="middle">200</text>
+<text class="label" x="731.0" y="301" text-anchor="middle">training step</text>
+<text class="label" transform="translate(512,166.0) rotate(-90)" text-anchor="middle">accuracy</text>
+<polyline points="544.0,86.8 637.5,86.8 731.0,172.4 824.5,181.0 918.0,202.4" fill="none" stroke="#0072B2" stroke-width="2"/>
+<circle cx="544.0" cy="86.8" r="3.2" fill="#0072B2"/>
+<circle cx="637.5" cy="86.8" r="3.2" fill="#0072B2"/>
+<circle cx="731.0" cy="172.4" r="3.2" fill="#0072B2"/>
+<circle cx="824.5" cy="181.0" r="3.2" fill="#0072B2"/>
+<circle cx="918.0" cy="202.4" r="3.2" fill="#0072B2"/>
+<polyline points="544.0,86.8 637.5,103.9 731.0,172.4 824.5,211.0 918.0,172.4" fill="none" stroke="#D55E00" stroke-width="2"/>
+<circle cx="544.0" cy="86.8" r="3.2" fill="#D55E00"/>
+<circle cx="637.5" cy="103.9" r="3.2" fill="#D55E00"/>
+<circle cx="731.0" cy="172.4" r="3.2" fill="#D55E00"/>
+<circle cx="824.5" cy="211.0" r="3.2" fill="#D55E00"/>
+<circle cx="918.0" cy="172.4" r="3.2" fill="#D55E00"/>
+<line x1="835" y1="54" x2="849" y2="54" stroke="#0072B2" stroke-width="2"/>
+<text class="legend" x="853" y="58">standard</text>
+<line x1="835" y1="69" x2="849" y2="69" stroke="#D55E00" stroke-width="2"/>
+<text class="legend" x="853" y="73">top-k</text>
+</svg>

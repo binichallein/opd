@@ -1,0 +1,274 @@
+[
+  {
+    "model": "base",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_full_key_batched_20260708_013007/base/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.41698256254738436,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.41698256254738436,
+      "numeric_boxed_or_last": 0.4624715693707354,
+      "primary_correct": 0.4624715693707354
+    },
+    "disagreements": {
+      "original_vs_primary": 60,
+      "strict_exact_vs_primary": 610
+    }
+  },
+  {
+    "model": "seed7_routed_lam110",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_full_key_batched_20260708_013007/seed7_routed_lam110/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.41925701288855194,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.4200151630022744,
+      "numeric_boxed_or_last": 0.4723275208491281,
+      "primary_correct": 0.4723275208491281
+    },
+    "disagreements": {
+      "original_vs_primary": 70,
+      "strict_exact_vs_primary": 622
+    }
+  },
+  {
+    "model": "seed7_standard",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_full_key_batched_20260708_013007/seed7_standard/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.4177407126611069,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.4177407126611069,
+      "numeric_boxed_or_last": 0.46171341925701287,
+      "primary_correct": 0.46171341925701287
+    },
+    "disagreements": {
+      "original_vs_primary": 58,
+      "strict_exact_vs_primary": 608
+    }
+  },
+  {
+    "model": "seed7_topk_router",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_full_key_batched_20260708_013007/seed7_topk_router/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.41698256254738436,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.41698256254738436,
+      "numeric_boxed_or_last": 0.46171341925701287,
+      "primary_correct": 0.46171341925701287
+    },
+    "disagreements": {
+      "original_vs_primary": 59,
+      "strict_exact_vs_primary": 608
+    }
+  },
+  {
+    "model": "standard_step100",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/standard_step100/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.3525398028809704,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.3525398028809704,
+      "numeric_boxed_or_last": 0.3995451099317665,
+      "primary_correct": 0.3995451099317665
+    },
+    "disagreements": {
+      "original_vs_primary": 62,
+      "strict_exact_vs_primary": 526
+    }
+  },
+  {
+    "model": "standard_step150",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/standard_step150/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.33434420015163,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.33434420015163,
+      "numeric_boxed_or_last": 0.38059135708870356,
+      "primary_correct": 0.38059135708870356
+    },
+    "disagreements": {
+      "original_vs_primary": 61,
+      "strict_exact_vs_primary": 501
+    }
+  },
+  {
+    "model": "topk_step100",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/topk_step100/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.3525398028809704,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.3525398028809704,
+      "numeric_boxed_or_last": 0.4025777103866566,
+      "primary_correct": 0.4025777103866566
+    },
+    "disagreements": {
+      "original_vs_primary": 66,
+      "strict_exact_vs_primary": 530
+    }
+  },
+  {
+    "model": "topk_step150",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/topk_step150/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.34874905231235787,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.34874905231235787,
+      "numeric_boxed_or_last": 0.39272175890826383,
+      "primary_correct": 0.39272175890826383
+    },
+    "disagreements": {
+      "original_vs_primary": 58,
+      "strict_exact_vs_primary": 518
+    }
+  },
+  {
+    "model": "base",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/base/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.16,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.168,
+      "numeric_boxed_or_last": 0.222,
+      "primary_correct": 0.202
+    },
+    "disagreements": {
+      "original_vs_primary": 21,
+      "strict_exact_vs_primary": 100
+    }
+  },
+  {
+    "model": "seed7_routed_lam110",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/seed7_routed_lam110/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.16,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.168,
+      "numeric_boxed_or_last": 0.216,
+      "primary_correct": 0.202
+    },
+    "disagreements": {
+      "original_vs_primary": 21,
+      "strict_exact_vs_primary": 100
+    }
+  },
+  {
+    "model": "seed7_standard",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/seed7_standard/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.168,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.176,
+      "numeric_boxed_or_last": 0.222,
+      "primary_correct": 0.202
+    },
+    "disagreements": {
+      "original_vs_primary": 17,
+      "strict_exact_vs_primary": 100
+    }
+  },
+  {
+    "model": "seed7_topk_router",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/seed7_topk_router/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.164,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.17,
+      "numeric_boxed_or_last": 0.222,
+      "primary_correct": 0.194
+    },
+    "disagreements": {
+      "original_vs_primary": 15,
+      "strict_exact_vs_primary": 96
+    }
+  },
+  {
+    "model": "standard_step100",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_curve_std_topk_20260708_042125/standard_step100/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.138,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.144,
+      "numeric_boxed_or_last": 0.178,
+      "primary_correct": 0.162
+    },
+    "disagreements": {
+      "original_vs_primary": 12,
+      "strict_exact_vs_primary": 81
+    }
+  },
+  {
+    "model": "standard_step150",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_curve_std_topk_20260708_042125/standard_step150/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.124,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.13,
+      "numeric_boxed_or_last": 0.174,
+      "primary_correct": 0.158
+    },
+    "disagreements": {
+      "original_vs_primary": 17,
+      "strict_exact_vs_primary": 78
+    }
+  },
+  {
+    "model": "topk_step100",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_curve_std_topk_20260708_042125/topk_step100/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.142,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.148,
+      "numeric_boxed_or_last": 0.18,
+      "primary_correct": 0.162
+    },
+    "disagreements": {
+      "original_vs_primary": 10,
+      "strict_exact_vs_primary": 81
+    }
+  },
+  {
+    "model": "topk_step150",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_curve_std_topk_20260708_042125/topk_step150/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.12,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.128,
+      "numeric_boxed_or_last": 0.164,
+      "primary_correct": 0.144
+    },
+    "disagreements": {
+      "original_vs_primary": 12,
+      "strict_exact_vs_primary": 71
+    }
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "model": "standard_step100",
+    "examples": 1319,
+    "pass_at_1": 0.3525398028809704,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_standard/checkpoint-step-00100",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/standard_step100",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "standard_step150",
+    "examples": 1319,
+    "pass_at_1": 0.33434420015163,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_standard/checkpoint-step-00150",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/standard_step150",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "topk_step100",
+    "examples": 1319,
+    "pass_at_1": 0.3525398028809704,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_topk_router/checkpoint-step-00100",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/topk_step100",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "topk_step150",
+    "examples": 1319,
+    "pass_at_1": 0.34874905231235787,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_topk_router/checkpoint-step-00150",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_curve_std_topk_20260708_035840/topk_step150",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  }
+]

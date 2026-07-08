@@ -1,0 +1,138 @@
+[
+  {
+    "model": "anchored_standard",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_anchor100_20260708_050836/anchored_standard/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.35405610310841545,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.35405610310841545,
+      "numeric_boxed_or_last": 0.400303260045489,
+      "primary_correct": 0.400303260045489
+    },
+    "disagreements": {
+      "original_vs_primary": 61,
+      "strict_exact_vs_primary": 527
+    }
+  },
+  {
+    "model": "anchored_topk_router",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_anchor100_20260708_050836/anchored_topk_router/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.37149355572403336,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.37149355572403336,
+      "numeric_boxed_or_last": 0.41925701288855194,
+      "primary_correct": 0.41925701288855194
+    },
+    "disagreements": {
+      "original_vs_primary": 63,
+      "strict_exact_vs_primary": 553
+    }
+  },
+  {
+    "model": "standard",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_anchor100_20260708_050836/standard/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.354814253222138,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.354814253222138,
+      "numeric_boxed_or_last": 0.4071266110689917,
+      "primary_correct": 0.4071266110689917
+    },
+    "disagreements": {
+      "original_vs_primary": 69,
+      "strict_exact_vs_primary": 536
+    }
+  },
+  {
+    "model": "topk_router",
+    "dataset": "gsm8k",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_anchor100_20260708_050836/topk_router/preds.jsonl",
+    "examples": 1319,
+    "metrics": {
+      "original_correct": 0.3457164518574678,
+      "strict_exact": 0.000758150113722517,
+      "boxed_exact": 0.3457164518574678,
+      "numeric_boxed_or_last": 0.39423805913570886,
+      "primary_correct": 0.39423805913570886
+    },
+    "disagreements": {
+      "original_vs_primary": 64,
+      "strict_exact_vs_primary": 519
+    }
+  },
+  {
+    "model": "anchored_standard",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_anchor100_20260708_053110/anchored_standard/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.124,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.13,
+      "numeric_boxed_or_last": 0.18,
+      "primary_correct": 0.152
+    },
+    "disagreements": {
+      "original_vs_primary": 14,
+      "strict_exact_vs_primary": 75
+    }
+  },
+  {
+    "model": "anchored_topk_router",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_anchor100_20260708_053110/anchored_topk_router/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.134,
+      "strict_exact": 0.004,
+      "boxed_exact": 0.142,
+      "numeric_boxed_or_last": 0.194,
+      "primary_correct": 0.178
+    },
+    "disagreements": {
+      "original_vs_primary": 22,
+      "strict_exact_vs_primary": 87
+    }
+  },
+  {
+    "model": "standard",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_anchor100_20260708_053110/standard/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.134,
+      "strict_exact": 0.002,
+      "boxed_exact": 0.14,
+      "numeric_boxed_or_last": 0.198,
+      "primary_correct": 0.168
+    },
+    "disagreements": {
+      "original_vs_primary": 17,
+      "strict_exact_vs_primary": 83
+    }
+  },
+  {
+    "model": "topk_router",
+    "dataset": "math500",
+    "preds_jsonl": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_anchor100_20260708_053110/topk_router/preds.jsonl",
+    "examples": 500,
+    "metrics": {
+      "original_correct": 0.14,
+      "strict_exact": 0.0,
+      "boxed_exact": 0.146,
+      "numeric_boxed_or_last": 0.196,
+      "primary_correct": 0.176
+    },
+    "disagreements": {
+      "original_vs_primary": 18,
+      "strict_exact_vs_primary": 88
+    }
+  }
+]

@@ -1,0 +1,51 @@
+name: 2026-07-08-block-advantage
+description: Compare naive sum, mean-normalized, and mixed block-3 OPD advantages.
+
+models:
+  student: Qwen/Qwen3-0.6B
+  teacher: Qwen/Qwen3-4B
+  policy: official checkpoints only
+
+data:
+  train_prompts: /mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/train_prompts.jsonl
+  train_prompt_count: 3400
+  eval_gsm8k: /mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/eval_gsm8k.jsonl
+  eval_gsm8k_count: 1319
+  eval_math500: /mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/eval_math500.jsonl
+  eval_math500_count: 500
+  manifest: /mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/manifest.json
+
+training:
+  max_steps: 50
+  save_steps: 50
+  prompts_per_step: 2
+  train_max_new_tokens: 128
+  lr: 5.0e-7
+  weight_decay: 0.0
+  grad_clip: 1.0
+  seed: 7
+  top_k: 20
+  token_supervision_stride: 1
+  token_supervision_offset: 0
+
+eval:
+  limit: 0
+  batch_size: 8
+  max_prompt_tokens: 1024
+  max_new_tokens: 256
+  temperature: 0.7
+  top_p: 0.95
+  seed: 7
+  enable_thinking: false
+
+variants:
+  - name: block3_sum
+    opd_block_size: 3
+    opd_block_advantage_mode: sum
+  - name: block3_mean
+    opd_block_size: 3
+    opd_block_advantage_mode: mean
+  - name: block3_mixed_lam05
+    opd_block_size: 3
+    opd_block_advantage_mode: mixed
+    opd_block_mix_lambda: 0.5

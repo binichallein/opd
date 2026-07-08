@@ -1,0 +1,50 @@
+[
+  {
+    "variant": "standard",
+    "steps": 100,
+    "avg_grad_norm": 78.25125,
+    "max_grad_norm": 201.0,
+    "avg_router_keep": 0.9555340299010276,
+    "avg_weight": 0.9999999940395355,
+    "avg_reference_gap": null,
+    "avg_positive_reference_gap_rate": null,
+    "avg_completion_tokens": 232.955,
+    "final_checkpoint": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/anchor100_20260708_044116/standard/checkpoint-step-00100"
+  },
+  {
+    "variant": "topk_router",
+    "steps": 100,
+    "avg_grad_norm": 70.99375,
+    "max_grad_norm": 224.0,
+    "avg_router_keep": 0.9555422729253769,
+    "avg_weight": 0.9599880445003509,
+    "avg_reference_gap": null,
+    "avg_positive_reference_gap_rate": null,
+    "avg_completion_tokens": 231.505,
+    "final_checkpoint": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/anchor100_20260708_044116/topk_router/checkpoint-step-00100"
+  },
+  {
+    "variant": "anchored_standard",
+    "steps": 100,
+    "avg_grad_norm": 75.7925,
+    "max_grad_norm": 248.0,
+    "avg_router_keep": 0.9529903051257134,
+    "avg_weight": 0.9999999949336051,
+    "avg_reference_gap": 0.0005548685999528403,
+    "avg_positive_reference_gap_rate": 0.39675978928804395,
+    "avg_completion_tokens": 231.6,
+    "final_checkpoint": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/anchor100_20260708_044116/anchored_standard/checkpoint-step-00100"
+  },
+  {
+    "variant": "anchored_topk_router",
+    "steps": 100,
+    "avg_grad_norm": 59.64625,
+    "max_grad_norm": 138.0,
+    "avg_router_keep": 0.9542499509453773,
+    "avg_weight": 0.9588249579071999,
+    "avg_reference_gap": 0.0011399385920958594,
+    "avg_positive_reference_gap_rate": 0.4569268740713596,
+    "avg_completion_tokens": 229.915,
+    "final_checkpoint": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/anchor100_20260708_044116/anchored_topk_router/checkpoint-step-00100"
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "seed13_standard": {
+    "steps": 50,
+    "final_step": 50,
+    "avg_grad_norm": 106.075,
+    "max_grad_norm": 282.0,
+    "avg_router_keep_rate": 0.958231720328331,
+    "avg_lambda_mean": 0.9999999988079071,
+    "avg_weight_mean": 0.9999999988079071,
+    "avg_completion_tokens": 127.16
+  },
+  "seed13_topk_default": {
+    "steps": 50,
+    "final_step": 50,
+    "avg_grad_norm": 97.7925,
+    "max_grad_norm": 300.0,
+    "avg_router_keep_rate": 0.9546365290880203,
+    "avg_lambda_mean": 0.9999999994039536,
+    "avg_weight_mean": 0.9591728812456131,
+    "avg_completion_tokens": 126.89
+  },
+  "seed7_topk_strict": {
+    "steps": 50,
+    "final_step": 50,
+    "avg_grad_norm": 72.1175,
+    "max_grad_norm": 292.0,
+    "avg_router_keep_rate": 0.609828574359417,
+    "avg_lambda_mean": 0.9999999988079071,
+    "avg_weight_mean": 0.6878628727793693,
+    "avg_completion_tokens": 127.35
+  },
+  "seed7_routed_lam110": {
+    "steps": 50,
+    "final_step": 50,
+    "avg_grad_norm": 112.715,
+    "max_grad_norm": 284.0,
+    "avg_router_keep_rate": 0.9558516901731491,
+    "avg_lambda_mean": 1.0955851781368255,
+    "avg_weight_mean": 0.9602665257453918,
+    "avg_completion_tokens": 127.94
+  }
+}

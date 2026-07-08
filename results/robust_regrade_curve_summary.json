@@ -1,0 +1,146 @@
+[
+  {
+    "dataset": "gsm8k",
+    "variant": "base",
+    "step": 0,
+    "primary_correct": 0.4624715693707354
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 50,
+    "primary_correct": 0.46171341925701287
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 50,
+    "primary_correct": 0.46171341925701287
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "routed_lam110",
+    "step": 50,
+    "primary_correct": 0.4723275208491281
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 100,
+    "primary_correct": 0.3995451099317665
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 100,
+    "primary_correct": 0.4025777103866566
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 150,
+    "primary_correct": 0.38059135708870356
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 150,
+    "primary_correct": 0.39272175890826383
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 200,
+    "primary_correct": 0.3616376042456406
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 200,
+    "primary_correct": 0.38817285822592873
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "outcome_reweight",
+    "step": 200,
+    "primary_correct": 0.378316906747536
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "outcome_topk_router",
+    "step": 200,
+    "primary_correct": 0.38514025777103866
+  },
+  {
+    "dataset": "math500",
+    "variant": "base",
+    "step": 0,
+    "primary_correct": 0.202
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 50,
+    "primary_correct": 0.202
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 50,
+    "primary_correct": 0.194
+  },
+  {
+    "dataset": "math500",
+    "variant": "routed_lam110",
+    "step": 50,
+    "primary_correct": 0.202
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 100,
+    "primary_correct": 0.162
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 100,
+    "primary_correct": 0.162
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 150,
+    "primary_correct": 0.158
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 150,
+    "primary_correct": 0.144
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 200,
+    "primary_correct": 0.148
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 200,
+    "primary_correct": 0.162
+  },
+  {
+    "dataset": "math500",
+    "variant": "outcome_reweight",
+    "step": 200,
+    "primary_correct": 0.166
+  },
+  {
+    "dataset": "math500",
+    "variant": "outcome_topk_router",
+    "step": 200,
+    "primary_correct": 0.164
+  }
+]

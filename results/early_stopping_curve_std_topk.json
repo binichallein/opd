@@ -1,0 +1,110 @@
+[
+  {
+    "dataset": "gsm8k",
+    "variant": "base",
+    "step": 0,
+    "pass_at_1": 0.41698256254738436
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 50,
+    "pass_at_1": 0.4177407126611069
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 50,
+    "pass_at_1": 0.41698256254738436
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 100,
+    "pass_at_1": 0.3525398028809704
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 100,
+    "pass_at_1": 0.3525398028809704
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 150,
+    "pass_at_1": 0.33434420015163
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 150,
+    "pass_at_1": 0.34874905231235787
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "standard",
+    "step": 200,
+    "pass_at_1": 0.3214556482183472
+  },
+  {
+    "dataset": "gsm8k",
+    "variant": "topk_router",
+    "step": 200,
+    "pass_at_1": 0.3388931008339651
+  },
+  {
+    "dataset": "math500",
+    "variant": "base",
+    "step": 0,
+    "pass_at_1": 0.16
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 50,
+    "pass_at_1": 0.168
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 50,
+    "pass_at_1": 0.164
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 100,
+    "pass_at_1": 0.138
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 100,
+    "pass_at_1": 0.142
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 150,
+    "pass_at_1": 0.124
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 150,
+    "pass_at_1": 0.12
+  },
+  {
+    "dataset": "math500",
+    "variant": "standard",
+    "step": 200,
+    "pass_at_1": 0.118
+  },
+  {
+    "dataset": "math500",
+    "variant": "topk_router",
+    "step": 200,
+    "pass_at_1": 0.132
+  }
+]

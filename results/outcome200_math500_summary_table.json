@@ -1,0 +1,38 @@
+[
+  {
+    "model": "seed7_standard",
+    "examples": 500,
+    "pass_at_1": 0.118,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_standard/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_standard",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_topk_router",
+    "examples": 500,
+    "pass_at_1": 0.132,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_topk_router/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_topk_router",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_outcome_reweight",
+    "examples": 500,
+    "pass_at_1": 0.126,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_outcome_reweight/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_outcome_reweight",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_outcome_topk_router",
+    "examples": 500,
+    "pass_at_1": 0.122,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_outcome_topk_router/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_math500_outcome200_20260707_194521/seed7_outcome_topk_router",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  }
+]

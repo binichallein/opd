@@ -1,0 +1,8 @@
+{
+  "model_id": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "local_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/models/official/Qwen__Qwen3-1.7B",
+  "snapshot_path": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/models/official/Qwen__Qwen3-1.7B",
+  "downloaded_at": "2026-07-08 05:47:26",
+  "official_only": true
+}

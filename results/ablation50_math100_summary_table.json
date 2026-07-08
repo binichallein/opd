@@ -1,0 +1,30 @@
+[
+  {
+    "variant": "seed13_standard",
+    "mean_score": 0.22,
+    "pass_at_k": 0.22,
+    "avg_completion_tokens": 238.36,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/ablation50_20260708_003315/seed13_standard/checkpoint-step-00050"
+  },
+  {
+    "variant": "seed13_topk_default",
+    "mean_score": 0.27,
+    "pass_at_k": 0.27,
+    "avg_completion_tokens": 237.23,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/ablation50_20260708_003315/seed13_topk_default/checkpoint-step-00050"
+  },
+  {
+    "variant": "seed7_topk_strict",
+    "mean_score": 0.2,
+    "pass_at_k": 0.2,
+    "avg_completion_tokens": 238.44,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/ablation50_20260708_003315/seed7_topk_strict/checkpoint-step-00050"
+  },
+  {
+    "variant": "seed7_routed_lam110",
+    "mean_score": 0.25,
+    "pass_at_k": 0.25,
+    "avg_completion_tokens": 236.11,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/ablation50_20260708_003315/seed7_routed_lam110/checkpoint-step-00050"
+  }
+]

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="330" viewBox="0 0 960 330">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#222} .title{font-size:15px;font-weight:700} .label{font-size:12px} .tick{font-size:10px;fill:#555} .legend{font-size:11px}</style>
+<text class="title" x="34" y="48">A. 1.7B teacher is locally closer</text>
+<line x1="88" y1="242" x2="450" y2="242" stroke="#222" stroke-width="1"/>
+<line x1="88" y1="62" x2="88" y2="242" stroke="#222" stroke-width="1"/>
+<line x1="88" y1="242.0" x2="450" y2="242.0" stroke="#ddd"/>
+<text class="tick" x="80" y="245.0" text-anchor="end">0.58</text>
+<line x1="88" y1="152.0" x2="450" y2="152.0" stroke="#ddd"/>
+<text class="tick" x="80" y="155.0" text-anchor="end">0.64</text>
+<line x1="88" y1="62.0" x2="450" y2="62.0" stroke="#ddd"/>
+<text class="tick" x="80" y="65.0" text-anchor="end">0.70</text>
+<text class="tick" x="148.3" y="259" text-anchor="middle">train</text>
+<rect x="130.3" y="141.7" width="16.0" height="100.3" fill="#56B4E9"/>
+<rect x="148.3" y="191.0" width="16.0" height="51.0" fill="#E69F00"/>
+<text class="tick" x="269.0" y="259" text-anchor="middle">GSM8K</text>
+<rect x="251.0" y="132.9" width="16.0" height="109.1" fill="#56B4E9"/>
+<rect x="269.0" y="185.4" width="16.0" height="56.6" fill="#E69F00"/>
+<text class="tick" x="389.7" y="259" text-anchor="middle">MATH</text>
+<rect x="371.7" y="88.4" width="16.0" height="153.6" fill="#56B4E9"/>
+<rect x="389.7" y="126.1" width="16.0" height="115.9" fill="#E69F00"/>
+<text class="label" transform="translate(46,152.0) rotate(-90)" text-anchor="middle">top-k overlap with student</text>
+<rect x="364" y="46" width="12" height="8" fill="#56B4E9"/>
+<text class="legend" x="381" y="54">1.7B</text>
+<rect x="364" y="61" width="12" height="8" fill="#E69F00"/>
+<text class="legend" x="381" y="69">4B</text>
+<text class="title" x="500" y="48">B. 4B gives larger local advantage</text>
+<line x1="554" y1="242" x2="916" y2="242" stroke="#222" stroke-width="1"/>
+<line x1="554" y1="62" x2="554" y2="242" stroke="#222" stroke-width="1"/>
+<line x1="554" y1="242.0" x2="916" y2="242.0" stroke="#ddd"/>
+<text class="tick" x="546" y="245.0" text-anchor="end">0.20</text>
+<line x1="554" y1="152.0" x2="916" y2="152.0" stroke="#ddd"/>
+<text class="tick" x="546" y="155.0" text-anchor="end">0.44</text>
+<line x1="554" y1="62.0" x2="916" y2="62.0" stroke="#ddd"/>
+<text class="tick" x="546" y="65.0" text-anchor="end">0.68</text>
+<text class="tick" x="614.3" y="259" text-anchor="middle">train</text>
+<rect x="596.3" y="116.9" width="16.0" height="125.1" fill="#56B4E9"/>
+<rect x="614.3" y="83.8" width="16.0" height="158.2" fill="#E69F00"/>
+<text class="tick" x="735.0" y="259" text-anchor="middle">GSM8K</text>
+<rect x="717.0" y="119.6" width="16.0" height="122.4" fill="#56B4E9"/>
+<rect x="735.0" y="84.3" width="16.0" height="157.7" fill="#E69F00"/>
+<text class="tick" x="855.7" y="259" text-anchor="middle">MATH</text>
+<rect x="837.7" y="201.9" width="16.0" height="40.1" fill="#56B4E9"/>
+<rect x="855.7" y="181.2" width="16.0" height="60.8" fill="#E69F00"/>
+<text class="label" transform="translate(512,152.0) rotate(-90)" text-anchor="middle">abs sampled-token advantage</text>
+<rect x="830" y="46" width="12" height="8" fill="#56B4E9"/>
+<text class="legend" x="847" y="54">1.7B</text>
+<rect x="830" y="61" width="12" height="8" fill="#E69F00"/>
+<text class="legend" x="847" y="69">4B</text>
+</svg>

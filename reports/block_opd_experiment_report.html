@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Block Reverse-KL OPD 实验报告</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #5d6876;
+      --line: #dce1e8;
+      --blue: #246bfe;
+      --green: #158f5b;
+      --amber: #b86b00;
+      --red: #bd3d3a;
+      --slate: #354052;
+      --code: #10151f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+    }
+    header {
+      background: #111827;
+      color: #fff;
+      padding: 34px 40px 28px;
+      border-bottom: 1px solid #0b1220;
+    }
+    main { max-width: 1180px; margin: 0 auto; padding: 26px 24px 48px; }
+    h1 { margin: 0 0 10px; font-size: 30px; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 20px; letter-spacing: 0; }
+    h3 { margin: 18px 0 8px; font-size: 16px; letter-spacing: 0; }
+    p { margin: 0 0 12px; }
+    .subtitle { color: #cbd5e1; max-width: 900px; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 6px;
+      padding: 4px 9px;
+      color: #e5e7eb;
+      background: rgba(255,255,255,.06);
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    .callout {
+      border-left: 4px solid var(--blue);
+      background: #eef4ff;
+      padding: 14px 16px;
+      border-radius: 6px;
+      margin: 12px 0 0;
+    }
+    .warn { border-left-color: var(--amber); background: #fff7e8; }
+    .good { border-left-color: var(--green); background: #edf8f3; }
+    .bad { border-left-color: var(--red); background: #fff1f0; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    pre {
+      margin: 10px 0 0;
+      padding: 14px;
+      overflow: auto;
+      color: #eef2ff;
+      background: var(--code);
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .markdown-formula {
+      margin-top: 12px;
+      white-space: pre;
+      tab-size: 2;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: #fff;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 9px;
+      text-align: right;
+      vertical-align: middle;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    th {
+      color: #334155;
+      background: #f3f5f8;
+      font-weight: 650;
+    }
+    .config-table td:nth-child(2), .config-table th:nth-child(2) {
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+    .config-table td:first-child {
+      width: 170px;
+      color: #334155;
+      font-weight: 650;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .best { color: var(--green); font-weight: 700; }
+    .risk { color: var(--red); font-weight: 700; }
+    .muted { color: var(--muted); }
+    .kpi {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .kpi-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+    .kpi-label { color: var(--muted); font-size: 13px; }
+    .kpi-value { margin-top: 5px; font-size: 26px; font-weight: 750; }
+    .bar-chart { display: grid; gap: 12px; margin-top: 6px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 94px 1fr 72px;
+      align-items: center;
+      gap: 10px;
+    }
+    .bar-track {
+      height: 22px;
+      background: #edf1f6;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill { height: 100%; background: var(--blue); }
+    .bar-fill.green { background: var(--green); }
+    .bar-fill.amber { background: var(--amber); }
+    .bar-fill.red { background: var(--red); }
+    .formula {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .formula-row {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfe;
+    }
+    .math-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .math-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 14px;
+    }
+    .math-title {
+      color: #334155;
+      font-weight: 750;
+      margin-bottom: 10px;
+    }
+    .eq {
+      overflow-x: auto;
+      margin: 10px 0;
+      padding: 12px;
+      border: 1px solid #d8e0ea;
+      border-radius: 8px;
+      background: #fff;
+      font-family: "Cambria Math", "Times New Roman", serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #111827;
+      white-space: nowrap;
+    }
+    .eq-center { text-align: center; }
+    .eq-caption {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 7px;
+    }
+    .term-token {
+      background: #eaf2ff;
+      border: 1px solid #b8cffd;
+      border-radius: 5px;
+      padding: 2px 5px;
+    }
+    .term-cross {
+      background: #fff0e0;
+      border: 1px solid #f3b56f;
+      border-radius: 5px;
+      padding: 2px 5px;
+    }
+    .math-note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #f3f5f8;
+      color: #334155;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 900px) {
+      header { padding: 26px 22px; }
+      main { padding: 18px 14px 36px; }
+      .span-4, .span-5, .span-7, .span-8, .span-12 { grid-column: span 12; }
+      .two-col, .kpi, .math-grid { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 80px 1fr 58px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Block Reverse-KL OPD：从单 token 到连续 token block 的验证</h1>
+    <p class="subtitle">目标：验证“teacher 同时给学生连续 2/3 个 token 的采样路径打分，再用 block 级 reverse-KL 风格信号更新学生”是否比标准 token-level OPD 更有效或更稳定。</p>
+    <div class="meta">
+      <span class="pill">实验机：train</span>
+      <span class="pill">Student：官方 Qwen3-0.6B</span>
+      <span class="pill">Teacher：官方 Qwen3-4B</span>
+      <span class="pill">完整 eval：GSM8K 1319 + MATH500 500</span>
+      <span class="pill">Run：block_opd_effect_20260708_124329</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid">
+      <div class="card span-7">
+        <h2>Idea 定义</h2>
+        <p>现有 OPD 通常是逐 token 监督：学生生成一个 token，teacher 就评价这个 token 比旧学生更应该被鼓励还是压低。你的想法是把连续几个 token 合成一个小片段，让 teacher 评价整个片段。</p>
+        <div class="formula">
+          <div class="formula-row"><strong>标准 token OPD：</strong>如果学生生成 <code>y1, y2, y3, y4</code>，就分别评价 <code>y1</code>、<code>y2</code>、<code>y3</code>、<code>y4</code> 四个 token。</div>
+          <div class="formula-row"><strong>block-2 OPD：</strong>把它们切成 <code>[y1, y2]</code> 和 <code>[y3, y4]</code> 两个连续 block，teacher 一次评价一个 block。</div>
+          <div class="formula-row"><strong>teacher 对 block 的分数：</strong><code>log p_teacher(y1) + log p_teacher(y2 | y1)</code>。这就是 teacher 认为连续片段 <code>[y1, y2]</code> 有多合理。</div>
+          <div class="formula-row"><strong>旧学生对同一 block 的分数：</strong><code>log p_old(y1) + log p_old(y2 | y1)</code>。</div>
+          <div class="formula-row"><strong>两者相减：</strong><code>teacher_block_score - old_block_score</code>。如果为正，说明 teacher 比旧学生更喜欢这个连续片段；如果为负，就说明 teacher 更不喜欢。</div>
+          <div class="formula-row"><strong>训练目标：</strong>teacher 更喜欢的 block，就提高当前学生生成这个 block 的概率；teacher 不喜欢的 block，就压低它的概率。</div>
+        </div>
+        <div class="callout">
+          这里验证的是 sampled block reverse-KL：只评价学生已经生成出来的连续 token block，例如 <code>[y1, y2]</code>，不枚举所有可能的 2-token 或 3-token 组合。
+        </div>
+      </div>
+
+      <div class="card span-5">
+        <h2>实验结论</h2>
+        <div class="callout good">
+          <p><strong>部分成立。</strong> block-3 在 GSM8K 和 MATH500 上都略高于 token OPD，说明 block-level 信号不是无效方向。</p>
+        </div>
+        <div class="callout warn">
+          <p><strong>但稳定性不干净。</strong> block-2 和 block-3 的 pre-clip grad norm 明显更高，block-3 的 max grad norm 达到 1136。</p>
+        </div>
+        <p class="footer-note">下一步更合理的研究问题不是“block 越大越好”，而是“block advantage 是否需要按长度归一化、温度缩放或裁剪”。</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>数学公式：token 监督 vs block 监督</h2>
+        <p>下面用可视化公式展示两者的差别。蓝色项是标准逐 token OPD 已经有的部分；橙色项是 block-level 额外引入的交叉项。</p>
+
+        <div class="math-grid">
+          <div class="math-card">
+            <div class="math-title">1. Token-level OPD：每个 token 各用各的信号</div>
+            <div class="eq eq-center">A<sub>t</sub> = log π<sub>T</sub>(y<sub>t</sub> | x, y<sub>&lt;t</sub>) − log π<sub>old</sub>(y<sub>t</sub> | x, y<sub>&lt;t</sub>)</div>
+            <div class="eq eq-center">L<sub>token</sub> = − Σ<sub>t</sub> sg(A<sub>t</sub>) · log π<sub>θ</sub>(y<sub>t</sub> | x, y<sub>&lt;t</sub>)</div>
+            <div class="eq-caption">直觉：第 t 个 token 的 teacher 信号，只更新第 t 个 token 的概率。</div>
+          </div>
+
+          <div class="math-card">
+            <div class="math-title">2. Block-level OPD：连续 token 共享一个整体信号</div>
+            <div class="eq eq-center">B<sub>j</sub> = (y<sub>s</sub>, y<sub>s+1</sub>, ..., y<sub>s+k−1</sub>)</div>
+            <div class="eq eq-center">A<sub>B</sub> = Σ<sub>i=0</sub><sup>k−1</sup> [log π<sub>T</sub>(y<sub>s+i</sub> | x, y<sub>&lt;s+i</sub>) − log π<sub>old</sub>(y<sub>s+i</sub> | x, y<sub>&lt;s+i</sub>)]</div>
+            <div class="eq eq-center">L<sub>block</sub> = − Σ<sub>j</sub> sg(A<sub>B<sub>j</sub></sub>) · log π<sub>θ</sub>(B<sub>j</sub>)</div>
+            <div class="eq-caption">直觉：teacher 不是单独评价每个 token，而是评价整个连续片段。</div>
+          </div>
+        </div>
+
+        <div class="math-card" style="margin-top:14px;">
+          <div class="math-title">3. block-2 展开：为什么它不是普通逐 token OPD</div>
+          <p class="muted">设一个 block 是 <code>[y1, y2]</code>，并定义两个 token 的 advantage：</p>
+          <div class="eq eq-center">A<sub>1</sub> = log π<sub>T</sub>(y<sub>1</sub>) − log π<sub>old</sub>(y<sub>1</sub>)</div>
+          <div class="eq eq-center">A<sub>2</sub> = log π<sub>T</sub>(y<sub>2</sub> | y<sub>1</sub>) − log π<sub>old</sub>(y<sub>2</sub> | y<sub>1</sub>)</div>
+
+          <div class="math-grid">
+            <div class="math-card">
+              <div class="math-title">逐 token loss</div>
+              <div class="eq">L<sub>token</sub> = <span class="term-token">− A<sub>1</sub> log π<sub>θ</sub>(y<sub>1</sub>)</span> <br> <span class="term-token">− A<sub>2</sub> log π<sub>θ</sub>(y<sub>2</sub> | y<sub>1</sub>)</span></div>
+            </div>
+            <div class="math-card">
+              <div class="math-title">block-2 loss</div>
+              <div class="eq">L<sub>block-2</sub> = − (A<sub>1</sub> + A<sub>2</sub>) · [log π<sub>θ</sub>(y<sub>1</sub>) + log π<sub>θ</sub>(y<sub>2</sub> | y<sub>1</sub>)]</div>
+            </div>
+          </div>
+
+          <div class="eq">
+            L<sub>block-2</sub> =
+            <span class="term-token">− A<sub>1</sub> log π<sub>θ</sub>(y<sub>1</sub>)</span>
+            <span class="term-token">− A<sub>2</sub> log π<sub>θ</sub>(y<sub>2</sub> | y<sub>1</sub>)</span>
+            <span class="term-cross">− A<sub>1</sub> log π<sub>θ</sub>(y<sub>2</sub> | y<sub>1</sub>)</span>
+            <span class="term-cross">− A<sub>2</sub> log π<sub>θ</sub>(y<sub>1</sub>)</span>
+          </div>
+          <div class="math-note">
+            <strong>核心差别：</strong>逐 token OPD 只有蓝色项；block-2 OPD 多了橙色交叉项。也就是说，block 内 token 共享一个整体 teacher 信号，所以它更像“短语/推理片段级监督”，但也会放大梯度并让 credit assignment 变粗。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>完整 Regrade 结果</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Variant</th>
+              <th>GSM8K primary</th>
+              <th>Δ vs token</th>
+              <th>MATH500 primary</th>
+              <th>Δ vs token</th>
+              <th>Grad norm mean</th>
+              <th>Grad norm max</th>
+              <th>Supervision units/step</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>token OPD</td>
+              <td>0.4594</td>
+              <td>0.0000</td>
+              <td>0.200</td>
+              <td>0.000</td>
+              <td>112.68</td>
+              <td>246</td>
+              <td>127.50</td>
+            </tr>
+            <tr>
+              <td>block-2</td>
+              <td>0.4541</td>
+              <td>-0.0053</td>
+              <td>0.194</td>
+              <td>-0.006</td>
+              <td class="risk">265.95</td>
+              <td class="risk">1008</td>
+              <td>63.59</td>
+            </tr>
+            <tr>
+              <td>block-3</td>
+              <td class="best">0.4685</td>
+              <td class="best">+0.0091</td>
+              <td class="best">0.202</td>
+              <td class="best">+0.002</td>
+              <td class="risk">473.84</td>
+              <td class="risk">1136</td>
+              <td>41.61</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-4">
+        <h2>GSM8K</h2>
+        <div class="bar-chart">
+          <div class="bar-row"><span>token</span><div class="bar-track"><div class="bar-fill" style="width: 98.1%"></div></div><strong>0.4594</strong></div>
+          <div class="bar-row"><span>block-2</span><div class="bar-track"><div class="bar-fill amber" style="width: 96.9%"></div></div><strong>0.4541</strong></div>
+          <div class="bar-row"><span>block-3</span><div class="bar-track"><div class="bar-fill green" style="width: 100%"></div></div><strong>0.4685</strong></div>
+        </div>
+      </div>
+      <div class="card span-4">
+        <h2>MATH500</h2>
+        <div class="bar-chart">
+          <div class="bar-row"><span>token</span><div class="bar-track"><div class="bar-fill" style="width: 99.0%"></div></div><strong>0.200</strong></div>
+          <div class="bar-row"><span>block-2</span><div class="bar-track"><div class="bar-fill amber" style="width: 96.0%"></div></div><strong>0.194</strong></div>
+          <div class="bar-row"><span>block-3</span><div class="bar-track"><div class="bar-fill green" style="width: 100%"></div></div><strong>0.202</strong></div>
+        </div>
+      </div>
+      <div class="card span-4">
+        <h2>梯度风险</h2>
+        <div class="bar-chart">
+          <div class="bar-row"><span>token</span><div class="bar-track"><div class="bar-fill green" style="width: 21.7%"></div></div><strong>246</strong></div>
+          <div class="bar-row"><span>block-2</span><div class="bar-track"><div class="bar-fill red" style="width: 88.7%"></div></div><strong>1008</strong></div>
+          <div class="bar-row"><span>block-3</span><div class="bar-track"><div class="bar-fill red" style="width: 100%"></div></div><strong>1136</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-7">
+        <h2>训练数据</h2>
+        <table class="config-table">
+          <tbody>
+            <tr><td>训练文件</td><td><code>/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/train_prompts.jsonl</code></td></tr>
+            <tr><td>训练样本数</td><td>3400 条 prompt。三组使用同一数据文件、同一 <code>seed=7</code>、同一 Python RNG prompt schedule，因此每一步抽到的 prompt ID 序列相同；但 OPD 是 on-policy，学生生成的 completion 会在不同 loss 更新后逐步分叉，所以 rollout 文本不保证相同。</td></tr>
+            <tr><td>来源分布</td><td><code>openai/gsm8k</code> train 2000 条；<code>EleutherAI/hendrycks_math</code> 7 个子类各 200 条：algebra、counting_and_probability、geometry、intermediate_algebra、number_theory、prealgebra、precalculus。</td></tr>
+            <tr><td>Prompt 模板</td><td>原题后追加：<code>Please reason step by step, and put your final answer within \boxed{}.</code></td></tr>
+            <tr><td>Data manifest</td><td><code>/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/manifest.json</code>，记录 sources、counts 和 <code>math_train_status=ok</code>。</td></tr>
+          </tbody>
+        </table>
+        <div class="callout">
+          训练 prompt 不是用户自训练模型产生的数据；本轮使用公开数学数据构造的 clean-room prompt 集，只用官方 Qwen3-0.6B 和 Qwen3-4B。三组共享相同 prompt 序列，但各自使用自己的 on-policy student rollout。
+        </div>
+      </div>
+
+      <div class="card span-5">
+        <h2>训练过程参数</h2>
+        <table class="config-table">
+          <tbody>
+            <tr><td>Student</td><td>官方 <code>Qwen/Qwen3-0.6B</code>，本地路径 <code>models/official/Qwen__Qwen3-0.6B</code></td></tr>
+            <tr><td>Teacher</td><td>官方 <code>Qwen/Qwen3-4B</code>，本地路径 <code>models/official/Qwen__Qwen3-4B</code></td></tr>
+            <tr><td>三组变量</td><td><code>--opd-block-size=1</code>、<code>2</code>、<code>3</code>；其他训练参数保持一致。</td></tr>
+            <tr><td>Rollout</td><td><code>prompts_per_step=2</code>，<code>max_prompt_tokens=1024</code>，<code>max_new_tokens=128</code>，<code>temperature=0.7</code>，<code>top_p=0.95</code>。</td></tr>
+            <tr><td>OPD 设置</td><td><code>variant=standard</code>，<code>top_k=20</code>，<code>token_supervision_stride=1</code>，<code>token_supervision_offset=0</code>。</td></tr>
+            <tr><td>优化设置</td><td>50 steps / variant，<code>lr=5e-7</code>，<code>weight_decay=0</code>，<code>grad_clip=1.0</code>，<code>seed=7</code>，<code>enable_thinking=false</code>。</td></tr>
+            <tr><td>Checkpoint</td><td><code>save_steps=50</code>，final checkpoint 保存完整模型、tokenizer 和 <code>training_state.pt</code>。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-8">
+        <h2>Eval 配置</h2>
+        <table class="config-table">
+          <tbody>
+            <tr><td>Eval checkpoint</td><td>每组使用自己的 <code>checkpoint-step-00050</code>：<code>token_opd</code>、<code>block_k2</code>、<code>block_k3</code>。</td></tr>
+            <tr><td>GSM8K</td><td><code>/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/eval_gsm8k.jsonl</code>，1319 条，<code>limit=0</code> 表示完整评测。</td></tr>
+            <tr><td>MATH500</td><td><code>/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/eval_math500.jsonl</code>，500 条，<code>limit=0</code> 表示完整评测。</td></tr>
+            <tr><td>生成参数</td><td><code>n=1</code>，<code>batch_size=8</code>，<code>max_prompt_tokens=1024</code>，<code>max_new_tokens=256</code>，<code>temperature=0.7</code>，<code>top_p=0.95</code>，<code>seed=7</code>，<code>enable_thinking=false</code>。</td></tr>
+            <tr><td>Online grader</td><td>生成时保存 <code>*_summary.json</code>，使用 simple boxed/exact normalizer；这是在线粗评，不作为最终主分数。</td></tr>
+            <tr><td>Final regrade</td><td>完整生成后运行 <code>scripts/regrade_predictions.py</code>。GSM8K 主分数使用 numeric boxed-or-last；MATH500 主分数使用 strict/boxed exact，并在数字答案场景补充 numeric match。</td></tr>
+            <tr><td>输出文件</td><td>每组保存 <code>gsm8k_preds.jsonl</code>、<code>math500_preds.jsonl</code>、<code>gsm8k_regrade_summary.json</code>、<code>math500_regrade_summary.json</code>。</td></tr>
+            <tr><td>Run root</td><td><code>/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/block_opd_effect_20260708_124329</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card span-4">
+        <h2>实现确认</h2>
+        <div class="kpi">
+          <div class="kpi-item">
+            <div class="kpi-label">token OPD units</div>
+            <div class="kpi-value">127.5</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">block-2 units</div>
+            <div class="kpi-value">63.6</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">block-3 units</div>
+            <div class="kpi-value">41.6</div>
+          </div>
+        </div>
+        <p class="footer-note">block-2 约为 1/2，block-3 约为 1/3；这说明实验不是 token mask，而是真正把连续 token 聚成 block loss unit。</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>下一轮实验：控制 block advantage 的尺度和归因泄漏</h2>
+        <p>上一轮 naive block aggregation 说明 block-3 有轻微收益，但梯度范数明显放大。下一轮不再只问“block 是否有效”，而是验证：<strong>能否保留 block 片段级信号，同时降低梯度放大和 credit assignment leakage。</strong></p>
+        <div class="math-grid">
+          <div class="math-card">
+            <div class="math-title">实验 A：naive block-3（已有对照）</div>
+            <div class="eq eq-center">A<sub>B</sub> = A<sub>1</sub> + A<sub>2</sub> + A<sub>3</sub></div>
+            <div class="eq eq-center">L = − sg(A<sub>B</sub>) · [logp<sub>1</sub> + logp<sub>2</sub> + logp<sub>3</sub>]</div>
+            <div class="eq-caption">作用：保留当前 block-3 的片段级监督；风险是 advantage 求和会放大梯度。</div>
+          </div>
+          <div class="math-card">
+            <div class="math-title">实验 B：mean block-3</div>
+            <div class="eq eq-center">A<sub>B</sub> = (A<sub>1</sub> + A<sub>2</sub> + A<sub>3</sub>) / 3</div>
+            <div class="eq eq-center">L = − sg(A<sub>B</sub>) · [logp<sub>1</sub> + logp<sub>2</sub> + logp<sub>3</sub>]</div>
+            <div class="eq-caption">目标：验证简单长度归一化能否降低 grad norm，同时尽量不损失 block-3 的性能。</div>
+          </div>
+          <div class="math-card">
+            <div class="math-title">实验 C：mixed block-3</div>
+            <div class="eq eq-center">A<sub>mix,i</sub> = (1 − λ) A<sub>i</sub> + λ mean(A<sub>1</sub>, A<sub>2</sub>, A<sub>3</sub>)</div>
+            <div class="eq eq-center">L = − Σ<sub>i=1</sub><sup>3</sup> sg(A<sub>mix,i</sub>) · logp<sub>i</sub></div>
+            <div class="eq-caption">目标：保留 token 自己的 credit assignment，同时加入 block 的整体趋势。本轮设 <code>λ=0.5</code>。</div>
+          </div>
+          <div class="math-card">
+            <div class="math-title">判定标准</div>
+            <p>如果 mean 或 mixed 在 GSM8K/MATH500 接近或超过 naive block-3，同时 grad norm 显著低于 naive block-3，就说明真正有价值的方向是 <strong>variance-controlled / credit-preserving block OPD</strong>，而不是简单的固定 k 聚合。</p>
+            <p class="footer-note">实验配置沿用上一轮：官方 Qwen3-0.6B student、官方 Qwen3-4B teacher、50 steps、完整 GSM8K + MATH500 eval、完整 regrade。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>下一轮实验结果：mean block-3 成立，mixed 需要再调</h2>
+        <p>本轮已在 <code>train</code> 跑完完整三组对照。Run root：<code>/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/block_advantage_20260708_144223</code>。三组均完成 50 steps 训练、GSM8K 1319 条完整生成、MATH500 500 条完整生成和 regrade。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>方案</th>
+              <th>block advantage</th>
+              <th>grad norm mean</th>
+              <th>grad norm max</th>
+              <th>GSM8K</th>
+              <th>MATH500</th>
+              <th>判断</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>naive block-3</td>
+              <td>A<sub>B</sub> = A<sub>1</sub> + A<sub>2</sub> + A<sub>3</sub></td>
+              <td>466.74</td>
+              <td>1136.00</td>
+              <td>0.4655</td>
+              <td>0.192</td>
+              <td>对照组，梯度放大明显</td>
+            </tr>
+            <tr>
+              <td><span class="best">mean block-3</span></td>
+              <td>A<sub>B</sub> = (A<sub>1</sub> + A<sub>2</sub> + A<sub>3</sub>) / 3</td>
+              <td><span class="best">165.22</span> <span class="muted">(-64.6%)</span></td>
+              <td><span class="best">504.00</span> <span class="muted">(-55.6%)</span></td>
+              <td><span class="best">0.4693</span> <span class="muted">(+0.38pp)</span></td>
+              <td><span class="best">0.198</span> <span class="muted">(+0.60pp)</span></td>
+              <td><span class="best">成立：降梯度且质量不降</span></td>
+            </tr>
+            <tr>
+              <td>mixed block-3, λ=0.5</td>
+              <td>A<sub>mix,i</sub> = 0.5A<sub>i</sub> + 0.5 mean(A<sub>1</sub>, A<sub>2</sub>, A<sub>3</sub>)</td>
+              <td><span class="best">83.29</span> <span class="muted">(-82.2%)</span></td>
+              <td><span class="best">175.00</span> <span class="muted">(-84.6%)</span></td>
+              <td><span class="best">0.4708</span> <span class="muted">(+0.53pp)</span></td>
+              <td><span class="risk">0.188</span> <span class="muted">(-0.40pp)</span></td>
+              <td>梯度最好，但 MATH500 下降；λ 需要 sweep</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout good">
+          结论：你的“给 token advantage 做权重”的方向有实验证据支持。最简单的等权归一化 <code>sum / k</code> 已经把 naive block 的梯度放大压下来，并且在两个 eval 上都略优于 naive block-3。
+        </div>
+        <div class="callout warn">
+          但结论不是“越 block 越好”。当前更准确的 idea 是：<strong>block-level reverse-KL 需要 variance-controlled advantage aggregation</strong>。下一步应做 <code>sum / sqrt(k)</code>、advantage clipping、以及 <code>λ ∈ {0.2, 0.8}</code> 的 mixed sweep。
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>这次实验说明了什么</h2>
+        <div class="two-col">
+          <div>
+            <h3>支持该 idea 的证据</h3>
+            <p>block-3 在两个任务上都略高于 token OPD：GSM8K 从 0.4594 到 0.4685，MATH500 从 0.200 到 0.202。虽然提升很小，但方向一致。</p>
+            <p>block supervision unit 明显减少，但性能没有崩，说明连续 token 的联合 logprob 信号可以承载有效监督。</p>
+          </div>
+          <div>
+            <h3>反对或需要修正的证据</h3>
+            <p>block-2 在两个任务上都略低于 token OPD，说明 block 化不是单调收益。</p>
+            <p>block-2/3 的 grad norm 明显放大，说明简单求和会改变 loss 尺度，可能需要按 block length 归一化、温度缩放或 advantage clipping。</p>
+          </div>
+        </div>
+        <div class="callout warn">
+          当前最合理结论：这个方向值得继续，但下一轮应测试 <code>sum / k</code>、<code>sum / sqrt(k)</code>、block advantage clipping，以及与原 token OPD 的 mixed objective。
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

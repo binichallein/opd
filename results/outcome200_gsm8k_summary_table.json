@@ -1,0 +1,38 @@
+[
+  {
+    "model": "seed7_standard",
+    "examples": 1319,
+    "pass_at_1": 0.3214556482183472,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_standard/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_standard",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_topk_router",
+    "examples": 1319,
+    "pass_at_1": 0.3388931008339651,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_topk_router/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_topk_router",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_outcome_reweight",
+    "examples": 1319,
+    "pass_at_1": 0.33358605003790753,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_outcome_reweight/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_outcome_reweight",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_outcome_topk_router",
+    "examples": 1319,
+    "pass_at_1": 0.33206974981046244,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/outcome200_20260708_020543/seed7_outcome_topk_router/checkpoint-step-00200",
+    "eval_dir": "/limx_embap/tos/user/Yaleon/opd_cleanroom_20260707/runs/eval_gsm8k_outcome200_20260707_192132/seed7_outcome_topk_router",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  }
+]

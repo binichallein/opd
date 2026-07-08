@@ -1,0 +1,38 @@
+[
+  {
+    "model": "base",
+    "examples": 500,
+    "pass_at_1": 0.16,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/models/official/Qwen__Qwen3-0.6B",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/base",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_standard",
+    "examples": 500,
+    "pass_at_1": 0.168,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/pilot50_20260707_230404/standard/checkpoint-step-00050",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/seed7_standard",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_topk_router",
+    "examples": 500,
+    "pass_at_1": 0.164,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/pilot50_20260707_230404/topk_router/checkpoint-step-00050",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/seed7_topk_router",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  },
+  {
+    "model": "seed7_routed_lam110",
+    "examples": 500,
+    "pass_at_1": 0.16,
+    "avg_completion_tokens": 256.0,
+    "model_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/ablation50_20260708_003315/seed7_routed_lam110/checkpoint-step-00050",
+    "eval_dir": "/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/runs/eval_math500_full_key_batched_20260708_014942/seed7_routed_lam110",
+    "grader": "simple boxed/exact normalizer; use for pilot comparisons, not final theorem-grade reporting"
+  }
+]
