@@ -1,61 +1,83 @@
-# OPD Internal Experiments
+# OPD 内部实验仓库
 
-This is an internal research repository for validating On-Policy Distillation
-(OPD) variants for language-model post-training.
+这是一个内部研究仓库，用来同步、规范和复现 On-Policy Distillation
+（OPD）相关实验，重点是语言模型后训练中的 token-level / block-level
+reverse-KL 目标。
 
-The current codebase contains clean-room OPD training/evaluation scripts,
-focused tests for block supervision, curated result summaries, and the HTML
-report for the block reverse-KL experiments.
+当前仓库包含 clean-room OPD 训练与评测脚本、block supervision 单测、
+整理后的结果摘要，以及 block reverse-KL 实验的 HTML 报告。
 
-## What Is Versioned
+## 仓库里保存什么
 
-- Training, evaluation, analysis, and launch scripts in `scripts/`
-- Unit tests in `tests/`
-- Research notes in `manuscript/`
-- Curated summaries in `results/*.json`
-- Human-readable reports in `reports/`
-- Figures in `figures/`
-- Experiment and data policies in `docs/`
-- Reproducible experiment configs in `configs/`
+- `scripts/`：训练、评测、regrade、分析和远端 launch 脚本
+- `tests/`：关键逻辑的单元测试，当前重点是 block supervision
+- `manuscript/`：研究笔记和论文草稿
+- `results/*.json`：小型、整理后的结果摘要表
+- `reports/`：方便阅读和讨论的 HTML 报告
+- `figures/`：论文或汇报用 SVG 图
+- `docs/`：实验协议、数据策略、模型策略、结果记录
+- `configs/`：可复现实验配置
+- `AGENTS.md`：给 AI coding agent 看的项目规则
 
-## What Is Not Versioned
+## 仓库里不保存什么
 
-Do not commit raw data, processed datasets, checkpoints, model weights, full
-prediction files, logs, cache directories, or credentials. The `.gitignore`
-is intentionally strict because the repository is meant to preserve experiment
-logic and conclusions, not duplicate large artifacts.
+不要提交以下内容：
 
-## Current Main Result
+- 原始数据或处理后数据
+- checkpoint
+- 模型权重
+- 完整 prediction `.jsonl`
+- 训练或评测日志
+- cache 目录
+- SSH key、access key、API token、`.env`
 
-The latest validated experiment tests block-level reverse-KL OPD with
-advantage aggregation:
+`.gitignore` 会默认拦截这些文件。这个仓库保存的是实验逻辑、配置、
+结论和小型摘要，不用来复制大体积实验产物。
 
-- `naive block-3`: sum token advantages inside each 3-token block
-- `mean block-3`: average token advantages inside each 3-token block
-- `mixed block-3`: interpolate token-local and block-mean advantages
+## 当前主要结果
 
-On the July 8, 2026 run, `mean block-3` reduced gradient norm substantially
-while slightly improving both GSM8K and MATH500 versus naive block-3. The
-current conclusion is that block OPD is most promising as variance-controlled
-block advantage aggregation, not naive block-size scaling.
+最新完成的实验验证了 block-level reverse-KL OPD 中的 advantage 聚合方式：
 
-See:
+- `naive block-3`：把 3 个连续 token 的 advantage 直接相加
+- `mean block-3`：把 3 个连续 token 的 advantage 取平均
+- `mixed block-3`：把 token 自己的 advantage 和 block 平均 advantage 混合
+
+2026-07-08 的完整实验结果显示：
+
+- `mean block-3` 相比 naive block-3 明显降低 gradient norm；
+- 同时在 GSM8K 和 MATH500 上都略有提升；
+- `mixed block-3, lambda=0.5` 梯度最低，但 MATH500 下降，需要继续 sweep。
+
+因此当前结论不是“block 越大越好”，而是：
+
+```text
+block-level reverse-KL OPD 需要 variance-controlled advantage aggregation。
+```
+
+详见：
 
 - `reports/block_opd_experiment_report.html`
 - `docs/results/2026-07-08-block-advantage.md`
 
-## Quick Checks
+## 快速检查
 
 ```bash
 python -m py_compile scripts/clean_opd_train.py scripts/summarize_block_advantage_experiment.py
 python -m pytest tests/test_block_supervision.py -q
 ```
 
-The current local environment used for these checks was the `vllm` conda
-environment on the experiment machine.
+当前实验机上使用的是 `vllm` conda 环境。
 
-## Remote Training Policy
+## 远端训练规范
 
-Long-running training must be launched detached on the training server, must
-write a complete checkpoint state, and must pass a small resume gate before
-using real GPU budget. See `docs/experiment_protocol.md`.
+长时间训练必须在训练服务器上 detached 启动，例如使用 `nohup` 或调度系统；
+不能依赖本地 SSH 会话存活。
+
+每个真实训练都必须：
+
+- 保存完整 checkpoint state，而不是只保存 HF 权重；
+- 记录命令、配置、数据 manifest、模型来源、seed 和 run root；
+- 在大规模训练前先做小型 resume gate；
+- 完整 eval 默认指 GSM8K 1319 条和 MATH500 500 条，除非明确标注为 pilot。
+
+详见 `docs/experiment_protocol.md`。
