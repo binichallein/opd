@@ -21,6 +21,10 @@
   - `block_advantage = sum/mean/mixed advantage[t:t+k]`
   - policy ratio 用 `exp(current_block_logprob - old_block_logprob)`。
 - FSDP actor 和 Megatron actor 都透传这些配置。
+- partial block 使用 `有效 token 数 / block_size` 作为 loss 权重，避免最后 1 个 token
+  和完整 3-token block 等权。
+- full/top-k KL 路径不是 sampled block reverse-KL；如果 `block_size>1` 与 full/top-k KL
+  同时开启，代码会显式报错。
 
 下一步实验矩阵：
 
@@ -28,5 +32,13 @@
 - `block3_sum`: naive block estimator，预期梯度更大。
 - `block3_mean`: mean-normalized block estimator，是当前最值得验证的版本。
 - `Teacher-TopK / LSM`: 来自 revisiting_opd 的外部强 baseline。
+
+有效运行入口：
+
+- 使用 `scripts/run_revisiting_sampled_block_opd_math.sh`。
+- 必须保持 `algorithm.adv_estimator=opd`、`actor_rollout_ref.actor.use_kl_loss=False`、
+  `algorithm.use_kl_in_reward=True`。
+- 不要用 `examples/opd/opd_math_qwen2.5-7b_it.sh` 加 block 参数；那个脚本走
+  `placeholder + full_reverse KL` 路径，只适合作为 token-level full/top-k KL baseline。
 
 论文级数据建议使用 DAPO-Math-17K，并评估 MATH500、AIME24、AIME25、AMC23。

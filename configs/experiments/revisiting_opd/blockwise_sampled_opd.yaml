@@ -11,6 +11,18 @@ idea:
     在 revisiting_opd 的 sampled-token OPD 上，把连续 k 个 sampled tokens
     聚合成一个 block action。old/current logprob 在 block 内求和，teacher-vs-old
     advantage 在 block 内按 sum/mean/mixed 聚合，再用 block-level PPO ratio 更新学生。
+  valid_path:
+    - algorithm.adv_estimator=opd
+    - actor_rollout_ref.actor.use_kl_loss=False
+    - algorithm.use_kl_in_reward=True
+  invalid_path:
+    - algorithm.adv_estimator=placeholder
+    - actor_rollout_ref.actor.kl_loss_type=full_reverse
+    - actor_rollout_ref.actor.use_kl_loss=True
+  note: >
+    revisiting_opd 的 full/top-k KL 路径是 token-level distribution KL baseline。
+    它不是 sampled block reverse-KL；如果 block_size>1 与 full/top-k KL 同时开启，
+    补丁会显式报错，避免静默跑成无效实验。
   default_comparison:
     - token_opd: actor_rollout_ref.actor.opd_block_size=1
     - block3_sum: actor_rollout_ref.actor.opd_block_size=3; actor_rollout_ref.actor.opd_block_advantage_mode=sum
@@ -31,7 +43,7 @@ baseline_matrix:
   required:
     - base student
     - standard sampled-token OPD
-    - Teacher-TopK / Local Support Matching from revisiting_opd
+    - Teacher-TopK / Local Support Matching from revisiting_opd with opd_block_size=1
     - block3_sum
     - block3_mean
   optional:
@@ -41,14 +53,26 @@ baseline_matrix:
 
 hydra_overrides:
   token_opd:
+    - algorithm.adv_estimator=opd
+    - actor_rollout_ref.actor.use_kl_loss=False
+    - algorithm.use_kl_in_reward=True
     - actor_rollout_ref.actor.opd_block_size=1
   block3_sum:
+    - algorithm.adv_estimator=opd
+    - actor_rollout_ref.actor.use_kl_loss=False
+    - algorithm.use_kl_in_reward=True
     - actor_rollout_ref.actor.opd_block_size=3
     - actor_rollout_ref.actor.opd_block_advantage_mode=sum
   block3_mean:
+    - algorithm.adv_estimator=opd
+    - actor_rollout_ref.actor.use_kl_loss=False
+    - algorithm.use_kl_in_reward=True
     - actor_rollout_ref.actor.opd_block_size=3
     - actor_rollout_ref.actor.opd_block_advantage_mode=mean
   block3_mixed_lam05:
+    - algorithm.adv_estimator=opd
+    - actor_rollout_ref.actor.use_kl_loss=False
+    - algorithm.use_kl_in_reward=True
     - actor_rollout_ref.actor.opd_block_size=3
     - actor_rollout_ref.actor.opd_block_advantage_mode=mixed
     - actor_rollout_ref.actor.opd_block_mix_lambda=0.5

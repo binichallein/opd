@@ -87,9 +87,21 @@ bash scripts/setup_revisiting_opd.sh
 开启我们的 block-level sampled OPD：
 
 ```text
+algorithm.adv_estimator=opd
+actor_rollout_ref.actor.use_kl_loss=False
+algorithm.use_kl_in_reward=True
 actor_rollout_ref.actor.opd_block_size=3
 actor_rollout_ref.actor.opd_block_advantage_mode=mean
 ```
+
+推荐入口是：
+
+```bash
+VARIANT=block3_mean bash scripts/run_revisiting_sampled_block_opd_math.sh
+```
+
+不要把 `opd_block_size>1` 直接加到 `placeholder + full_reverse KL` 路径上；
+那条路径是 token-level full/top-k KL baseline，不是 sampled block reverse-KL。
 
 推荐论文级比较矩阵见
 `configs/experiments/revisiting_opd/blockwise_sampled_opd.yaml`。

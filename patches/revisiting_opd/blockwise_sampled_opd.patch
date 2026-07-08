@@ -13,10 +13,10 @@ index dcff326..ffb216f 100644
      invalid_action_penalty_coef: 0.1
      use_kl_loss: False # True for GRPO
 diff --git a/verl/trainer/ppo/core_algos.py b/verl/trainer/ppo/core_algos.py
-index f754f25..4dd17a2 100644
+index f754f25..8c4492e 100644
 --- a/verl/trainer/ppo/core_algos.py
 +++ b/verl/trainer/ppo/core_algos.py
-@@ -428,6 +428,75 @@ def agg_loss(loss_mat: torch.Tensor, loss_mask: torch.Tensor, loss_agg_mode: str
+@@ -428,6 +428,98 @@ def agg_loss(loss_mat: torch.Tensor, loss_mask: torch.Tensor, loss_agg_mode: str
      return loss
 
 
@@ -29,6 +29,25 @@ index f754f25..4dd17a2 100644
 +        return tensor
 +    pad = tensor.new_full((*tensor.shape[:-1], pad_len), value)
 +    return torch.cat([tensor, pad], dim=-1)
++
++
++def validate_block_opd_compatibility(
++    block_size: int = 1,
++    loss_mode: str = "vanilla",
++    use_full_kl: bool = False,
++):
++    """Reject settings where block OPD would silently not test sampled block scoring."""
++    block_size = int(block_size or 1)
++    if block_size <= 1:
++        return
++    if loss_mode != "vanilla":
++        raise ValueError("Block OPD currently supports only vanilla PPO policy loss, not GSPO.")
++    if use_full_kl:
++        raise ValueError(
++            "Block OPD currently implements sampled block reverse-KL, not full/top-k KL. "
++            "Use algorithm.adv_estimator=opd with actor_rollout_ref.actor.use_kl_loss=False "
++            "for block OPD variants, and keep full/top-k KL as a separate baseline."
++        )
 +
 +
 +def aggregate_blockwise_policy_inputs(
@@ -59,6 +78,10 @@ index f754f25..4dd17a2 100644
 +        raise ValueError("block_mix_lambda must satisfy 0 <= lambda <= 1")
 +
 +    mask = response_mask.to(dtype=old_log_prob.dtype)
++    valid = mask.bool()
++    old_log_prob = torch.where(valid, old_log_prob, torch.zeros_like(old_log_prob))
++    log_prob = torch.where(valid, log_prob, torch.zeros_like(log_prob))
++    advantages = torch.where(valid, advantages, torch.zeros_like(advantages))
 +
 +    old_blocks = _pad_last_dim_to_multiple(old_log_prob * mask, block_size).reshape(
 +        old_log_prob.size(0), -1, block_size
@@ -74,7 +97,7 @@ index f754f25..4dd17a2 100644
 +    block_old_log_prob = old_blocks.sum(dim=-1)
 +    block_log_prob = log_blocks.sum(dim=-1)
 +    block_counts = mask_blocks.sum(dim=-1).clamp(min=1.0)
-+    block_mask = (mask_blocks.sum(dim=-1) > 0).to(dtype=response_mask.dtype)
++    block_mask = mask_blocks.sum(dim=-1) / float(block_size)
 +
 +    block_advantage_sum = adv_blocks.sum(dim=-1)
 +    block_advantage_mean = block_advantage_sum / block_counts
@@ -92,7 +115,7 @@ index f754f25..4dd17a2 100644
  def compute_policy_loss(
      old_log_prob,
      log_prob,
-@@ -438,6 +507,9 @@ def compute_policy_loss(
+@@ -438,6 +530,9 @@ def compute_policy_loss(
      cliprange_high=None,
      clip_ratio_c=3.0,
      loss_agg_mode: str = "token-mean",
@@ -102,7 +125,7 @@ index f754f25..4dd17a2 100644
  ):
      """
      Compute the clipped policy objective and related metrics for PPO.
-@@ -469,6 +541,16 @@ def compute_policy_loss(
+@@ -469,6 +564,16 @@ def compute_policy_loss(
      """
      assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
 
@@ -119,17 +142,63 @@ index f754f25..4dd17a2 100644
      negative_approx_kl = log_prob - old_log_prob
      ratio = torch.exp(negative_approx_kl)
      ppo_kl = verl_F.masked_mean(-negative_approx_kl, response_mask)
+@@ -502,6 +607,9 @@ def compute_policy_loss_gspo(
+     cliprange_high=None,
+     clip_ratio_c=3.0,
+     loss_agg_mode: str = "seq-mean-token-mean",
++    opd_block_size: int = 1,
++    opd_block_advantage_mode: str = "sum",
++    opd_block_mix_lambda: float = 0.5,
+ ):
+     """
+     Compute the clipped policy objective and related metrics for GSPO.
+@@ -522,6 +630,11 @@ def compute_policy_loss_gspo(
+     """
+
+     assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
++    validate_block_opd_compatibility(
++        block_size=opd_block_size,
++        loss_mode="gspo",
++        use_full_kl=False,
++    )
+     if cliprange_low is None:
+         cliprange_low = cliprange
+     if cliprange_high is None:
 diff --git a/verl/workers/actor/dp_actor.py b/verl/workers/actor/dp_actor.py
-index 5d6bab1..aa018a3 100644
+index 5d6bab1..58e411a 100644
 --- a/verl/workers/actor/dp_actor.py
 +++ b/verl/workers/actor/dp_actor.py
-@@ -1288,6 +1288,9 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -31,7 +31,7 @@ import verl.utils.torch_functional as verl_F
+ from verl import DataProto
+ from verl.trainer.ppo.core_algos import (
+     agg_loss, compute_policy_loss, compute_policy_loss_gspo, kl_penalty,
+-    compute_memory_efficient_kl,
++    compute_memory_efficient_kl, validate_block_opd_compatibility,
+ )
+ from verl.utils.debug import GPUMemoryLogger
+ from verl.utils.device import get_device_name, get_torch_device, is_cuda_available, is_npu_available
+@@ -1276,6 +1276,14 @@ class DataParallelPPOActor(BasePPOActor):
+                         policy_loss_fn = compute_policy_loss_gspo
+                     else:
+                         raise ValueError(f"Unsupported loss_mode: {loss_mode}")
++                    opd_block_size = self.config.get("opd_block_size", 1)
++                    opd_block_advantage_mode = self.config.get("opd_block_advantage_mode", "sum")
++                    opd_block_mix_lambda = self.config.get("opd_block_mix_lambda", 0.5)
++                    validate_block_opd_compatibility(
++                        block_size=opd_block_size,
++                        loss_mode=loss_mode,
++                        use_full_kl=use_full_kl,
++                    )
+
+                     pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower = policy_loss_fn(
+                         old_log_prob=old_log_prob,
+@@ -1288,6 +1296,9 @@ class DataParallelPPOActor(BasePPOActor):
                          cliprange_high=clip_ratio_high,
                          clip_ratio_c=clip_ratio_c,
                          loss_agg_mode=loss_agg_mode,
-+                        opd_block_size=self.config.get("opd_block_size", 1),
-+                        opd_block_advantage_mode=self.config.get("opd_block_advantage_mode", "sum"),
-+                        opd_block_mix_lambda=self.config.get("opd_block_mix_lambda", 0.5),
++                        opd_block_size=opd_block_size,
++                        opd_block_advantage_mode=opd_block_advantage_mode,
++                        opd_block_mix_lambda=opd_block_mix_lambda,
                      )
 
                      if entropy_coeff != 0:
