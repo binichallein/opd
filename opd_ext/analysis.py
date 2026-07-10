@@ -9,6 +9,28 @@ from pathlib import Path
 import numpy as np
 
 
+def aggregate_position_segment(
+    statistics: dict[str, np.ndarray],
+    start: int,
+    end: int,
+    min_coverage: int = 8,
+) -> float:
+    """Aggregate one output-position segment only when enough rollouts reach it."""
+    sums = np.asarray(statistics["sum"], dtype=np.float64)
+    counts = np.asarray(statistics["valid_count"], dtype=np.int64)
+    if sums.shape != counts.shape or sums.ndim != 1:
+        raise ValueError("position sums and counts must be one-dimensional and aligned")
+    if not (0 <= start < end <= sums.size):
+        raise ValueError("segment bounds must lie inside the position arrays")
+    if min_coverage < 1:
+        raise ValueError("min_coverage must be positive")
+    segment_counts = counts[start:end]
+    if segment_counts.size == 0 or int(segment_counts.max(initial=0)) < min_coverage:
+        return float("nan")
+    token_count = int(segment_counts.sum())
+    return float(sums[start:end].sum() / token_count) if token_count else float("nan")
+
+
 def bin_position_statistics(
     statistics: dict[str, np.ndarray],
     bin_size: int,

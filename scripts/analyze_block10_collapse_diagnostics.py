@@ -17,6 +17,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from opd_ext.analysis import (
+    aggregate_position_segment,
     bin_position_statistics,
     classify_leading_mechanism,
     classify_ordered_propagation,
@@ -223,16 +224,24 @@ def plot_entropy_segments(
 
 
 def segment_series(
-    snapshots: list[dict[str, object]], metric: str, start: int, end: int
+    snapshots: list[dict[str, object]],
+    metric: str,
+    start: int,
+    end: int,
+    min_coverage: int = 8,
 ) -> tuple[np.ndarray, np.ndarray]:
     steps = []
     values = []
     for snapshot in snapshots:
         statistics = snapshot["metrics"][metric]
-        count = int(statistics["valid_count"][start:end].sum())
         steps.append(int(snapshot["step"]))
         values.append(
-            float(statistics["sum"][start:end].sum() / count) if count else np.nan
+            aggregate_position_segment(
+                statistics,
+                start=start,
+                end=end,
+                min_coverage=min_coverage,
+            )
         )
     return np.asarray(steps, dtype=np.int64), np.asarray(values, dtype=np.float64)
 

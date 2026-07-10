@@ -1,6 +1,7 @@
 import numpy as np
 
 from opd_ext.analysis import (
+    aggregate_position_segment,
     bin_position_statistics,
     classify_leading_mechanism,
     classify_ordered_propagation,
@@ -48,6 +49,23 @@ def test_one_rollout_cannot_satisfy_eight_rollout_heatmap_threshold():
 
     assert np.isnan(means).all()
     np.testing.assert_array_equal(coverage, np.array([1]))
+
+
+def test_one_long_rollout_cannot_drive_segment_onset():
+    statistics = {
+        "sum": np.full(128, 3.0),
+        "squared_sum": np.full(128, 9.0),
+        "valid_count": np.ones(128, dtype=np.int64),
+    }
+
+    assert np.isnan(
+        aggregate_position_segment(statistics, start=0, end=128, min_coverage=8)
+    )
+
+    statistics["sum"] *= 8
+    statistics["squared_sum"] *= 8
+    statistics["valid_count"] *= 8
+    assert aggregate_position_segment(statistics, start=0, end=128, min_coverage=8) == 3.0
 
 
 def test_sustained_onset_requires_two_consecutive_diagnostic_points():
