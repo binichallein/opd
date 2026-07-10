@@ -62,3 +62,15 @@ Unless a result is explicitly labeled as a pilot:
 - MATH500 eval uses all 500 examples.
 - Final reported scores should come from post-hoc regrade summaries, not only
   online rough grading.
+
+For the DAPO-Math-17K paper-aligned block OPD experiment, report the Qwen3
+math benchmark set separately from the legacy clean-room policy:
+
+- MATH500 full set
+- AIME24 full set
+- AIME25 full set
+- AMC23 full set
+- `n` and decoding settings must be identical across token OPD and block OPD
+
+If only a subset is prepared or evaluated, label the result as a pilot and do
+not compare it as the final paper-aligned result.

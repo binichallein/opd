@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "experiment": "sampled_block_reverse_kl_size_sweep",
+  "status": "complete",
+  "hypothesis": "Contiguous student-sampled tokens can be scored and updated as one reverse-KL-style block, and block size affects quality and stability.",
+  "training": {
+    "student": "Qwen3-1.7B-Base",
+    "teacher": "Qwen3-4B-Base-GRPO",
+    "dataset": "DAPO-Math-17K raw 1791700-row pool",
+    "train_sha256": "cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf",
+    "eval_sha256": "c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680",
+    "seed": 21,
+    "steps": 200,
+    "train_batch_size": 4,
+    "rollouts_per_prompt": 8,
+    "max_response_tokens": 16384,
+    "learning_rate": 0.000002
+  },
+  "evaluation": {
+    "n": 8,
+    "temperature": 1.0,
+    "top_p": 0.9,
+    "max_tokens": 16384,
+    "tasks": [
+      "math500",
+      "aime24",
+      "aime25",
+      "amc23"
+    ]
+  },
+  "results": {
+    "token_opd": {
+      "macro_avg_at_8": 0.3146799698795181,
+      "macro_pass_at_8": 0.4864598393574297,
+      "tasks": {
+        "math500": {"avg_at_8": 0.69125, "pass_at_8": 0.886, "format_errors": 175, "avg_length_tokens": 2528.75725},
+        "aime24": {"avg_at_8": 0.13333333333333333, "pass_at_8": 0.26666666666666666, "format_errors": 44, "avg_length_tokens": 6848.654166666666},
+        "aime25": {"avg_at_8": 0.06666666666666667, "pass_at_8": 0.16666666666666666, "format_errors": 34, "avg_length_tokens": 6213.891666666666},
+        "amc23": {"avg_at_8": 0.3674698795180723, "pass_at_8": 0.6265060240963856, "format_errors": 62, "avg_length_tokens": 4863.6626506024095}
+      }
+    },
+    "block3_mean": {
+      "macro_avg_at_8": 0.3187949297188755,
+      "macro_pass_at_8": 0.514781124497992,
+      "tasks": {
+        "math500": {"avg_at_8": 0.69275, "pass_at_8": 0.878, "format_errors": 117, "avg_length_tokens": 2385.65},
+        "aime24": {"avg_at_8": 0.09583333333333334, "pass_at_8": 0.3, "format_errors": 42, "avg_length_tokens": 6450.054166666667},
+        "aime25": {"avg_at_8": 0.0875, "pass_at_8": 0.26666666666666666, "format_errors": 21, "avg_length_tokens": 5459.845833333334},
+        "amc23": {"avg_at_8": 0.3990963855421687, "pass_at_8": 0.6144578313253012, "format_errors": 54, "avg_length_tokens": 4434.746987951808}
+      }
+    },
+    "block5_mean": {
+      "macro_avg_at_8": 0.29667520080321286,
+      "macro_pass_at_8": 0.48094779116465863,
+      "tasks": {
+        "math500": {"avg_at_8": 0.674, "pass_at_8": 0.876, "format_errors": 131, "avg_length_tokens": 2478.74},
+        "aime24": {"avg_at_8": 0.09166666666666666, "pass_at_8": 0.2, "format_errors": 46, "avg_length_tokens": 6976.379166666667},
+        "aime25": {"avg_at_8": 0.07916666666666666, "pass_at_8": 0.23333333333333334, "format_errors": 30, "avg_length_tokens": 6137.683333333333},
+        "amc23": {"avg_at_8": 0.34186746987951805, "pass_at_8": 0.6144578313253012, "format_errors": 74, "avg_length_tokens": 5169.240963855422}
+      }
+    },
+    "block10_mean": {
+      "macro_avg_at_8": 0.0,
+      "macro_pass_at_8": 0.0,
+      "tasks": {
+        "math500": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 4000, "avg_length_tokens": 12978.8385},
+        "aime24": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 240, "avg_length_tokens": 12632.9125},
+        "aime25": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 240, "avg_length_tokens": 12739.320833333333},
+        "amc23": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 664, "avg_length_tokens": 12996.340361445784}
+      },
+      "collapse_onset": {
+        "approximate_step_range": [50, 60],
+        "step_60_actor_entropy": 6.837,
+        "step_60_avg_response_length": 7446.438,
+        "step_60_reward_mean": 0.0,
+        "step_200_actor_entropy": 7.222,
+        "step_200_avg_response_length": 15048.188,
+        "step_200_length_clip_ratio": 0.875,
+        "all_eval_rollouts_format_error": true
+      }
+    }
+  },
+  "comparability": {
+    "identical_across_runs": [
+      "seed",
+      "student weights",
+      "teacher weights",
+      "training data",
+      "evaluation data",
+      "core code",
+      "training objective except block size",
+      "training steps",
+      "evaluation decoding"
+    ],
+    "hardware": {
+      "token_block3_block5": "4x NVIDIA A800-SXM4-80GB",
+      "block10": "4x NVIDIA A100-SXM4-80GB"
+    },
+    "caveats": [
+      "Only one seed was run.",
+      "Block10 ran on different GPU hardware and driver versions.",
+      "The common tokenizer regex warning was present under the same evaluation implementation.",
+      "A same-machine multi-seed replication is required for strict causal attribution of the block10 collapse."
+    ]
+  },
+  "conclusion": {
+    "small_block_result": "block3_mean weakly improves macro avg@8 and macro pass@8 over token_opd in this run",
+    "size_scaling_result": "not supported: block5_mean regresses and block10_mean collapses",
+    "research_claim": "Sampled block reverse-KL has a block-length-dependent stability boundary; future variants should control cross-token credit leakage and joint importance-ratio variance."
+  }
+}

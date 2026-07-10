@@ -9,6 +9,37 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 当前论文级实验设置
+
+为了和 `Rethinking OPD` / `Blockwise Policy-Drift Gating` 的数学 OPD
+实验线对齐，当前 DAPO-Math-17K 对比使用：
+
+- Student：`Qwen3-1.7B-Base`
+- Teacher：`Qwen3-4B-Base-GRPO`
+- 训练数据：DAPO-Math-17K released parquet 展开的 1,791,700-row
+  prompt-answer pool
+  `/mnt/data/cpfs/Yaleon/opd/data/math_opd_dapo17k_hf_full_eval4/train.parquet`
+- Eval 数据：`/mnt/data/cpfs/Yaleon/opd/data/math_opd_dapo17k_hf_full_eval4/test.parquet`
+  含 MATH500 500、AIME24 30、AIME25 30、AMC23 83
+- 正式比较四组：标准 `token_opd`、`block3_mean`、`block5_mean`、
+  `block10_mean`
+- `external/revisiting_opd/` 只作为代码底座；不采用该论文的
+  Qwen2.5/OpenThinker 模型设置作为本轮主实验模型
+
+旧的官方 `Qwen/Qwen3-0.6B` + `Qwen/Qwen3-4B` 结果属于 clean-room pilot，
+不能作为论文同款模型结果引用。
+
+注：`math_opd_dapo17k_hf_dedup_eval4` 是早期去重 pilot 目录，不再作为
+当前论文级主设置。和 `Blockwise Policy-Drift Gating` 对齐时，默认使用
+raw row-pool 训练表。
+
+四组均已训练到 step 200，并在 MATH500、AIME24、AIME25、AMC23 上完成
+`n=8` full eval。当前单 seed 结果为：`block3_mean` 相对 token OPD 有小幅
+macro 增益，`block5_mean` 回退，`block10_mean` 在约 step 50-60 后发生
+高熵、长度膨胀和全格式错误的生成崩塌。这个结果不支持“block 越大越好”；
+严格归因仍需在同一硬件上增加多个 seed。完整配置、结果和诊断见
+`reports/block_opd_experiment_report.html`。
+
 ## 仓库里保存什么
 
 - `scripts/`：训练、评测、regrade、分析和远端 launch 脚本
@@ -116,6 +147,7 @@ VARIANT=block3_mean bash scripts/run_revisiting_sampled_block_opd_math.sh
 - 保存完整 checkpoint state，而不是只保存 HF 权重；
 - 记录命令、配置、数据 manifest、模型来源、seed 和 run root；
 - 在大规模训练前先做小型 resume gate；
-- 完整 eval 默认指 GSM8K 1319 条和 MATH500 500 条，除非明确标注为 pilot。
+- clean-room pilot 的完整 eval 默认指 GSM8K 1319 条和 MATH500 500 条；
+  DAPO-Math-17K 论文级实验的完整 eval 指 MATH500、AIME24、AIME25、AMC23。
 
 详见 `docs/experiment_protocol.md`。

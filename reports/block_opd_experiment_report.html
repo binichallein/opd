@@ -251,13 +251,13 @@
 <body>
   <header>
     <h1>Block Reverse-KL OPD：从单 token 到连续 token block 的验证</h1>
-    <p class="subtitle">目标：验证“teacher 同时给学生连续 2/3 个 token 的采样路径打分，再用 block 级 reverse-KL 风格信号更新学生”是否比标准 token-level OPD 更有效或更稳定。</p>
+    <p class="subtitle">目标：验证“teacher 同时给学生连续 2/3/5/10 个 token 的采样路径打分，再用 block 级 reverse-KL 风格信号更新学生”是否比标准 token-level OPD 更有效或更稳定。</p>
     <div class="meta">
-      <span class="pill">实验机：train</span>
-      <span class="pill">Student：官方 Qwen3-0.6B</span>
-      <span class="pill">Teacher：官方 Qwen3-4B</span>
-      <span class="pill">完整 eval：GSM8K 1319 + MATH500 500</span>
-      <span class="pill">Run：block_opd_effect_20260708_124329</span>
+      <span class="pill">实验机：train + ml2</span>
+      <span class="pill">当前论文级 Student：Qwen3-1.7B-Base</span>
+      <span class="pill">当前论文级 Teacher：Qwen3-4B-Base-GRPO</span>
+      <span class="pill">训练数据：DAPO-Math-17K raw 1,791,700 rows</span>
+      <span class="pill">状态：四组 step-200 + full eval 均完成；block10_mean 发生训练崩塌</span>
     </div>
   </header>
 
@@ -280,14 +280,246 @@
       </div>
 
       <div class="card span-5">
-        <h2>实验结论</h2>
+        <h2>上一轮 pilot 结论</h2>
         <div class="callout good">
           <p><strong>部分成立。</strong> block-3 在 GSM8K 和 MATH500 上都略高于 token OPD，说明 block-level 信号不是无效方向。</p>
         </div>
         <div class="callout warn">
           <p><strong>但稳定性不干净。</strong> block-2 和 block-3 的 pre-clip grad norm 明显更高，block-3 的 max grad norm 达到 1136。</p>
         </div>
-        <p class="footer-note">下一步更合理的研究问题不是“block 越大越好”，而是“block advantage 是否需要按长度归一化、温度缩放或裁剪”。</p>
+        <p class="footer-note">注意：这里是旧的 clean-room pilot，使用官方 Qwen3-0.6B student 和官方 Qwen3-4B teacher；不是当前论文同款模型设置。当前正式对比改用 Qwen3-1.7B-Base / Qwen3-4B-Base-GRPO。</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>当前论文级复现实验设置</h2>
+        <p>你的要求是“其他论文用哪个模型，我们也和人家用一样的模型”。当前设置已按 Qwen3 math OPD 论文线修正：<code>external/revisiting_opd</code> 只作为代码底座，不决定模型选择。</p>
+        <p class="footer-note">模型来源要分清：<code>Qwen3-1.7B-Base</code> 是 Qwen3 base 系列学生模型；<code>Qwen3-4B-Base-GRPO</code> 不是 Qwen 官方原始 base/instruct checkpoint，而是 <code>Rethinking OPD</code> 作者基于 <code>Qwen3-4B-Base</code> 用 GRPO 训练并发布的 paper teacher checkpoint。我们当前 run 对齐的是这个论文 teacher。</p>
+        <table class="config-table">
+          <thead>
+            <tr>
+              <th>来源</th>
+              <th>Student</th>
+              <th>Teacher</th>
+              <th>本实验采用方式</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Rethinking OPD</td>
+              <td><code>Qwen3-1.7B-Base</code></td>
+              <td><code>Qwen3-4B-Base-GRPO</code> 等 Qwen3-4B teachers；GRPO teacher 来自论文作者发布 checkpoint</td>
+              <td>采用同家族 Qwen3-1.7B student + Qwen3-4B-GRPO teacher</td>
+            </tr>
+            <tr>
+              <td>Blockwise Policy-Drift Gating</td>
+              <td><code>Qwen3-1.7B-Base</code></td>
+              <td><code>Qwen3-4B-Base-GRPO</code>，同上，paper GRPO checkpoint</td>
+              <td>主对齐对象；我们的 block3_mean 与标准 sampled-token OPD 在同配置下比较</td>
+            </tr>
+            <tr>
+              <td>Revisiting OPD</td>
+              <td><code>Qwen2.5-7B-Instruct</code></td>
+              <td><code>OpenThinker3-7B</code></td>
+              <td>只复用其公开 codebase；不把这组模型作为本轮 DAPO-Math-17K 主实验模型</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="two-col" style="margin-top:14px;">
+          <div class="math-card">
+            <div class="math-title">模型与数据</div>
+            <table class="config-table">
+              <tbody>
+                <tr><td>Student</td><td><code>/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/models/Qwen3-1.7B-Base</code></td></tr>
+                <tr><td>Teacher</td><td><code>/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/models/Qwen3-4B-Base-GRPO</code>，论文作者发布的 GRPO teacher，不是 Qwen 官方原始 checkpoint</td></tr>
+                <tr><td>Train data</td><td><code>/mnt/data/cpfs/Yaleon/opd/data/math_opd_dapo17k_hf_full_eval4/train.parquet</code>，1,791,700 row-pool entries；对齐 Blockwise Policy-Drift Gating 的训练表口径</td></tr>
+                <tr><td>Train SHA256</td><td><code>cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf</code></td></tr>
+                <tr><td>Eval data</td><td><code>/mnt/data/cpfs/Yaleon/opd/data/math_opd_dapo17k_hf_full_eval4/test.parquet</code>，643 rows = MATH500 500 + AIME24 30 + AIME25 30 + AMC23 83</td></tr>
+                <tr><td>Eval SHA256</td><td><code>c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="math-card">
+            <div class="math-title">当前验证状态</div>
+            <table class="config-table">
+              <tbody>
+                <tr><td>Resume gate</td><td><code>/mnt/data/cpfs/Yaleon/opd/runs/20260708_block3_dapo17k/resume_gate_qwen3_full</code></td></tr>
+                <tr><td>结果</td><td>从 <code>global_step_1</code> 成功恢复，保存 <code>global_step_2</code>；model / optimizer / extra_state 均为 4 rank 完整 checkpoint。</td></tr>
+                <tr><td>当前 run root</td><td>已完成基线：<code>/mnt/data/cpfs/Yaleon/opd/runs/20260708_block3_dapo17k_paper_qwen3</code><br>已完成 block5：<code>/mnt/data/cpfs/Yaleon/opd/runs/20260709_block5_dapo17k_paper_qwen3</code><br>已完成 block10：<code>/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260709_block10_dapo17k_paper_qwen3</code></td></tr>
+                <tr><td>当前进度</td><td><code>token_opd</code>、<code>block3_mean</code>、<code>block5_mean</code>、<code>block10_mean</code> 均已保存 <code>global_step_200</code> 完整 checkpoint，并完成四任务 <code>n=8</code> full eval。block5 首次正式 run 在 step 42 触发 vLLM CUDA OOM，失败目录已归档为 <code>block5_mean_failure_attempt_20260709_205712_oom_step42</code>；重启时保持目标、模型、数据、seed 和训练步数不变，仅把 vLLM 后端显存阈值降为 <code>0.6</code>。block10 第一次尝试因 ml2 venv 的 numpy/OpenBLAS 残缺失败，已归档为 <code>block10_mean_failure_attempt_20260709_131921_numpy_openblas</code>；修复环境后的正式 run 于 2026-07-10 03:22 UTC 完成。block10 的 0 分来自模型生成崩塌，原始输出与训练指标均已复核，不是 grader 误判。</td></tr>
+                <tr><td>正式训练组</td><td><code>token_opd</code> vs <code>block3_mean</code> vs <code>block5_mean</code> vs <code>block10_mean</code>，同 seed、同数据、同模型、同训练步数；block5/block10 额外记录运行后端显存阈值 <code>gpu_memory_utilization=0.6</code>。</td></tr>
+                <tr><td>正式 eval</td><td>MATH500、AIME24、AIME25、AMC23；四组均使用 step 200、<code>n=8</code>、<code>temperature=1.0</code>、<code>top_p=0.9</code>、<code>max_tokens=16384</code>，完整评测均已结束。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="callout">
+          当前模型选择排除了用户自训练 checkpoint，也排除了旧项目里的 Qwen3-MoE。之后所有正式结果都必须明确写出 student/teacher 路径、数据 SHA256、checkpoint step 和 eval decoding 配置。
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>正式 full eval 结果</h2>
+        <p>四组都使用 step 200 checkpoint；四个 benchmark 均使用 <code>n=8</code>、<code>temperature=1.0</code>、<code>top_p=0.9</code>、<code>max_tokens=16384</code>。结果呈现清晰的非单调关系：<code>block3_mean</code> 略优于 token 基线，<code>block5_mean</code> 回退，<code>block10_mean</code> 则发生完全生成崩塌。</p>
+        <table class="config-table">
+          <thead>
+            <tr>
+              <th>方法</th>
+              <th>状态</th>
+              <th>Macro avg@8</th>
+              <th>Macro pass@8</th>
+              <th>MATH500 avg/pass</th>
+              <th>AIME24 avg/pass</th>
+              <th>AIME25 avg/pass</th>
+              <th>AMC23 avg/pass</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>token_opd</code></td>
+              <td>完成</td>
+              <td><code>0.3147</code></td>
+              <td><code>0.4865</code></td>
+              <td><code>0.6913 / 0.8860</code></td>
+              <td><code>0.1333 / 0.2667</code></td>
+              <td><code>0.0667 / 0.1667</code></td>
+              <td><code>0.3675 / 0.6265</code></td>
+            </tr>
+            <tr>
+              <td><code>block3_mean</code></td>
+              <td>完成</td>
+              <td><code>0.3188</code></td>
+              <td><code>0.5148</code></td>
+              <td><code>0.6928 / 0.8780</code></td>
+              <td><code>0.0958 / 0.3000</code></td>
+              <td><code>0.0875 / 0.2667</code></td>
+              <td><code>0.3991 / 0.6145</code></td>
+            </tr>
+            <tr>
+              <td><code>block5_mean</code></td>
+              <td>完成</td>
+              <td><code>0.2967</code></td>
+              <td><code>0.4809</code></td>
+              <td><code>0.6740 / 0.8760</code></td>
+              <td><code>0.0917 / 0.2000</code></td>
+              <td><code>0.0792 / 0.2333</code></td>
+              <td><code>0.3419 / 0.6145</code></td>
+            </tr>
+            <tr>
+              <td><code>block10_mean</code></td>
+              <td>完成（崩塌）</td>
+              <td><code>0.0000</code></td>
+              <td><code>0.0000</code></td>
+              <td><code>0.0000 / 0.0000</code></td>
+              <td><code>0.0000 / 0.0000</code></td>
+              <td><code>0.0000 / 0.0000</code></td>
+              <td><code>0.0000 / 0.0000</code></td>
+            </tr>
+            <tr>
+              <td><strong>Δ block3-token</strong></td>
+              <td>差值</td>
+              <td><code>+0.0041</code></td>
+              <td><code>+0.0283</code></td>
+              <td><code>+0.0015 / -0.0080</code></td>
+              <td><code>-0.0375 / +0.0333</code></td>
+              <td><code>+0.0208 / +0.1000</code></td>
+              <td><code>+0.0316 / -0.0120</code></td>
+            </tr>
+            <tr>
+              <td><strong>Δ block5-token</strong></td>
+              <td>差值</td>
+              <td><code>-0.0180</code></td>
+              <td><code>-0.0055</code></td>
+              <td><code>-0.0173 / -0.0100</code></td>
+              <td><code>-0.0417 / -0.0667</code></td>
+              <td><code>+0.0125 / +0.0667</code></td>
+              <td><code>-0.0256 / -0.0120</code></td>
+            </tr>
+            <tr>
+              <td><strong>Δ block10-token</strong></td>
+              <td>差值</td>
+              <td><code>-0.3147</code></td>
+              <td><code>-0.4865</code></td>
+              <td><code>-0.6913 / -0.8860</code></td>
+              <td><code>-0.1333 / -0.2667</code></td>
+              <td><code>-0.0667 / -0.1667</code></td>
+              <td><code>-0.3675 / -0.6265</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="two-col" style="margin-top:18px;">
+          <div>
+            <div class="math-title">Macro avg@8</div>
+            <div class="bar-chart">
+              <div class="bar-row"><span>token</span><div class="bar-track"><div class="bar-fill" style="width:98.7%"></div></div><strong>0.3147</strong></div>
+              <div class="bar-row"><span>block-3</span><div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div><strong>0.3188</strong></div>
+              <div class="bar-row"><span>block-5</span><div class="bar-track"><div class="bar-fill amber" style="width:93.1%"></div></div><strong>0.2967</strong></div>
+              <div class="bar-row"><span>block-10</span><div class="bar-track"><div class="bar-fill red" style="width:0%"></div></div><strong>0.0000</strong></div>
+            </div>
+          </div>
+          <div>
+            <div class="math-title">Macro pass@8</div>
+            <div class="bar-chart">
+              <div class="bar-row"><span>token</span><div class="bar-track"><div class="bar-fill" style="width:94.5%"></div></div><strong>0.4865</strong></div>
+              <div class="bar-row"><span>block-3</span><div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div><strong>0.5148</strong></div>
+              <div class="bar-row"><span>block-5</span><div class="bar-track"><div class="bar-fill amber" style="width:93.4%"></div></div><strong>0.4809</strong></div>
+              <div class="bar-row"><span>block-10</span><div class="bar-track"><div class="bar-fill red" style="width:0%"></div></div><strong>0.0000</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout good">
+          小 block 结论：在这次 DAPO-Math-17K + Qwen3-1.7B/Base-to-4B-GRPO 的单 seed 验证里，<strong>block3_mean 弱成立</strong>。它相对 token OPD 提升 macro avg@8 <code>+0.0041</code>、macro pass@8 <code>+0.0283</code>，但并非所有单项都提升。
+        </div>
+        <div class="callout warn">
+          总体结论：<strong>“连续 token 联合打分”有局部可行性，但“block 越大越好”不成立。</strong> block5 已低于 token 基线，block10 则完全崩塌。当前更有研究价值的表述是：block reverse-KL 存在 block 长度相关的稳定性边界，需要控制跨 token credit leakage 和联合 importance ratio 的方差。
+        </div>
+
+        <table class="config-table" style="margin-top:14px;">
+          <thead>
+            <tr>
+              <th>任务</th>
+              <th>token 长度 / 格式错</th>
+              <th>block3 长度 / 格式错</th>
+              <th>block5 长度 / 格式错</th>
+              <th>block10 长度 / 格式错</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>MATH500</td><td><code>2528.8 / 175</code></td><td><code>2385.7 / 117</code></td><td><code>2478.7 / 131</code></td><td><code>12978.8 / 4000</code></td></tr>
+            <tr><td>AIME24</td><td><code>6848.7 / 44</code></td><td><code>6450.1 / 42</code></td><td><code>6976.4 / 46</code></td><td><code>12632.9 / 240</code></td></tr>
+            <tr><td>AIME25</td><td><code>6213.9 / 34</code></td><td><code>5459.8 / 21</code></td><td><code>6137.7 / 30</code></td><td><code>12739.3 / 240</code></td></tr>
+            <tr><td>AMC23</td><td><code>4863.7 / 62</code></td><td><code>4434.7 / 54</code></td><td><code>5169.2 / 74</code></td><td><code>12996.3 / 664</code></td></tr>
+            <tr><td><strong>格式错合计</strong></td><td><code>315 / 5144</code></td><td><code>234 / 5144</code></td><td><code>281 / 5144</code></td><td><code>5144 / 5144</code></td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top:18px;">block10 崩塌的训练证据</h3>
+        <table class="config-table">
+          <thead>
+            <tr><th>训练 step</th><th>actor entropy</th><th>平均回复长度</th><th>长度截断率</th><th>episode reward mean</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>50</code></td><td><code>0.702</code></td><td><code>4302.5</code></td><td><code>0.156</code></td><td><code>0.062</code></td></tr>
+            <tr><td><code>60</code></td><td><code>6.837</code></td><td><code>7446.4</code></td><td><code>0.312</code></td><td><code>0.000</code></td></tr>
+            <tr><td><code>70</code></td><td><code>7.872</code></td><td><code>13728.2</code></td><td><code>0.625</code></td><td><code>0.000</code></td></tr>
+            <tr><td><code>100</code></td><td><code>9.854</code></td><td><code>13118.9</code></td><td><code>0.625</code></td><td><code>0.000</code></td></tr>
+            <tr><td><code>170</code></td><td><code>5.142</code></td><td><code>16384.0</code></td><td><code>1.000</code></td><td><code>0.000</code></td></tr>
+            <tr><td><code>200</code></td><td><code>7.222</code></td><td><code>15048.2</code></td><td><code>0.875</code></td><td><code>0.000</code></td></tr>
+          </tbody>
+        </table>
+        <div class="callout warn">
+          崩塌在约 step 50–60 出现：熵、长度和截断率同时跃升，reward 降为 0 并持续到训练结束。作为对照，block5 在 step 200 的 entropy 为 <code>0.264</code>、平均长度为 <code>4297.2</code>、reward mean 为 <code>0.125</code>。step-200 原始样本已确认是长篇多语种随机碎片，因此 0 分不是答案抽取器造成的。
+        </div>
+        <div class="callout warn">
+          可比性与限制：四组使用相同 seed、模型权重、数据 SHA256、核心代码 SHA256、训练超参和 eval 配置；train/ml2 的 PyTorch、Transformers、vLLM、NumPy 版本也相同。硬件仍有差异：token/block3/block5 在 4×A800 上运行，block10 在 4×A100 上运行，驱动与 Python patch 版本也不同。因此本次结果足以证明“这次 block10 run 真实崩塌”，但若要把崩塌严格归因于 <code>k=10</code>，仍应在同一机器上复跑并增加 2–3 个 seed。tokenizer regex warning 在四组相同评测口径中均出现，作为共同 caveat 记录。
+        </div>
       </div>
     </section>
 
@@ -346,7 +578,7 @@
 
     <section class="grid">
       <div class="card span-12">
-        <h2>完整 Regrade 结果</h2>
+        <h2>上一轮 clean-room pilot 完整 Regrade 结果</h2>
         <table>
           <thead>
             <tr>
@@ -425,7 +657,7 @@
 
     <section class="grid">
       <div class="card span-7">
-        <h2>训练数据</h2>
+        <h2>上一轮 clean-room pilot 训练数据</h2>
         <table class="config-table">
           <tbody>
             <tr><td>训练文件</td><td><code>/mnt/data/cpfs/Yaleon/opd_cleanroom_20260707/data/public_math/train_prompts.jsonl</code></td></tr>
@@ -436,12 +668,12 @@
           </tbody>
         </table>
         <div class="callout">
-          训练 prompt 不是用户自训练模型产生的数据；本轮使用公开数学数据构造的 clean-room prompt 集，只用官方 Qwen3-0.6B 和 Qwen3-4B。三组共享相同 prompt 序列，但各自使用自己的 on-policy student rollout。
+          训练 prompt 不是用户自训练模型产生的数据；这一段记录的是旧 clean-room pilot，使用公开数学数据构造 prompt 集，只用官方 Qwen3-0.6B 和 Qwen3-4B。三组共享相同 prompt 序列，但各自使用自己的 on-policy student rollout。
         </div>
       </div>
 
       <div class="card span-5">
-        <h2>训练过程参数</h2>
+        <h2>上一轮 clean-room pilot 训练过程参数</h2>
         <table class="config-table">
           <tbody>
             <tr><td>Student</td><td>官方 <code>Qwen/Qwen3-0.6B</code>，本地路径 <code>models/official/Qwen__Qwen3-0.6B</code></td></tr>
@@ -458,7 +690,7 @@
 
     <section class="grid">
       <div class="card span-8">
-        <h2>Eval 配置</h2>
+        <h2>上一轮 clean-room pilot Eval 配置</h2>
         <table class="config-table">
           <tbody>
             <tr><td>Eval checkpoint</td><td>每组使用自己的 <code>checkpoint-step-00050</code>：<code>token_opd</code>、<code>block_k2</code>、<code>block_k3</code>。</td></tr>
