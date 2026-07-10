@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Collection
+from functools import wraps
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -10,6 +12,40 @@ import tempfile
 
 import numpy as np
 import torch
+
+
+def preserve_module_training_mode(method):
+    """Restore ``self.actor_module.training`` after an inference-style method."""
+
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        was_training = bool(self.actor_module.training)
+        try:
+            return method(self, *args, **kwargs)
+        finally:
+            self.actor_module.train(was_training)
+
+    return wrapped
+
+
+@torch.no_grad()
+def prompt_batch_sha256(
+    input_ids: torch.Tensor,
+    attention_mask: torch.Tensor,
+    response_length: int,
+) -> str:
+    """Hash the order-invariant multiset of prompt token sequences in a rollout batch."""
+    if input_ids.shape != attention_mask.shape or input_ids.ndim != 2:
+        raise ValueError("input_ids and attention_mask must be aligned rank-two tensors")
+    if response_length < 1 or response_length >= input_ids.size(1):
+        raise ValueError("response_length must leave a nonempty prompt segment")
+    prompt_ids = input_ids[:, :-response_length].detach().cpu()
+    prompt_mask = attention_mask[:, :-response_length].bool().detach().cpu()
+    row_digests = []
+    for row_ids, row_mask in zip(prompt_ids, prompt_mask):
+        tokens = row_ids[row_mask].to(torch.int64).numpy().astype("<i8", copy=False)
+        row_digests.append(hashlib.sha256(tokens.tobytes()).digest())
+    return hashlib.sha256(b"".join(sorted(row_digests))).hexdigest()
 
 
 def _pad_last_dim(tensor: torch.Tensor, multiple: int, value: float = 0.0) -> torch.Tensor:
@@ -330,6 +366,11 @@ def should_run_diagnostics(global_step: int, enabled: bool, interval: int) -> bo
     if interval < 1:
         raise ValueError("diagnostic interval must be positive")
     return bool(enabled and (global_step == 1 or global_step % interval == 0))
+
+
+def should_stop_after_step(global_step: int, stop_after_step: int) -> bool:
+    """Support a probe-only early stop without changing the scheduler horizon."""
+    return bool(stop_after_step > 0 and global_step == stop_after_step)
 
 
 def parse_milestone_steps(value: str | Collection[int]) -> set[int]:

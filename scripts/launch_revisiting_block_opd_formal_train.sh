@@ -43,6 +43,7 @@ OPD_DIAG_POSITION_BIN="${OPD_DIAG_POSITION_BIN:-128}"
 OPD_DIAG_POSITION_STRIDE="${OPD_DIAG_POSITION_STRIDE:-1}"
 OPD_DIAG_SIGN_EPS="${OPD_DIAG_SIGN_EPS:-1e-4}"
 DIAGNOSTIC_SAVE_STEPS="${DIAGNOSTIC_SAVE_STEPS:-40,50,60,80,100,200}"
+STOP_AFTER_STEP="${STOP_AFTER_STEP:--1}"
 
 RUN_DIR="${RUN_ROOT}/${VARIANT}"
 CKPTS_DIR="${RUN_DIR}/checkpoints"
@@ -134,6 +135,7 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"opd_diag_position_stride\": ${OPD_DIAG_POSITION_STRIDE},
   \"opd_diag_sign_epsilon\": ${OPD_DIAG_SIGN_EPS},
   \"diagnostic_save_steps\": \"${DIAGNOSTIC_SAVE_STEPS}\",
+  \"stop_after_step\": ${STOP_AFTER_STEP},
   \"diagnostic_output_dir\": \"${OPD_DIAG_OUTPUT_DIR}\",
   \"checkpoint_policy\": \"preserve all milestone checkpoints; no automatic deletion\",
   \"baseline_alignment\": \"Blockwise/Rethinking-aligned Qwen3-1.7B-Base student, Qwen3-4B-Base-GRPO teacher, and raw 1,791,700-row DAPO-Math-17K pool; Revisiting OPD is codebase only\"
@@ -189,6 +191,7 @@ OPD_DIAG_POSITION_BIN='${OPD_DIAG_POSITION_BIN}' \
 OPD_DIAG_POSITION_STRIDE='${OPD_DIAG_POSITION_STRIDE}' \
 OPD_DIAG_SIGN_EPS='${OPD_DIAG_SIGN_EPS}' \
 DIAGNOSTIC_SAVE_STEPS='${DIAGNOSTIC_SAVE_STEPS}' \
+STOP_AFTER_STEP='${STOP_AFTER_STEP}' \
 OPD_DIAG_OUTPUT_DIR='${OPD_DIAG_OUTPUT_DIR}' \
 bash scripts/run_revisiting_sampled_block_opd_math.sh
 CMD

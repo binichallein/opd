@@ -10,10 +10,13 @@ from opd_ext.diagnostics import (
     compute_topk_alignment_diagnostics,
     merge_position_stat_shards,
     parse_milestone_steps,
+    preserve_module_training_mode,
     save_diagnostic_snapshot,
     scatter_position_statistics,
     should_save_checkpoint,
     should_run_diagnostics,
+    should_stop_after_step,
+    prompt_batch_sha256,
 )
 from opd_ext.analysis import load_scalar_records
 
@@ -130,6 +133,12 @@ def test_checkpoint_milestones_and_final_step_are_saved():
     ]
 
     assert saved == [40, 50, 60, 80, 100, 200]
+
+
+def test_probe_stop_step_does_not_depend_on_total_training_horizon():
+    assert should_stop_after_step(global_step=1, stop_after_step=1)
+    assert not should_stop_after_step(global_step=1, stop_after_step=-1)
+    assert not should_stop_after_step(global_step=2, stop_after_step=1)
 
 
 def test_block_ratio_diagnostics_uses_summed_log_ratio_and_reports_clipping():
@@ -288,3 +297,61 @@ def test_scatter_position_statistics_restores_sampled_positions():
     np.testing.assert_allclose(full["sum"], np.array([3.0, 0.0, 0.0, 7.0, 0.0]))
     np.testing.assert_allclose(full["squared_sum"], np.array([5.0, 0.0, 0.0, 25.0, 0.0]))
     np.testing.assert_array_equal(full["valid_count"], np.array([2, 0, 0, 2, 0]))
+
+
+def test_mode_preserving_inference_restores_training_state_even_on_error():
+    class DummyModule:
+        def __init__(self):
+            self.training = True
+
+        def eval(self):
+            self.training = False
+
+        def train(self, mode=True):
+            self.training = mode
+
+    class DummyActor:
+        def __init__(self):
+            self.actor_module = DummyModule()
+
+        @preserve_module_training_mode
+        def inference(self, fail=False):
+            self.actor_module.eval()
+            if fail:
+                raise RuntimeError("expected")
+            return self.actor_module.training
+
+    actor = DummyActor()
+    assert actor.inference() is False
+    assert actor.actor_module.training is True
+    try:
+        actor.inference(fail=True)
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("expected inference failure")
+    assert actor.actor_module.training is True
+
+
+def test_prompt_batch_hash_is_order_invariant_but_content_sensitive():
+    input_ids = torch.tensor(
+        [
+            [0, 11, 12, 101, 102],
+            [0, 21, 22, 201, 202],
+        ]
+    )
+    attention_mask = torch.tensor(
+        [
+            [0, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1],
+        ]
+    )
+    original = prompt_batch_sha256(input_ids, attention_mask, response_length=2)
+    reordered = prompt_batch_sha256(
+        input_ids.flip(0), attention_mask.flip(0), response_length=2
+    )
+    changed = input_ids.clone()
+    changed[0, 2] = 99
+
+    assert original == reordered
+    assert original != prompt_batch_sha256(changed, attention_mask, response_length=2)

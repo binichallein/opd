@@ -14,6 +14,7 @@ FILES=(
   scripts/launch_revisiting_block_opd_formal_train.sh
   scripts/launch_qwen3_math_eval.sh
   scripts/eval_qwen3_math_vllm.py
+  scripts/audit_block10_run.py
   external/revisiting_opd.UPSTREAM_COMMIT
   manifests/revisiting_opd_runtime.sha256
   external/revisiting_opd/verl/trainer/config/ppo_trainer.yaml

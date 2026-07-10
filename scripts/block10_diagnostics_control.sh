@@ -36,6 +36,7 @@ launch_host() {
   local milestones="$4"
   local interval="$5"
   local stride="$6"
+  local stop_after_step="$7"
   local remote_root venv hf_home student teacher cache run_root
 
   if [[ "${host}" == "train" ]]; then
@@ -88,6 +89,7 @@ launch_host() {
   OPD_DIAG_POSITION_STRIDE="${stride}" \
   OPD_DIAG_SIGN_EPS=1e-4 \
   DIAGNOSTIC_SAVE_STEPS="${milestones}" \
+  STOP_AFTER_STEP="${stop_after_step}" \
   bash "${ROOT_DIR}/scripts/launch_revisiting_block_opd_formal_train.sh"
 }
 
@@ -130,21 +132,35 @@ eval_host() {
     bash "${ROOT_DIR}/scripts/launch_qwen3_math_eval.sh"
 }
 
+audit_host() {
+  local host="$1"
+  local remote_root venv run_dir
+  run_dir="$(run_root_for "${host}" formal)/block10_mean"
+  if [[ "${host}" == "train" ]]; then
+    remote_root="/mnt/data/cpfs/Yaleon/opd"
+    venv="/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/venv"
+  else
+    remote_root="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd"
+    venv="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl"
+  fi
+  ssh "${host}" "'${venv}/bin/python' '${remote_root}/scripts/audit_block10_run.py' --run-dir '${run_dir}'"
+}
+
 case "${ACTION}" in
   sync)
     bash "${ROOT_DIR}/scripts/sync_block10_diagnostics_to_hosts.sh"
     ;;
   probe1)
-    launch_host train probe 1 1 1 1
-    launch_host ml2 probe 1 1 1 1
+    launch_host train probe 2 1 1 1 1
+    launch_host ml2 probe 2 1 1 1 1
     ;;
   probe2)
-    launch_host train probe 2 1,2 1 1
-    launch_host ml2 probe 2 1,2 1 1
+    launch_host train probe 2 1,2 1 1 -1
+    launch_host ml2 probe 2 1,2 1 1 -1
     ;;
   formal)
-    launch_host train formal 200 40,50,60,80,100,200 5 "${DIAG_STRIDE}"
-    launch_host ml2 formal 200 40,50,60,80,100,200 5 "${DIAG_STRIDE}"
+    launch_host train formal 200 40,50,60,80,100,200 5 "${DIAG_STRIDE}" -1
+    launch_host ml2 formal 200 40,50,60,80,100,200 5 "${DIAG_STRIDE}" -1
     ;;
   status)
     status_host train
@@ -154,8 +170,12 @@ case "${ACTION}" in
     eval_host train
     eval_host ml2
     ;;
+  audit)
+    audit_host train
+    audit_host ml2
+    ;;
   *)
-    echo "usage: $0 {sync|probe1|probe2|formal|status|eval [step]}" >&2
+    echo "usage: $0 {sync|probe1|probe2|formal|status|eval [step]|audit}" >&2
     exit 2
     ;;
 esac

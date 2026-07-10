@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from numbers import Real
 from pathlib import Path
 
 import numpy as np
@@ -26,10 +27,11 @@ def bin_position_statistics(
         counts = np.pad(counts, (0, pad))
     binned_sum = sums.reshape(-1, bin_size).sum(axis=1)
     binned_count = counts.reshape(-1, bin_size).sum(axis=1)
+    rollout_coverage = counts.reshape(-1, bin_size).max(axis=1)
     means = np.full(binned_sum.shape, np.nan, dtype=np.float64)
-    valid = binned_count >= min_count
+    valid = rollout_coverage >= min_count
     means[valid] = binned_sum[valid] / binned_count[valid]
-    return means, binned_count
+    return means, rollout_coverage
 
 
 def detect_sustained_onset(
@@ -78,6 +80,70 @@ def classify_leading_mechanism(onsets: dict[str, int | None], tie_window: int = 
     if len(tied) != 1:
         return "mixed_mechanism"
     return tied[0]
+
+
+def confirmed_chain_onset(
+    first_signal: int | None, confirmation_signal: int | None
+) -> int | None:
+    """Timestamp an ordered, confirmed mechanism at its first observable signal."""
+    if first_signal is None or confirmation_signal is None:
+        return None
+    return first_signal if first_signal <= confirmation_signal else None
+
+
+def classify_ordered_propagation(
+    front: int | None, middle: int | None, tail: int | None
+) -> str:
+    """Classify entropy onset order without treating simultaneous onsets as propagation."""
+    if front is None and middle is None and tail is None:
+        return "no_sustained_onset"
+    if front is None or middle is None or tail is None:
+        return "incomplete_propagation"
+    if tail < middle < front:
+        return "tail_to_front"
+    return "simultaneous_or_non_tail_to_front"
+
+
+def first_nonfinite_step(records: list[dict[str, object]]) -> int | None:
+    """Return the first step containing a non-finite numeric scalar."""
+    for record in records:
+        for key, value in record.items():
+            if key == "step" or isinstance(value, bool) or not isinstance(value, Real):
+                continue
+            if not np.isfinite(float(value)):
+                return int(record["step"])
+    return None
+
+
+def normalize_hash_manifest_lines(lines: list[str]) -> dict[str, str]:
+    """Map host-specific absolute manifest paths onto comparable artifact identities."""
+    normalized: dict[str, str] = {}
+    markers = (
+        "Qwen3-1.7B-Base",
+        "Qwen3-4B-Base-GRPO",
+        "math_opd_dapo17k_hf_full_eval4",
+    )
+    for line in lines:
+        if not line.strip():
+            continue
+        digest, raw_path = line.split(maxsplit=1)
+        path = Path(raw_path.lstrip("*"))
+        parts = path.parts
+        identity = None
+        for marker in markers:
+            if marker in parts:
+                identity = "/".join(parts[parts.index(marker) :])
+                break
+        if identity is None and "opd" in parts:
+            root_index = len(parts) - 1 - tuple(reversed(parts)).index("opd")
+            identity = "/".join(parts[root_index + 1 :])
+        if not identity:
+            identity = "/".join(parts[-2:])
+        previous = normalized.get(identity)
+        if previous is not None and previous != digest:
+            raise ValueError(f"conflicting hashes for normalized artifact {identity}")
+        normalized[identity] = digest
+    return normalized
 
 
 def _minimum_onset(*values: int | None) -> int | None:

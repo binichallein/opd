@@ -49,6 +49,7 @@ opd_diag_sign_eps="${OPD_DIAG_SIGN_EPS:-1e-4}"
 diagnostic_save_steps="${DIAGNOSTIC_SAVE_STEPS:-40,50,60,80,100,200}"
 diagnostic_save_steps_list="[${diagnostic_save_steps}]"
 opd_diag_output_dir="${OPD_DIAG_OUTPUT_DIR:-${CKPTS_DIR}/../diagnostics}"
+stop_after_step="${STOP_AFTER_STEP:--1}"
 
 case "${VARIANT}" in
   token_opd)
@@ -169,6 +170,7 @@ python3 -m verl.trainer.main_ppo_multitask \
     trainer.val_only=False \
     trainer.default_local_dir="${CKPTS_DIR}" \
     +trainer.opd_diagnostic_dir="${opd_diag_output_dir}" \
+    +trainer.stop_after_step="${stop_after_step}" \
     trainer.resume_mode=auto \
     +trainer.val_generation_dir="${VAL_GENERATION_DIR:-${CKPTS_DIR}/val_generations}" \
     ray_init.num_cpus="${RAY_NUM_CPUS:-96}" \

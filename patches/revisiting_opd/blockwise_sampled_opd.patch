@@ -165,7 +165,7 @@ index f754f25..861eda5 100644
          cliprange_low = cliprange
      if cliprange_high is None:
 diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
-index cbf1a4f..9f4552b 100644
+index cbf1a4f..06ecb47 100644
 --- a/verl/trainer/ppo/ray_trainer_multitask.py
 +++ b/verl/trainer/ppo/ray_trainer_multitask.py
 @@ -23,6 +23,7 @@ This trainer supports model-agonistic model initialization with huggingface
@@ -176,7 +176,7 @@ index cbf1a4f..9f4552b 100644
  import uuid
  from collections import defaultdict
  from contextlib import contextmanager
-@@ -65,6 +66,20 @@ from verl.utils.tracking import ValidationGenerationsLogger
+@@ -65,6 +66,22 @@ from verl.utils.tracking import ValidationGenerationsLogger
  from verl.workers.rollout.async_server import AsyncLLMServerManager
  from gigpo import core_gigpo
  
@@ -188,16 +188,18 @@ index cbf1a4f..9f4552b 100644
 +    compute_position_statistics,
 +    compute_topk_alignment_diagnostics,
 +    parse_milestone_steps,
++    prompt_batch_sha256,
 +    save_diagnostic_snapshot,
 +    scatter_position_statistics,
 +    should_run_diagnostics,
 +    should_save_checkpoint,
++    should_stop_after_step,
 +)
 +
  from agent_system.multi_turn_rollout import TrajectoryCollector, adjust_batch
  
  WorkerType = Type[Worker]
-@@ -1225,6 +1240,120 @@ class RayPPOTrainer:
+@@ -1225,6 +1242,120 @@ class RayPPOTrainer:
          global_balance_stats = log_seqlen_unbalance(seqlen_list=global_seqlen_lst, partitions=global_partition_lst, prefix=logging_prefix)
          metrics.update(global_balance_stats)
  
@@ -318,21 +320,28 @@ index cbf1a4f..9f4552b 100644
      def fit(self):
          """
          The training loop of PPO.
-@@ -1242,6 +1371,9 @@ class RayPPOTrainer:
+@@ -1242,6 +1373,17 @@ class RayPPOTrainer:
              default_backend=self.config.trainer.logger,
              config=OmegaConf.to_container(self.config, resolve=True),
          )
 +        checkpoint_milestones = parse_milestone_steps(
 +            self.config.trainer.get("checkpoint_milestones", "")
 +        )
++        diagnostic_config = self.config.algorithm.get("opd_diagnostics", {})
++        if bool(diagnostic_config.get("enabled", False)) and self.ref_in_actor:
++            raise NotImplementedError(
++                "OPD diagnostics require a standalone reference worker; LoRA ref-in-actor is unsupported"
++            )
++        stop_after_step = int(self.config.trainer.get("stop_after_step", -1))
++        if stop_after_step > 0 and stop_after_step not in checkpoint_milestones:
++            raise ValueError("trainer.stop_after_step must also be a checkpoint milestone")
  
          self.global_steps = 0
  
-@@ -1269,6 +1401,14 @@ class RayPPOTrainer:
+@@ -1269,6 +1411,13 @@ class RayPPOTrainer:
              for batch_dict in self.train_dataloader:
                  metrics = {}
                  timing_raw = {}
-+                diagnostic_config = self.config.algorithm.get("opd_diagnostics", {})
 +                run_opd_diagnostics = should_run_diagnostics(
 +                    global_step=self.global_steps,
 +                    enabled=bool(diagnostic_config.get("enabled", False)),
@@ -343,7 +352,7 @@ index cbf1a4f..9f4552b 100644
                  batch: DataProto = DataProto.from_single_dict(batch_dict)
  
                  # pop those keys for generation
-@@ -1481,6 +1621,27 @@ class RayPPOTrainer:
+@@ -1481,6 +1630,27 @@ class RayPPOTrainer:
                                      else:
                                          ref_log_prob = self.actor_rollout_wg.compute_ref_log_prob(batch)
                              batch = batch.union(ref_log_prob)
@@ -371,7 +380,7 @@ index cbf1a4f..9f4552b 100644
                          
                          # Compute student's log probs for teacher's top-k indices if using OPD topk
                          if use_opd_topk and "teacher_topk_indices" in batch.batch:
-@@ -1606,6 +1767,19 @@ class RayPPOTrainer:
+@@ -1606,6 +1776,19 @@ class RayPPOTrainer:
                                  clip_log_ratio=self.config.actor_rollout_ref.actor.get("clip_log_ratio", False), # this config is not that naturally related to OPD, but we keep it here for compatibility
                              )
  
@@ -391,7 +400,7 @@ index cbf1a4f..9f4552b 100644
                          if self.config.trainer.get("rollout_data_dir", None):
                              self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
  
-@@ -1625,6 +1799,67 @@ class RayPPOTrainer:
+@@ -1625,6 +1808,67 @@ class RayPPOTrainer:
                          actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                          metrics.update(actor_output_metrics)
  
@@ -421,31 +430,31 @@ index cbf1a4f..9f4552b 100644
 +                                    ),
 +                                )
 +                                post_update_ratio_metrics = {
-+                                    "diagnostics/block_log_ratio_abs_mean": float(
++                                    "diagnostics/post_update_block_log_ratio_abs_mean": float(
 +                                        block_ratio["log_ratio_abs_mean"].item()
 +                                    ),
-+                                    "diagnostics/block_log_ratio_abs_p95": float(
++                                    "diagnostics/post_update_block_log_ratio_abs_p95": float(
 +                                        block_ratio["log_ratio_abs_p95"].item()
 +                                    ),
-+                                    "diagnostics/block_log_ratio_abs_max": float(
++                                    "diagnostics/post_update_block_log_ratio_abs_max": float(
 +                                        block_ratio["log_ratio_abs_max"].item()
 +                                    ),
-+                                    "diagnostics/block_ratio_p95": float(
++                                    "diagnostics/post_update_block_ratio_p95": float(
 +                                        block_ratio["ratio_p95"].item()
 +                                    ),
-+                                    "diagnostics/block_ratio_max": float(
++                                    "diagnostics/post_update_block_ratio_max": float(
 +                                        block_ratio["ratio_max"].item()
 +                                    ),
-+                                    "diagnostics/block_ratio_clip_fraction": float(
++                                    "diagnostics/post_update_block_ratio_outside_clip_fraction": float(
 +                                        block_ratio["clip_fraction"].item()
 +                                    ),
-+                                    "diagnostics/block_ratio_overflow_count": float(
++                                    "diagnostics/post_update_block_ratio_overflow_count": float(
 +                                        block_ratio["overflow_count"].item()
 +                                    ),
-+                                    "diagnostics/block_ratio_underflow_count": float(
++                                    "diagnostics/post_update_block_ratio_underflow_count": float(
 +                                        block_ratio["underflow_count"].item()
 +                                    ),
-+                                    "diagnostics/block_ratio_nonfinite_count": float(
++                                    "diagnostics/post_update_block_ratio_nonfinite_count": float(
 +                                        block_ratio["nonfinite_count"].item()
 +                                    ),
 +                                }
@@ -459,24 +468,18 @@ index cbf1a4f..9f4552b 100644
                      # Log rollout generations if enabled
                      rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
                      if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
-@@ -1638,7 +1873,15 @@ class RayPPOTrainer:
+@@ -1638,10 +1882,6 @@ class RayPPOTrainer:
                                  last_val_metrics = val_metrics
                          metrics.update(val_metrics)
  
 -                    if self.config.trainer.save_freq > 0 and (is_last_step or self.global_steps % self.config.trainer.save_freq == 0):
-+                    periodic_save = (
-+                        self.config.trainer.save_freq > 0
-+                        and self.global_steps % self.config.trainer.save_freq == 0
-+                    )
-+                    if periodic_save or should_save_checkpoint(
-+                        global_step=self.global_steps,
-+                        is_last_step=is_last_step,
-+                        milestone_steps=checkpoint_milestones,
-+                    ):
-                         with _timer("save_checkpoint", timing_raw):
-                             self._save_checkpoint()
- 
-@@ -1656,6 +1899,46 @@ class RayPPOTrainer:
+-                        with _timer("save_checkpoint", timing_raw):
+-                            self._save_checkpoint()
+-
+                 # training metrics
+                 metrics.update(
+                     {
+@@ -1656,10 +1896,71 @@ class RayPPOTrainer:
                  n_gpus = self.resource_pool_manager.get_n_gpus()
                  metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
  
@@ -517,17 +520,46 @@ index cbf1a4f..9f4552b 100644
 +                                diagnostic_config.get("sign_epsilon", 1e-4)
 +                            ),
 +                            "block_ratio_definition": "post_update_policy_vs_behavior_policy",
++                            "prompt_batch_sha256": prompt_batch_sha256(
++                                batch.batch["input_ids"],
++                                batch.batch["attention_mask"],
++                                response_length=batch.batch["responses"].size(1),
++                            ),
 +                        },
 +                    )
++
++                periodic_save = (
++                    self.config.trainer.save_freq > 0
++                    and self.global_steps % self.config.trainer.save_freq == 0
++                )
++                if periodic_save or should_save_checkpoint(
++                    global_step=self.global_steps,
++                    is_last_step=is_last_step,
++                    milestone_steps=checkpoint_milestones,
++                ):
++                    with _timer("save_checkpoint", timing_raw):
++                        self._save_checkpoint()
 +
                  # TODO: make a canonical logger that supports various backend
                  logger.log(data=metrics, step=self.global_steps)
  
+                 progress_bar.update(1)
++                if should_stop_after_step(self.global_steps, stop_after_step):
++                    pprint(f"Probe stop requested after checkpoint at step {self.global_steps}")
++                    progress_bar.close()
++                    return
+                 self.global_steps += 1
+                 if is_last_step:
+                     pprint(f"Final validation metrics: {last_val_metrics}")
 diff --git a/verl/workers/actor/dp_actor.py b/verl/workers/actor/dp_actor.py
-index 5d6bab1..b4b67d7 100644
+index 5d6bab1..4283c1d 100644
 --- a/verl/workers/actor/dp_actor.py
 +++ b/verl/workers/actor/dp_actor.py
-@@ -31,7 +31,7 @@ import verl.utils.torch_functional as verl_F
+@@ -28,10 +28,11 @@ from torch import nn
+ from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+ 
+ import verl.utils.torch_functional as verl_F
++from opd_ext.diagnostics import preserve_module_training_mode
  from verl import DataProto
  from verl.trainer.ppo.core_algos import (
      agg_loss, compute_policy_loss, compute_policy_loss_gspo, kl_penalty,
@@ -536,7 +568,23 @@ index 5d6bab1..b4b67d7 100644
  )
  from verl.utils.debug import GPUMemoryLogger
  from verl.utils.device import get_device_name, get_torch_device, is_cuda_available, is_npu_available
-@@ -793,6 +793,10 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -336,6 +337,7 @@ class DataParallelPPOActor(BasePPOActor):
+         return grad_norm
+ 
+     @GPUMemoryLogger(role="dp actor", logger=logger)
++    @preserve_module_training_mode
+     def compute_log_prob(self, data: DataProto, calculate_entropy=False) -> torch.Tensor:
+         """Compute the log probability of the responses given input_ids, attention_mask and position_ids
+ 
+@@ -771,6 +773,7 @@ class DataParallelPPOActor(BasePPOActor):
+         return log_probs, output_kl_inputs
+ 
+     @GPUMemoryLogger(role="dp actor", logger=logger)
++    @preserve_module_training_mode
+     def compute_log_prob_with_topk(self, data: DataProto, topk_k: int = 50) -> dict:
+         """Compute log probabilities along with top-k token indices and their log probs.
+         
+@@ -793,6 +796,10 @@ class DataParallelPPOActor(BasePPOActor):
          micro_batch_size = data.meta_info["micro_batch_size"]
          temperature = data.meta_info["temperature"]
          use_dynamic_bsz = data.meta_info["use_dynamic_bsz"]
@@ -547,7 +595,7 @@ index 5d6bab1..b4b67d7 100644
          
          select_keys = ["responses", "input_ids", "attention_mask", "position_ids"]
          batch = data.select(batch_keys=select_keys).batch
-@@ -811,22 +815,35 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -811,22 +818,35 @@ class DataParallelPPOActor(BasePPOActor):
          log_probs_lst = []
          topk_indices_lst = []
          topk_log_probs_lst = []
@@ -585,7 +633,7 @@ index 5d6bab1..b4b67d7 100644
          
          if use_dynamic_bsz:
              indices = list(itertools.chain.from_iterable(indices))
-@@ -834,14 +851,25 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -834,14 +854,25 @@ class DataParallelPPOActor(BasePPOActor):
              log_probs = log_probs[revert_indices]
              topk_indices = topk_indices[revert_indices]
              topk_log_probs = topk_log_probs[revert_indices]
@@ -612,7 +660,7 @@ index 5d6bab1..b4b67d7 100644
          """Forward pass that returns log probs for selected tokens AND top-k info.
          
          Follows the same rmpad pattern as _forward_micro_batch for memory efficiency.
-@@ -849,6 +877,13 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -849,6 +880,13 @@ class DataParallelPPOActor(BasePPOActor):
          from verl.utils.torch_functional import topk_logprobs_from_logits, logprobs_from_logits
          
          response_length = micro_batch["responses"].size(-1)
@@ -626,7 +674,7 @@ index 5d6bab1..b4b67d7 100644
          multi_modal_inputs = {}
          if "multi_modal_inputs" in micro_batch:
              for key in micro_batch["multi_modal_inputs"][0].keys():
-@@ -917,10 +952,49 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -917,10 +955,49 @@ class DataParallelPPOActor(BasePPOActor):
                      inplace_backward=False,  # Can't use inplace since we need logits for top-k
                  )
  
@@ -680,7 +728,7 @@ index 5d6bab1..b4b67d7 100644
  
                  # Gather if using ulysses sp
                  if self.use_ulysses_sp:
-@@ -928,6 +1002,13 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -928,6 +1005,13 @@ class DataParallelPPOActor(BasePPOActor):
                      # Gather top-k results
                      topk_indices_rmpad = gather_outpus_and_unpad(topk_indices_rmpad, gather_dim=0, unpad_dim=0, padding_size=pad_size)
                      topk_log_probs_rmpad = gather_outpus_and_unpad(topk_log_probs_rmpad, gather_dim=0, unpad_dim=0, padding_size=pad_size)
@@ -694,7 +742,7 @@ index 5d6bab1..b4b67d7 100644
  
                  # Pad back to (bsz, seqlen)
                  full_log_probs = pad_input(
-@@ -937,25 +1018,41 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -937,25 +1021,41 @@ class DataParallelPPOActor(BasePPOActor):
                      seqlen=seqlen,
                  )
  
@@ -751,7 +799,7 @@ index 5d6bab1..b4b67d7 100644
  
              else:  # not using rmpad
                  output = self.actor_module(
-@@ -972,9 +1069,22 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -972,9 +1072,22 @@ class DataParallelPPOActor(BasePPOActor):
  
                  # Compute log probs and top-k
                  log_probs = logprobs_from_logits(response_logits, micro_batch["responses"])
@@ -776,7 +824,7 @@ index 5d6bab1..b4b67d7 100644
  
      @GPUMemoryLogger(role="dp actor", logger=logger)
      def compute_log_prob_for_topk_indices(self, data: DataProto, topk_indices: torch.Tensor) -> torch.Tensor:
-@@ -1166,7 +1276,6 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1166,7 +1279,6 @@ class DataParallelPPOActor(BasePPOActor):
  
          temperature = data.meta_info["temperature"]  # temperature must be in the data.meta_info to avoid silent error
          multi_turn = data.meta_info.get("multi_turn", False)
@@ -784,7 +832,7 @@ index 5d6bab1..b4b67d7 100644
          select_keys = ["responses", "input_ids", "attention_mask", "position_ids", "old_log_probs", "advantages"]
          if multi_turn:
              select_keys.append("loss_mask")
-@@ -1276,6 +1385,14 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1276,6 +1388,14 @@ class DataParallelPPOActor(BasePPOActor):
                          policy_loss_fn = compute_policy_loss_gspo
                      else:
                          raise ValueError(f"Unsupported loss_mode: {loss_mode}")
@@ -799,7 +847,7 @@ index 5d6bab1..b4b67d7 100644
  
                      pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower = policy_loss_fn(
                          old_log_prob=old_log_prob,
-@@ -1288,6 +1405,9 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1288,6 +1408,9 @@ class DataParallelPPOActor(BasePPOActor):
                          cliprange_high=clip_ratio_high,
                          clip_ratio_c=clip_ratio_c,
                          loss_agg_mode=loss_agg_mode,

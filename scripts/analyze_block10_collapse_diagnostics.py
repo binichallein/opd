@@ -19,8 +19,12 @@ if str(ROOT_DIR) not in sys.path:
 from opd_ext.analysis import (
     bin_position_statistics,
     classify_leading_mechanism,
+    classify_ordered_propagation,
+    confirmed_chain_onset,
     detect_sustained_onset,
+    first_nonfinite_step,
     load_scalar_records,
+    normalize_hash_manifest_lines,
 )
 
 
@@ -60,12 +64,12 @@ SCALAR_GROUPS = {
         "diagnostics/block_advantage_max",
     ),
     "scalar_optimization.png": (
-        "diagnostics/block_log_ratio_abs_mean",
-        "diagnostics/block_log_ratio_abs_p95",
-        "diagnostics/block_log_ratio_abs_max",
-        "diagnostics/block_ratio_p95",
-        "diagnostics/block_ratio_max",
-        "diagnostics/block_ratio_clip_fraction",
+        "diagnostics/post_update_block_log_ratio_abs_mean",
+        "diagnostics/post_update_block_log_ratio_abs_p95",
+        "diagnostics/post_update_block_log_ratio_abs_max",
+        "diagnostics/post_update_block_ratio_p95",
+        "diagnostics/post_update_block_ratio_max",
+        "diagnostics/post_update_block_ratio_outside_clip_fraction",
         "actor/pg_loss",
         "actor/pg_clipfrac",
         "actor/grad_norm",
@@ -83,6 +87,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--position-bin", type=int, default=128)
     parser.add_argument("--min-count", type=int, default=8)
+    parser.add_argument("--allow-incomplete", action="store_true")
     return parser.parse_args()
 
 
@@ -271,13 +276,7 @@ def compute_onsets(
     student_mass = onset("diagnostics/student_overlap_mass", "down")
     support_drift = minimum(overlap, student_mass)
     teacher_ood_confirmation = minimum(tail_entropy_gap, tail_overlap)
-    teacher_ood = None
-    if (
-        tail_teacher_entropy is not None
-        and teacher_ood_confirmation is not None
-        and tail_teacher_entropy <= teacher_ood_confirmation
-    ):
-        teacher_ood = teacher_ood_confirmation
+    teacher_ood = confirmed_chain_onset(tail_teacher_entropy, teacher_ood_confirmation)
     if tail_teacher_entropy is not None and support_drift is not None:
         if tail_teacher_entropy <= support_drift:
             support_drift = None
@@ -295,12 +294,15 @@ def compute_onsets(
         "sign_flip": onset("diagnostics/weighted_sign_flip_rate", "up"),
         "leakage": onset("diagnostics/normalized_leakage", "up"),
         "block_ratio": minimum(
-            onset("diagnostics/block_log_ratio_abs_p95", "up"),
-            onset("diagnostics/block_ratio_clip_fraction", "up"),
+            onset("diagnostics/post_update_block_log_ratio_abs_p95", "up"),
+            onset("diagnostics/post_update_block_ratio_outside_clip_fraction", "up"),
         ),
         "teacher_ood": teacher_ood,
         "support_drift": support_drift,
-        "numerical": min(numerical_steps) if numerical_steps else None,
+        "numerical": minimum(
+            min(numerical_steps) if numerical_steps else None,
+            first_nonfinite_step(records),
+        ),
         "student_entropy": onset("diagnostics/student_entropy", "up"),
         "tail_teacher_entropy": tail_teacher_entropy,
         "tail_entropy_gap": tail_entropy_gap,
@@ -321,11 +323,7 @@ def classify_entropy_propagation(onsets: dict[str, int | None]) -> str:
     front = onsets.get("student_entropy_front")
     middle = onsets.get("student_entropy_middle")
     tail = onsets.get("student_entropy_tail")
-    if tail is None and middle is None and front is None:
-        return "no_sustained_entropy_onset"
-    if tail is not None and middle is not None and front is not None and tail <= middle <= front:
-        return "tail_to_front"
-    return "non_tail_to_front_or_incomplete"
+    return classify_ordered_propagation(front=front, middle=middle, tail=tail)
 
 
 def write_report(
@@ -333,11 +331,13 @@ def write_report(
     onsets_by_host: dict[str, dict[str, int | None]],
     classifications: dict[str, str],
     propagation: dict[str, str],
+    acceptance: dict[str, object],
 ) -> None:
     stable = (
-        len(set(classifications.values())) == 1
+        bool(acceptance["passed"])
+        and len(set(classifications.values())) == 1
         and "undetermined" not in classifications.values()
-        and len(set(propagation.values())) == 1
+        and set(propagation.values()) == {"tail_to_front"}
     )
     rows = []
     for host, onsets in onsets_by_host.items():
@@ -354,6 +354,7 @@ def write_report(
 <html lang="zh-CN"><head><meta charset="utf-8"><title>Block10 Collapse 双机诊断</title>
 <style>body{{font-family:system-ui,sans-serif;margin:32px;color:#172033}}main{{max-width:1280px;margin:auto}}img{{width:100%;border:1px solid #d7dde8;margin:12px 0 28px}}table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #cbd3df;padding:8px;text-align:left}}th{{background:#eef2f7}}.status{{font-weight:700;color:{'#166534' if stable else '#9a3412'}}}</style></head>
 <body><main><h1>Block10 Collapse 双机诊断</h1>
+<p class="status">验收门禁：{'通过' if acceptance['passed'] else '未通过'}；{html.escape('; '.join(acceptance['issues']) or '所有必需产物完整且双机哈希一致')}</p>
 <p class="status">跨机器稳定结论：{'是' if stable else '否；当前只能报告分机器领先机制'}</p>
 <table><thead><tr><th>Host</th><th>Classification</th><th>Entropy propagation</th>{headers}</tr></thead><tbody>{''.join(rows)}</tbody></table>
 <h2>师生分布动态</h2><img src="scalar_alignment.png" alt="alignment scalar curves">
@@ -370,11 +371,67 @@ def main() -> None:
     args = parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     run_dirs = {"train-A800": args.train_run, "ml2-A100": args.ml2_run}
+    acceptance_by_host = {}
+    for host, run_dir in run_dirs.items():
+        acceptance_path = run_dir / "acceptance.json"
+        if not acceptance_path.is_file():
+            if not args.allow_incomplete:
+                raise FileNotFoundError(
+                    f"missing {acceptance_path}; run scripts/audit_block10_run.py first"
+                )
+            acceptance_by_host[host] = {
+                "passed": False,
+                "issues": ["acceptance.json missing"],
+            }
+        else:
+            acceptance_by_host[host] = json.loads(
+                acceptance_path.read_text(encoding="utf-8")
+            )
+    cross_host_issues = []
+    source_commits = {
+        result.get("source_commit") for result in acceptance_by_host.values()
+    }
+    if len(source_commits) != 1 or None in source_commits:
+        cross_host_issues.append("cross-host source_commit mismatch")
+    for manifest_name in ("artifact_hashes.sha256", "script_hashes.sha256"):
+        manifests = []
+        for run_dir in run_dirs.values():
+            path = run_dir / manifest_name
+            if not path.is_file():
+                manifests.append(None)
+            else:
+                manifests.append(
+                    normalize_hash_manifest_lines(path.read_text(encoding="utf-8").splitlines())
+                )
+        if manifests[0] is None or manifests[1] is None or manifests[0] != manifests[1]:
+            cross_host_issues.append(f"cross-host {manifest_name} mismatch")
+    acceptance_issues = [
+        f"{host}: {issue}"
+        for host, result in acceptance_by_host.items()
+        for issue in result.get("issues", [])
+    ] + cross_host_issues
+    acceptance = {
+        "passed": all(result.get("passed", False) for result in acceptance_by_host.values())
+        and not cross_host_issues,
+        "issues": acceptance_issues,
+        "by_host": acceptance_by_host,
+    }
     snapshots = {host: load_snapshots(run_dir) for host, run_dir in run_dirs.items()}
     records = {
         host: load_scalar_records(run_dir / "diagnostics" / "scalars.jsonl")
         for host, run_dir in run_dirs.items()
     }
+    prompt_hashes = {
+        host: {
+            int(record["step"]): record.get("prompt_batch_sha256")
+            for record in host_records
+            if "prompt_batch_sha256" in record
+        }
+        for host, host_records in records.items()
+    }
+    if len({tuple(sorted(values.items())) for values in prompt_hashes.values()}) != 1:
+        acceptance["issues"].append("cross-host prompt batch hashes mismatch")
+        acceptance["passed"] = False
     for filename, scalar_metrics in SCALAR_GROUPS.items():
         plot_scalar_curves(records, scalar_metrics, args.output_dir / filename)
     plot_heatmaps(
@@ -397,11 +454,12 @@ def main() -> None:
         "onsets": onsets,
         "classifications": classifications,
         "entropy_propagation": propagation,
+        "acceptance": acceptance,
     }
     (args.output_dir / "onsets.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
     )
-    write_report(args.output_dir, onsets, classifications, propagation)
+    write_report(args.output_dir, onsets, classifications, propagation, acceptance)
 
 
 if __name__ == "__main__":
