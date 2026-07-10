@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Block10 OPD 崩塌原因分析</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #5f6b78;
+      --line: #d9e0e7;
+      --blue: #246bfe;
+      --blue-soft: #edf3ff;
+      --green: #13845a;
+      --green-soft: #eaf7f1;
+      --amber: #a95e00;
+      --amber-soft: #fff5e4;
+      --red: #b93835;
+      --red-soft: #fff0ef;
+      --violet: #6d4cc7;
+      --violet-soft: #f3efff;
+      --header: #111827;
+      --code: #101722;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { letter-spacing: 0; }
+    h1 { margin-bottom: 10px; font-size: 30px; line-height: 1.25; }
+    h2 { margin-bottom: 10px; font-size: 22px; line-height: 1.35; }
+    h3 { margin-bottom: 8px; font-size: 17px; line-height: 1.4; }
+    p { margin-bottom: 12px; }
+
+    code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    code {
+      overflow-wrap: anywhere;
+      color: #25324a;
+    }
+
+    .wrap {
+      width: min(1160px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .report-header {
+      padding: 36px 0 30px;
+      color: #ffffff;
+      background: var(--header);
+      border-bottom: 1px solid #080d16;
+    }
+
+    .eyebrow {
+      margin-bottom: 8px;
+      color: #9fb9ff;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      max-width: 900px;
+      margin-bottom: 0;
+      color: #cbd5e1;
+      font-size: 16px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      min-height: 29px;
+      align-items: center;
+      padding: 4px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #e5e7eb;
+      font-size: 13px;
+    }
+
+    .band {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .band.alt { background: var(--bg); }
+
+    .section-lead {
+      max-width: 900px;
+      color: var(--muted);
+    }
+
+    .verdict {
+      padding: 18px 20px;
+      border-left: 5px solid var(--red);
+      border-radius: 6px;
+      background: var(--red-soft);
+      font-size: 17px;
+    }
+
+    .verdict strong { color: #8f2826; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      min-height: 118px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric-value {
+      margin-top: 5px;
+      font-size: 27px;
+      font-weight: 760;
+      line-height: 1.2;
+    }
+
+    .metric-note {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      margin-top: 18px;
+    }
+
+    .formula-panel {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .formula-title {
+      margin-bottom: 10px;
+      color: #334155;
+      font-size: 14px;
+      font-weight: 720;
+    }
+
+    .equation {
+      padding: 12px 14px;
+      overflow-x: auto;
+      border: 1px solid #ccd6e2;
+      border-radius: 6px;
+      background: #ffffff;
+      font: 16px/1.7 Georgia, "Times New Roman", serif;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .equation + .equation { margin-top: 9px; }
+    .token-term { color: var(--blue); font-weight: 700; }
+    .cross-term { color: var(--red); font-weight: 700; }
+
+    .expansion {
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .term-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      background: var(--blue);
+    }
+
+    .swatch.cross { background: var(--red); }
+
+    .bar-chart {
+      display: grid;
+      gap: 11px;
+      margin-top: 14px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr) 74px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bar-track {
+      height: 24px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #edf1f5;
+    }
+
+    .bar-fill {
+      height: 100%;
+      min-width: 2px;
+      background: var(--blue);
+    }
+
+    .bar-fill.green { background: var(--green); }
+    .bar-fill.amber { background: var(--amber); }
+    .bar-fill.red { background: var(--red); }
+
+    .bar-value {
+      color: #334155;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .callout {
+      margin-top: 14px;
+      padding: 13px 15px;
+      border-left: 4px solid var(--blue);
+      border-radius: 6px;
+      background: var(--blue-soft);
+    }
+
+    .callout.warn {
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .callout.good {
+      border-left-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .callout.bad {
+      border-left-color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .phase-strip {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr 1.35fr;
+      margin-top: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .phase {
+      min-height: 126px;
+      padding: 14px 16px;
+      border-right: 1px solid var(--line);
+      background: var(--green-soft);
+    }
+
+    .phase:last-child { border-right: 0; }
+    .phase.drift { background: var(--amber-soft); }
+    .phase.collapse { background: var(--red-soft); }
+    .phase-step { color: var(--muted); font-size: 13px; }
+    .phase-name { margin-top: 3px; font-size: 18px; font-weight: 750; }
+    .phase p { margin: 7px 0 0; font-size: 14px; }
+
+    .table-scroll {
+      margin-top: 16px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f1f4f7;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    th:first-child, td:first-child { text-align: left; }
+    tr:last-child td { border-bottom: 0; }
+    tr.onset td { background: #fff9ec; }
+    tr.failed td { background: #fff4f3; }
+
+    .entropy-cell {
+      display: grid;
+      grid-template-columns: 48px 100px;
+      align-items: center;
+      justify-content: end;
+      gap: 8px;
+    }
+
+    .mini-track {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 2px;
+      background: #e6ebf0;
+    }
+
+    .mini-fill { height: 100%; background: var(--violet); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 22px;
+      align-items: stretch;
+      margin-top: 20px;
+    }
+
+    .flow-node {
+      position: relative;
+      min-height: 132px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--blue);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .flow-node:nth-child(2) { border-top-color: var(--amber); }
+    .flow-node:nth-child(3) { border-top-color: var(--violet); }
+    .flow-node:nth-child(4) { border-top-color: var(--red); }
+    .flow-node:nth-child(5) { border-top-color: var(--amber); }
+    .flow-node:nth-child(6) { border-top-color: var(--red); }
+
+    .flow-node:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 45%;
+      right: -19px;
+      width: 16px;
+      color: #64748b;
+      font-size: 20px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .flow-index {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .flow-title {
+      margin-top: 5px;
+      font-weight: 760;
+      line-height: 1.35;
+    }
+
+    .flow-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .evidence {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .evidence.direct { border-left: 5px solid var(--green); }
+    .evidence.strong { border-left: 5px solid var(--amber); }
+    .evidence.secondary { border-left: 5px solid var(--blue); }
+    .evidence.unresolved { border-left: 5px solid var(--red); }
+
+    .evidence-tag {
+      display: inline-flex;
+      padding: 3px 7px;
+      border-radius: 4px;
+      background: #edf1f5;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .evidence ul, .test-list {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    .evidence li, .test-list li { margin: 5px 0; }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .test-arm {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .test-arm strong { display: block; margin-bottom: 7px; }
+    .test-arm p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .source-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer {
+      padding: 22px 0 28px;
+      color: #64748b;
+      background: var(--bg);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .flow-node:nth-child(3)::after { content: "↓"; top: auto; right: 48%; bottom: -22px; }
+      .test-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      body { font-size: 14px; }
+      .wrap { width: min(100% - 24px, 1160px); }
+      .report-header { padding: 26px 0 22px; }
+      h1 { font-size: 25px; }
+      h2 { font-size: 20px; }
+      .band { padding: 23px 0; }
+      .split, .evidence-grid { grid-template-columns: 1fr; }
+      .phase-strip { grid-template-columns: 1fr; }
+      .phase { border-right: 0; border-bottom: 1px solid var(--line); }
+      .phase:last-child { border-bottom: 0; }
+      .flow { grid-template-columns: 1fr; gap: 24px; }
+      .flow-node { min-height: auto; }
+      .flow-node:not(:last-child)::after,
+      .flow-node:nth-child(3)::after {
+        content: "↓";
+        top: auto;
+        right: 48%;
+        bottom: -23px;
+      }
+      .test-grid { grid-template-columns: 1fr; }
+      .equation { font-size: 15px; text-align: left; }
+      .entropy-cell { grid-template-columns: 44px 84px; }
+    }
+
+    @media (max-width: 480px) {
+      .metrics { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 76px minmax(0, 1fr) 62px; }
+      .metric { min-height: auto; }
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      .band, .footer { break-inside: avoid; }
+      .report-header { background: #111827 !important; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <header class="report-header">
+    <div class="wrap">
+      <div class="eyebrow">Post-hoc mechanism diagnosis</div>
+      <h1>Block10 OPD 为什么会崩塌？</h1>
+      <p class="subtitle">对 sampled block reverse-KL 的实现、200-step 训练日志和四组对照结果进行联合诊断。结论针对当前单 seed run，区分直接证据、机制解释和仍待排除的混杂因素。</p>
+      <div class="meta">
+        <span class="pill">Student：Qwen3-1.7B-Base</span>
+        <span class="pill">Teacher：Qwen3-4B-Base-GRPO</span>
+        <span class="pill">Data：DAPO-Math-17K</span>
+        <span class="pill">Seed：21</span>
+        <span class="pill">Checkpoint：step 200</span>
+        <span class="pill">诊断状态：机制高度可疑，因果尚需同机复现</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="band">
+      <div class="wrap">
+        <h2>结论先行</h2>
+        <div class="verdict">
+          <strong>block10 不是因为梯度消失，也不是被某一次未受控的数值爆炸直接击穿。</strong>
+          最符合代码与时间序列的解释是：10-token 共享 advantage 引入大量跨 token 信用项，使更新方向长期高方差；学生开始偏离后，teacher 在 OOD 前缀上的 sampled-token 负反馈继续污染整个 block，最终形成高熵、超长、全格式错误的自强化崩塌。
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">梯度裁剪覆盖</div>
+            <div class="metric-value">200 / 200</div>
+            <div class="metric-note">所有 step 的裁剪前 grad norm 都高于阈值 1.0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">k=10 交叉信用项</div>
+            <div class="metric-value">90 个</div>
+            <div class="metric-note">相对 10 个 token 自身项，干扰项数量为 9 倍</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">崩塌后的完整评测</div>
+            <div class="metric-value">5,144 / 5,144</div>
+            <div class="metric-note">四任务所有 rollout 都是 format error</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">可见崩塌窗口</div>
+            <div class="metric-value">step 50–60</div>
+            <div class="metric-note">熵、长度与负 advantage 同时恶化</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band alt">
+      <div class="wrap">
+        <h2>1. 从 token OPD 到 block10，梯度结构发生了什么变化</h2>
+        <p class="section-lead">实现并不是简单地把 10 个 token 的 loss 做平均。它同时把 10 个 token 的旧策略与当前策略 log-prob 相加，形成一个 block action；随后用同一个 block advantage 更新整个片段。</p>
+
+        <div class="split">
+          <div class="formula-panel">
+            <div class="formula-title">Token-level sampled OPD</div>
+            <div class="equation">A<sub>t</sub> = log π<sub>T</sub>(y<sub>t</sub> | h<sub>t</sub>) − log π<sub>old</sub>(y<sub>t</sub> | h<sub>t</sub>)</div>
+            <div class="equation">L<sub>token</sub> ∝ − Σ<sub>t</sub> A<sub>t</sub> · r<sub>t</sub></div>
+            <div class="callout good">每个 token 主要使用自己的 teacher-vs-student 信号：错误 token 被压低，合理 token 可以保留自己的正向或弱负向信用。</div>
+          </div>
+
+          <div class="formula-panel">
+            <div class="formula-title">当前 block10 mean 实现</div>
+            <div class="equation">Ā<sub>B</sub> = (1 / k) Σ<sub>t∈B</sub> A<sub>t</sub></div>
+            <div class="equation">log r<sub>B</sub> = Σ<sub>t∈B</sub> [log π<sub>θ</sub>(y<sub>t</sub>) − log π<sub>old</sub>(y<sub>t</sub>)]</div>
+            <div class="callout warn">一个 token 的强负信号会进入 block 均值，并通过同一个 Ā<sub>B</sub> 作用到另外 9 个 token。</div>
+          </div>
+        </div>
+
+        <div class="expansion">
+          <h3>关键展开：自身信用之外，多出了交叉信用</h3>
+          <div class="equation">
+            ∇L<sub>B</sub> ∝ − Ā<sub>B</sub> Σ<sub>s∈B</sub> ∇logπ<sub>θ</sub>(y<sub>s</sub>)
+          </div>
+          <div class="equation">
+            ∝ − <span class="token-term">Σ<sub>t</sub> A<sub>t</sub> ∇logπ(y<sub>t</sub>)</span>
+            − <span class="cross-term">Σ<sub>t≠s</sub> A<sub>t</sub> ∇logπ(y<sub>s</sub>)</span>
+          </div>
+          <div class="term-legend">
+            <span class="legend-item"><span class="swatch"></span>token 自身项：与 token OPD 的信用方向一致</span>
+            <span class="legend-item"><span class="swatch cross"></span>交叉项：其他 token 的 advantage 改写当前 token</span>
+          </div>
+          <p class="section-lead" style="margin-top:12px;">上式省略了不影响这里结论的公共归一化系数。重要的是交叉项数量随 k 二次增长，而不是简单线性增长。</p>
+        </div>
+
+        <div class="split">
+          <div>
+            <h3>有序交叉项数量：k(k−1)</h3>
+            <div class="bar-chart">
+              <div class="bar-row"><span>block-3</span><div class="bar-track"><div class="bar-fill green" style="width:6.7%"></div></div><span class="bar-value">6</span></div>
+              <div class="bar-row"><span>block-5</span><div class="bar-track"><div class="bar-fill amber" style="width:22.2%"></div></div><span class="bar-value">20</span></div>
+              <div class="bar-row"><span>block-10</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="bar-value">90</span></div>
+            </div>
+          </div>
+          <div class="callout bad" style="margin-top:0;">
+            <strong>为什么 mean 没能解决问题？</strong>
+            <p style="margin:7px 0 0;">advantage 除以 k 控制了标量幅度，却没有删除交叉项。与此同时，loss 从 T 个 token 单元变成约 T/k 个 block 单元，外层平均会抵消一部分缩放。因此 mean 能缓解 naive sum 的直接放大，却不能消除共享信用带来的方向污染。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap">
+        <h2>2. 崩塌不是瞬间发生，而是一个可见的漂移过程</h2>
+        <p class="section-lead">大梯度峰值不是最早出现的异常。熵和回复长度先在 step 48–60 持续上升；主要的 30–86 梯度尖峰多数出现在模型已经进入高熵、reward=0 状态之后。</p>
+
+        <div class="phase-strip">
+          <div class="phase">
+            <div class="phase-step">Step 40–47</div>
+            <div class="phase-name">尚可运行</div>
+            <p>entropy 约 0.2–0.9，长度仍在数千 token；负 advantage 已开始累积。</p>
+          </div>
+          <div class="phase drift">
+            <div class="phase-step">Step 48–60</div>
+            <div class="phase-name">分布漂移窗口</div>
+            <p>entropy 从 1.196 升至 6.837，平均长度升至 7.4K，outcome reward 降为 0。</p>
+          </div>
+          <div class="phase collapse">
+            <div class="phase-step">Step 61–200</div>
+            <div class="phase-name">自强化崩塌</div>
+            <p>OOD 前缀、负 sampled-token 信号和持续裁剪互相强化，最终生成随机碎片。</p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Step</th>
+                <th>Entropy</th>
+                <th>Pre-clip grad norm</th>
+                <th>平均回复长度</th>
+                <th>Outcome reward</th>
+                <th>观察</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>40</td>
+                <td><div class="entropy-cell"><span>0.216</span><span class="mini-track"><span class="mini-fill" style="display:block;width:2.3%"></span></span></div></td>
+                <td>4.707</td><td>4,248</td><td>0.062</td><td>仍接近低熵推理分布</td>
+              </tr>
+              <tr class="onset">
+                <td>48</td>
+                <td><div class="entropy-cell"><span>1.196</span><span class="mini-track"><span class="mini-fill" style="display:block;width:12.4%"></span></span></div></td>
+                <td>4.390</td><td>3,313</td><td>0.062</td><td>熵开始抬升</td>
+              </tr>
+              <tr class="onset">
+                <td>53</td>
+                <td><div class="entropy-cell"><span>2.762</span><span class="mini-track"><span class="mini-fill" style="display:block;width:28.7%"></span></span></div></td>
+                <td>5.976</td><td>4,838</td><td>0.031</td><td>漂移已明显，但没有单次巨峰</td>
+              </tr>
+              <tr class="onset">
+                <td>58</td>
+                <td><div class="entropy-cell"><span>4.098</span><span class="mini-track"><span class="mini-fill" style="display:block;width:42.6%"></span></span></div></td>
+                <td>5.044</td><td>5,731</td><td>0.000</td><td>任务质量归零</td>
+              </tr>
+              <tr class="failed">
+                <td>60</td>
+                <td><div class="entropy-cell"><span>6.837</span><span class="mini-track"><span class="mini-fill" style="display:block;width:71.1%"></span></span></div></td>
+                <td>5.070</td><td>7,446</td><td>0.000</td><td>进入高熵失败区</td>
+              </tr>
+              <tr class="failed">
+                <td>66</td>
+                <td><div class="entropy-cell"><span>7.928</span><span class="mini-track"><span class="mini-fill" style="display:block;width:82.4%"></span></span></div></td>
+                <td>32.047</td><td>9,201</td><td>0.000</td><td>崩塌后出现第一轮大梯度尖峰</td>
+              </tr>
+              <tr class="failed">
+                <td>70</td>
+                <td><div class="entropy-cell"><span>7.872</span><span class="mini-track"><span class="mini-fill" style="display:block;width:81.8%"></span></span></div></td>
+                <td>3.066</td><td>13,728</td><td>0.000</td><td>即使梯度不大，分布仍继续恶化</td>
+              </tr>
+              <tr class="failed">
+                <td>76</td>
+                <td><div class="entropy-cell"><span>8.968</span><span class="mini-track"><span class="mini-fill" style="display:block;width:93.2%"></span></span></div></td>
+                <td>86.786</td><td>11,630</td><td>0.000</td><td>大梯度成为放大器</td>
+              </tr>
+              <tr class="failed">
+                <td>90</td>
+                <td><div class="entropy-cell"><span>9.582</span><span class="mini-track"><span class="mini-fill" style="display:block;width:99.6%"></span></span></div></td>
+                <td>3.599</td><td>14,795</td><td>0.000</td><td>接近随机化、长度饱和</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn">
+          <strong>反证“单次梯度爆炸就是根因”：</strong>block5 在 step 52 也出现过 grad norm = 63.501，但 entropy 保持 0.109，最终没有崩塌。block10 的关键异常是长期高方差和持续错误方向，而不是某一个峰值。
+        </div>
+      </div>
+    </section>
+
+    <section class="band alt">
+      <div class="wrap">
+        <h2>3. 为什么 sampled-token 反馈会把漂移变成恶性循环</h2>
+        <p class="section-lead">本轮使用的是学生已采样 token 上的 teacher log-prob 差值，不是 full/top-k teacher distribution。它擅长表达“当前 token 不应这么高”，但不会直接给出“应该换成哪个 token”。</p>
+
+        <div class="flow">
+          <div class="flow-node">
+            <div class="flow-index">01</div>
+            <div class="flow-title">跨 token 信用泄漏</div>
+            <div class="flow-note">一个强负 A<sub>t</sub> 同时影响 block 内其余 9 个 token。</div>
+          </div>
+          <div class="flow-node">
+            <div class="flow-index">02</div>
+            <div class="flow-title">正常 token 被一起压低</div>
+            <div class="flow-note">推理连接词、数学符号、格式与 EOS 都可能继承错误信用。</div>
+          </div>
+          <div class="flow-node">
+            <div class="flow-index">03</div>
+            <div class="flow-title">概率质量扩散</div>
+            <div class="flow-note">只有采样 token 被评价，质量转移到未被 teacher 明确指导的词表区域。</div>
+          </div>
+          <div class="flow-node">
+            <div class="flow-index">04</div>
+            <div class="flow-title">学生 prefix 进入 OOD</div>
+            <div class="flow-note">高熵采样产生随机多语种片段，teacher 的局部评分可靠性下降。</div>
+          </div>
+          <div class="flow-node">
+            <div class="flow-index">05</div>
+            <div class="flow-title">负信号进一步加重</div>
+            <div class="flow-note">未裁剪 log-ratio 在异常 prefix 上产生更负、更偏斜的 advantage。</div>
+          </div>
+          <div class="flow-node">
+            <div class="flow-index">06</div>
+            <div class="flow-title">超长随机 rollout</div>
+            <div class="flow-note">reward 已为 0，但纯 OPD 仍继续更新，循环没有自动刹车。</div>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="callout bad">
+            <strong>配置中的三个放大条件</strong>
+            <ul class="test-list">
+              <li><code>clip_log_ratio=False</code>：token advantage 未裁剪，观察到最负约 −20.8。</li>
+              <li><code>reward_weight=0</code>：outcome reward 归零不会停止或反转 OPD 更新。</li>
+              <li>full/top-k KL 未启用：teacher 不为未采样替代 token 提供密集正向方向。</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <strong>为什么高熵不违背 reverse KL 的理论？</strong>
+            <p style="margin:7px 0 0;">精确 reverse KL 的最优解不会是随机碎片；这里失败的是 sampled、block-shared 的梯度估计器及其 OOD 反馈条件。大量负信用广播只是在压低当前样本，并不等于精确追随 teacher 的完整分布。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap">
+        <h2>4. 梯度裁剪阻止数值爆炸，却修复不了错误方向</h2>
+        <p class="section-lead"><code>actor/grad_norm</code> 是调用 <code>clip_grad_norm_(max_norm=1.0)</code> 返回的裁剪前总范数。日志中没有 NaN/Inf，也没有接近 0 的梯度；但 block10 所有 step 都被裁剪。</p>
+
+        <div class="split">
+          <div>
+            <h3>Step 50 之后的 pre-clip grad norm P95</h3>
+            <div class="bar-chart">
+              <div class="bar-row"><span>token</span><div class="bar-track"><div class="bar-fill" style="width:7.8%"></div></div><span class="bar-value">1.622</span></div>
+              <div class="bar-row"><span>block-3</span><div class="bar-track"><div class="bar-fill green" style="width:10.7%"></div></div><span class="bar-value">2.228</span></div>
+              <div class="bar-row"><span>block-5</span><div class="bar-track"><div class="bar-fill amber" style="width:13.6%"></div></div><span class="bar-value">2.824</span></div>
+              <div class="bar-row"><span>block-10</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="bar-value">20.735</span></div>
+            </div>
+          </div>
+
+          <div class="formula-panel">
+            <div class="formula-title">全局梯度裁剪</div>
+            <div class="equation">g<sub>used</sub> = g · min(1, 1 / ‖g‖)</div>
+            <p style="margin:12px 0 0;">中位数 ‖g‖ = 4.141 时，典型梯度约保留 24%；峰值 420.710 时只保留约 0.24%。裁剪把大小限制住，却会保留由异常 block 主导的方向。</p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>方法（step 50 后）</th><th>平均 grad norm</th><th>P95</th><th>grad &gt; 10 的 step</th><th>解释</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>token OPD</td><td>1.233</td><td>1.622</td><td>0</td><td>快速回到稳定区间</td></tr>
+              <tr><td>block3 mean</td><td>2.118</td><td>2.228</td><td>1</td><td>多数 step 稳定</td></tr>
+              <tr><td>block5 mean</td><td>2.451</td><td>2.824</td><td>1</td><td>有孤立尖峰但未持续</td></tr>
+              <tr class="failed"><td><strong>block10 mean</strong></td><td><strong>7.289</strong></td><td><strong>20.735</strong></td><td><strong>21</strong></td><td><strong>持续高方差与频繁大尖峰</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          联合 importance ratio <code>r<sub>B</sub> = exp(Σ Δlogπ)</code> 理论上也会随 k 增大方差，但本次崩塌窗口中的 PPO <code>pg_clipfrac</code> 总体不高。因此它更像次要放大器，当前证据不支持把它列为最初触发因素。
+        </div>
+      </div>
+    </section>
+
+    <section class="band alt">
+      <div class="wrap">
+        <h2>5. 证据强度：哪些已经确认，哪些仍是解释</h2>
+        <div class="evidence-grid">
+          <div class="evidence direct">
+            <span class="evidence-tag">直接观察</span>
+            <h3 style="margin-top:9px;">高置信事实</h3>
+            <ul>
+              <li>block10 在 step 50–60 出现熵和长度快速上升。</li>
+              <li>200/200 step 的裁剪前 grad norm 均大于 1.0。</li>
+              <li>没有 NaN/Inf，也没有梯度消失。</li>
+              <li>step-200 的 5,144 条 eval rollout 全部格式错误。</li>
+            </ul>
+          </div>
+
+          <div class="evidence strong">
+            <span class="evidence-tag">代码 + 动力学支持</span>
+            <h3 style="margin-top:9px;">最可能机制</h3>
+            <ul>
+              <li>block advantage 广播产生 90 个跨 token 信用项。</li>
+              <li>未裁剪的负 advantage 污染同 block 的正常 token。</li>
+              <li>sampled-only 反馈与 OOD prefix 构成自强化漂移。</li>
+              <li>持续全局裁剪限制大小，但保留噪声方向。</li>
+            </ul>
+          </div>
+
+          <div class="evidence secondary">
+            <span class="evidence-tag">次要假设</span>
+            <h3 style="margin-top:9px;">可能的放大因素</h3>
+            <ul>
+              <li>10-token 联合 likelihood ratio 的乘法方差。</li>
+              <li>固定 block 边界跨越语义步骤和答案格式边界。</li>
+              <li>长回复让更多 OOD 状态进入后续更新。</li>
+            </ul>
+          </div>
+
+          <div class="evidence unresolved">
+            <span class="evidence-tag">尚未排除</span>
+            <h3 style="margin-top:9px;">因果混杂</h3>
+            <ul>
+              <li>block10 在 4×A100 上运行，其他三组在 4×A800 上运行。</li>
+              <li>驱动与 Python patch 版本不同。</li>
+              <li>目前只有 seed=21，没有同机重复实验。</li>
+              <li>未记录逐 block advantage 符号率和相邻梯度 cosine。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          因此当前可以写：<strong>“这次 block10 run 的崩塌与实现中的跨 token 信用、sampled-only OOD 反馈和持续梯度裁剪一致。”</strong> 不能写成：<strong>“已经证明所有 k=10 block OPD 都必然崩塌。”</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap">
+        <h2>6. 最小验证实验：如何真正确认根因</h2>
+        <p class="section-lead">下一轮不需要立刻再跑完整 200-step × full eval。先在同一台 A800 机器、相同 seed/data 上运行到 step 70，观察哪个干预能阻止 entropy 在 step 50–60 上升。</p>
+
+        <div class="test-grid">
+          <div class="test-arm">
+            <strong>A. 原始 block10</strong>
+            <p>同机复现当前设置，确认崩塌不是 A100/驱动造成的偶然分叉。</p>
+          </div>
+          <div class="test-arm">
+            <strong>B. 去交叉信用对照</strong>
+            <p>保留 10-token 数据组织，但每个 token 使用自身 A<sub>t</sub>，直接检验共享信用是否为主因。</p>
+          </div>
+          <div class="test-arm">
+            <strong>C. Advantage clip</strong>
+            <p>只把 token log-ratio 裁到 [−5, 5]，判断极端负信号是否驱动 OOD 循环。</p>
+          </div>
+          <div class="test-arm">
+            <strong>D. Outcome / overlap gate</strong>
+            <p>错误轨迹或低 teacher-student overlap block 不更新，测试 teacher-on-OOD-prefix 失真。</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top:20px;">必须新增的诊断指标</h3>
+        <ul class="test-list">
+          <li>每个 block 的 advantage 正/负比例、均值、标准差与最小值。</li>
+          <li>实际 gradient clip coefficient，而不只记录裁剪前 norm。</li>
+          <li>相邻 step 梯度 cosine，区分“范数大”与“方向来回震荡”。</li>
+          <li>teacher/student top-k overlap 随 prefix 深度的变化。</li>
+          <li>EOS、数学符号、格式 token 在 block 中收到的共享 advantage。</li>
+        </ul>
+
+        <div class="callout good">
+          <strong>可证伪标准：</strong>如果同机原始 block10 不再崩塌，硬件/随机路径解释上升；如果只有“去交叉信用”组稳定，credit leakage 得到强因果支持；如果仅 advantage clip 或 OOD gate 稳定，则极端负信号或 teacher prefix 可靠性是更直接的控制点。
+        </div>
+      </div>
+    </section>
+
+    <section class="band alt">
+      <div class="wrap">
+        <h2>数据与实现位置</h2>
+        <div class="source-list">
+          <div>Block 聚合：<code>external/revisiting_opd/verl/trainer/ppo/core_algos.py::aggregate_blockwise_policy_inputs</code></div>
+          <div>OPD advantage：<code>external/revisiting_opd/verl/trainer/ppo/core_algos.py::compute_opd_advantage</code></div>
+          <div>梯度裁剪与日志：<code>external/revisiting_opd/verl/workers/actor/dp_actor.py::_optimizer_step</code></div>
+          <div>block10 训练日志：<code>ml2:/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260709_block10_dapo17k_paper_qwen3/block10_mean/logs/</code></div>
+          <div>完整结果：<code>results/2026-07-10-block-size-sweep-step200-n8.json</code></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">Block10 sampled block reverse-KL post-hoc diagnosis · 2026-07-10 · 内部实验记录</div>
+  </footer>
+</body>
+</html>
