@@ -55,7 +55,7 @@ test -d '${MATH_TEACHER}'
 test -x '${VENV}/bin/python'
 test -f '${TRAIN_DATA}'
 test -f '${VAL_DATA}'
-test "\$(cat '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT')" = '${SUBMODULE_BASE_COMMIT}'
+test \$(cat '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT') = '${SUBMODULE_BASE_COMMIT}'
 if git -C '${REMOTE_ROOT}' rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   bash '${REMOTE_ROOT}/scripts/setup_revisiting_opd.sh' >/dev/null
 fi
