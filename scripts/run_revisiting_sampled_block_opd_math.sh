@@ -174,4 +174,5 @@ python3 -m verl.trainer.main_ppo_multitask \
     trainer.resume_mode=auto \
     +trainer.val_generation_dir="${VAL_GENERATION_DIR:-${CKPTS_DIR}/val_generations}" \
     ray_init.num_cpus="${RAY_NUM_CPUS:-96}" \
+    +ray_init.include_dashboard=False \
     2>&1 | tee "${LOG_DIR}/${exp_name}_${TIME_STAMP}.log"
