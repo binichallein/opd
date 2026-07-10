@@ -8,6 +8,7 @@ DATE_TAG="${DATE_TAG:-20260710}"
 DIAG_STRIDE="${DIAG_STRIDE:-1}"
 ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.6}"
 ROLLOUT_MAX_NUM_BATCHED_TOKENS="${ROLLOUT_MAX_NUM_BATCHED_TOKENS:-18432}"
+FILTER_OVERLONG_PROMPTS="${FILTER_OVERLONG_PROMPTS:-false}"
 SOURCE_COMMIT="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
 SUBMODULE_BASE_COMMIT="$(git -C "${ROOT_DIR}/external/revisiting_opd" rev-parse HEAD)"
 
@@ -90,6 +91,7 @@ launch_host() {
   OPD_DIAG_SIGN_EPS=1e-4 \
   DIAGNOSTIC_SAVE_STEPS="${milestones}" \
   STOP_AFTER_STEP="${stop_after_step}" \
+  FILTER_OVERLONG_PROMPTS="${FILTER_OVERLONG_PROMPTS}" \
   bash "${ROOT_DIR}/scripts/launch_revisiting_block_opd_formal_train.sh"
 }
 

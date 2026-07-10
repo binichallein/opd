@@ -76,6 +76,7 @@ def main() -> None:
         "opd_diag_interval": 5,
         "opd_diag_topk": 16,
         "rollout_gpu_memory_utilization": 0.6,
+        "filter_overlong_prompts": False,
     }
     for key, expected in expected_card.items():
         if card.get(key) != expected:

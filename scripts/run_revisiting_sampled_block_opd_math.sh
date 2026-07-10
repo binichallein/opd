@@ -50,6 +50,7 @@ diagnostic_save_steps="${DIAGNOSTIC_SAVE_STEPS:-40,50,60,80,100,200}"
 diagnostic_save_steps_list="[${diagnostic_save_steps}]"
 opd_diag_output_dir="${OPD_DIAG_OUTPUT_DIR:-${CKPTS_DIR}/../diagnostics}"
 stop_after_step="${STOP_AFTER_STEP:--1}"
+filter_overlong_prompts="${FILTER_OVERLONG_PROMPTS:-true}"
 
 case "${VARIANT}" in
   token_opd)
@@ -108,7 +109,7 @@ python3 -m verl.trainer.main_ppo_multitask \
     data.val_batch_size="${val_data_size}" \
     data.max_prompt_length="${max_prompt_length}" \
     data.max_response_length="${max_response_length}" \
-    data.filter_overlong_prompts=True \
+    data.filter_overlong_prompts="${filter_overlong_prompts}" \
     data.truncation=middle \
     data.return_raw_chat=True \
     +data.seed="${ENV_SEED:-21}" \
