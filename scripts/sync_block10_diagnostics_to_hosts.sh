@@ -27,8 +27,6 @@ FILES=(
 sync_host() {
   local host="$1"
   local remote_root="$2"
-  local file
-
   ssh "${host}" "mkdir -p '${remote_root}/opd_ext' '${remote_root}/scripts' \
     '${remote_root}/patches/revisiting_opd' \
     '${remote_root}/external' \
@@ -37,9 +35,7 @@ sync_host() {
     '${remote_root}/external/revisiting_opd/verl/trainer/ppo' \
     '${remote_root}/external/revisiting_opd/verl/workers/actor' \
     '${remote_root}/external/revisiting_opd/verl/workers'"
-  for file in "${FILES[@]}"; do
-    rsync -a --checksum "${ROOT_DIR}/${file}" "${host}:${remote_root}/${file}"
-  done
+  tar -C "${ROOT_DIR}" -cf - "${FILES[@]}" | ssh "${host}" "tar -C '${remote_root}' -xf -"
   ssh "${host}" "cd '${remote_root}' && sha256sum ${FILES[*]}"
 }
 
