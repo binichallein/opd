@@ -81,6 +81,7 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
         top_p,
         max_tokens,
         enable_thinking,
+        eval_seed,
     ) = args_tuple
 
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
@@ -109,14 +110,14 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
                 pass
 
         prompts = [apply_template(tokenizer, row["prompt"], enable_thinking) for row in rows]
-        sampling = SamplingParams(
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-            stop_token_ids=stop_token_ids or None,
-        )
-
         for rollout_id in rollout_ids:
+            sampling = SamplingParams(
+                temperature=temperature,
+                top_p=top_p,
+                max_tokens=max_tokens,
+                stop_token_ids=stop_token_ids or None,
+                seed=eval_seed + rollout_id,
+            )
             outputs = llm.generate(prompts, sampling, use_tqdm=False)
             for row, output in zip(rows, outputs):
                 results.append(
@@ -127,7 +128,8 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
                         "problem": row["problem"],
                         "prompt": row["prompt"],
                         "answer": row["answer"],
-                        "seed": rollout_id,
+                        "rollout_id": rollout_id,
+                        "seed": eval_seed + rollout_id,
                         "response": output.outputs[0].text,
                     }
                 )
@@ -149,18 +151,25 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
     return results
 
 
-def load_grader():
+def load_grader(grader_name: str):
+    if grader_name == "verl":
+        from verl.utils.reward_score.math import compute_score
+
+        return lambda response, answer: bool(compute_score(response, answer))
+
+    if grader_name != "external":
+        raise ValueError(f"unsupported grader: {grader_name}")
     utils_path = Path(os.environ.get("EVAL_GRADE_UTILS_PATH", DEFAULT_GRADE_UTILS))
-    if utils_path.exists():
-        spec = importlib.util.spec_from_file_location("qwen3_math_grade_utils", utils_path)
-        if spec is not None and spec.loader is not None:
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module.grade_answer_verl
-
-    from verl.utils.reward_score.math import compute_score
-
-    return lambda response, answer: bool(compute_score(response, answer))
+    if not utils_path.is_file():
+        raise FileNotFoundError(
+            f"external grader requested but EVAL_GRADE_UTILS_PATH is unavailable: {utils_path}"
+        )
+    spec = importlib.util.spec_from_file_location("qwen3_math_grade_utils", utils_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot import external grader from {utils_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.grade_answer_verl
 
 
 def grade_outputs(
@@ -168,8 +177,11 @@ def grade_outputs(
     summary_path: Path,
     length_tokenizer_path: str | None,
     n_expected: int,
+    grader_name: str,
+    eval_seed: int,
+    enable_thinking: bool,
 ) -> dict[str, Any]:
-    grade_answer = load_grader()
+    grade_answer = load_grader(grader_name)
     length_tokenizer = None
     if length_tokenizer_path:
         length_tokenizer = AutoTokenizer.from_pretrained(length_tokenizer_path, local_files_only=True)
@@ -181,6 +193,10 @@ def grade_outputs(
 
     summary: dict[str, Any] = {
         "n_expected": n_expected,
+        "grader": grader_name,
+        "eval_seed": eval_seed,
+        "rollout_seeds": [eval_seed + rollout_id for rollout_id in range(n_expected)],
+        "enable_thinking": enable_thinking,
         "tasks": {},
     }
     for task, examples in sorted(by_task.items()):
@@ -243,6 +259,8 @@ def main() -> None:
     parser.add_argument("--top-p", type=float, default=0.9)
     parser.add_argument("--max-tokens", type=int, default=16384)
     parser.add_argument("--gpus", default="0,1,2,3")
+    parser.add_argument("--eval-seed", type=int, default=21)
+    parser.add_argument("--grader", choices=("verl", "external"), default="verl")
     parser.add_argument("--enable-thinking", action="store_true")
     parser.add_argument("--replace", action="store_true")
     parser.add_argument("--length-tokenizer-path", default=None)
@@ -264,6 +282,9 @@ def main() -> None:
         "top_p": args.top_p,
         "max_tokens": args.max_tokens,
         "gpus": gpu_ids,
+        "eval_seed": args.eval_seed,
+        "rollout_seeds": [args.eval_seed + rollout_id for rollout_id in range(args.n)],
+        "grader": args.grader,
         "enable_thinking": args.enable_thinking,
     }
     (out_dir / "eval_config.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
@@ -294,6 +315,7 @@ def main() -> None:
                 args.top_p,
                 args.max_tokens,
                 args.enable_thinking,
+                args.eval_seed,
             )
             for i in range(len(gpu_ids))
             if chunks[i]
@@ -315,6 +337,9 @@ def main() -> None:
         out_dir / "summary.json",
         args.length_tokenizer_path,
         args.n,
+        args.grader,
+        args.eval_seed,
+        args.enable_thinking,
     )
     print(json.dumps(summary, indent=2, ensure_ascii=False), flush=True)
 

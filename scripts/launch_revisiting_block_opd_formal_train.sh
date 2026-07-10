@@ -36,6 +36,7 @@ VAL_N="${VAL_N:-1}"
 TRAINER_LOGGER="${TRAINER_LOGGER:-['console']}"
 ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.7}"
 ROLLOUT_MAX_NUM_BATCHED_TOKENS="${ROLLOUT_MAX_NUM_BATCHED_TOKENS:-18432}"
+REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"
 OPD_DIAGNOSTICS="${OPD_DIAGNOSTICS:-false}"
 OPD_DIAG_INTERVAL="${OPD_DIAG_INTERVAL:-5}"
 OPD_DIAG_TOPK="${OPD_DIAG_TOPK:-16}"
@@ -59,6 +60,10 @@ test -d '${MATH_TEACHER}'
 test -x '${VENV}/bin/python'
 test -f '${TRAIN_DATA}'
 test -f '${VAL_DATA}'
+test -f '${DATA_DIR}/eval_jsonl/math500.jsonl'
+test -f '${DATA_DIR}/eval_jsonl/aime24.jsonl'
+test -f '${DATA_DIR}/eval_jsonl/aime25.jsonl'
+test -f '${DATA_DIR}/eval_jsonl/amc23.jsonl'
 test \$(cat '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT') = '${SUBMODULE_BASE_COMMIT}'
 if git -C '${REMOTE_ROOT}' rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   bash '${REMOTE_ROOT}/scripts/setup_revisiting_opd.sh' >/dev/null
@@ -75,6 +80,9 @@ sha256sum \
   '${REMOTE_ROOT}/scripts/launch_revisiting_block_opd_formal_train.sh' \
   '${REMOTE_ROOT}/scripts/run_revisiting_sampled_block_opd_math.sh' \
   '${REMOTE_ROOT}/scripts/setup_revisiting_opd.sh' \
+  '${REMOTE_ROOT}/scripts/launch_qwen3_math_eval.sh' \
+  '${REMOTE_ROOT}/scripts/eval_qwen3_math_vllm.py' \
+  '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
   '${REMOTE_ROOT}/patches/revisiting_opd/blockwise_sampled_opd.patch' \
   '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT' \
   '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256' \
@@ -83,10 +91,15 @@ sha256sum \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/ppo/ray_trainer_multitask.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/actor/dp_actor.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/fsdp_workers.py' \
+  '${REMOTE_ROOT}/external/revisiting_opd/verl/utils/reward_score/math.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/config/ppo_trainer.yaml' \
   > '${RUN_DIR}/script_hashes.sha256'
 {
-  sha256sum '${TRAIN_DATA}' '${VAL_DATA}'
+  sha256sum '${TRAIN_DATA}' '${VAL_DATA}' \
+    '${DATA_DIR}/eval_jsonl/math500.jsonl' \
+    '${DATA_DIR}/eval_jsonl/aime24.jsonl' \
+    '${DATA_DIR}/eval_jsonl/aime25.jsonl' \
+    '${DATA_DIR}/eval_jsonl/amc23.jsonl'
   find '${STUDENT_MODEL}' '${MATH_TEACHER}' -maxdepth 1 -type f \
     \( -name '*.safetensors' -o -name '*.bin' -o -name '*.json' -o -name '*.jinja' -o -name '*.txt' \) \
     -print0 | sort -z | xargs -0 sha256sum
@@ -129,6 +142,7 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"val_n\": ${VAL_N},
   \"rollout_gpu_memory_utilization\": ${ROLLOUT_GPU_MEMORY_UTILIZATION},
   \"rollout_max_num_batched_tokens\": ${ROLLOUT_MAX_NUM_BATCHED_TOKENS},
+  \"ref_log_prob_micro_batch_size_per_gpu\": ${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU},
   \"opd_diagnostics\": ${OPD_DIAGNOSTICS},
   \"opd_diag_interval\": ${OPD_DIAG_INTERVAL},
   \"opd_diag_topk\": ${OPD_DIAG_TOPK},
@@ -196,6 +210,7 @@ TEST_FREQ='${TEST_FREQ}' \
 VAL_N='${VAL_N}' \
 ROLLOUT_GPU_MEMORY_UTILIZATION='${ROLLOUT_GPU_MEMORY_UTILIZATION}' \
 ROLLOUT_MAX_NUM_BATCHED_TOKENS='${ROLLOUT_MAX_NUM_BATCHED_TOKENS}' \
+REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU='${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU}' \
 TRAINER_LOGGER=\"${TRAINER_LOGGER}\" \
 OPD_DIAGNOSTICS='${OPD_DIAGNOSTICS}' \
 OPD_DIAG_INTERVAL='${OPD_DIAG_INTERVAL}' \

@@ -17,6 +17,9 @@ TOP_P="${TOP_P:-0.9}"
 MAX_TOKENS="${MAX_TOKENS:-16384}"
 GPUS="${GPUS:-0,1,2,3}"
 TASKS="${TASKS:-math500 aime24 aime25 amc23}"
+EVAL_SEED="${EVAL_SEED:-21}"
+GRADER="${GRADER:-verl}"
+ENABLE_THINKING="${ENABLE_THINKING:-false}"
 
 RUN_DIR="${RUN_ROOT}/${VARIANT}"
 CKPT_DIR="${RUN_DIR}/checkpoints/global_step_${STEP}"
@@ -48,6 +51,9 @@ cat > '${EVAL_DIR}/eval_card.json' <<JSON
   \"temperature\": ${TEMPERATURE},
   \"top_p\": ${TOP_P},
   \"max_tokens\": ${MAX_TOKENS},
+  \"eval_seed\": ${EVAL_SEED},
+  \"grader\": \"${GRADER}\",
+  \"enable_thinking\": ${ENABLE_THINKING},
   \"gpus\": \"${GPUS}\",
   \"tasks\": \"${TASKS}\"
 }
@@ -55,6 +61,17 @@ JSON
 cat > '${EVAL_DIR}/command.sh' <<'CMD'
 #!/usr/bin/env bash
 set -euo pipefail
+EVAL_DIR='${EVAL_DIR}'
+rm -f "\${EVAL_DIR}/exit_code.txt" "\${EVAL_DIR}/finished_at.txt"
+date --iso-8601=seconds > "\${EVAL_DIR}/started_at.txt"
+record_exit() {
+  local status=\$?
+  trap - EXIT
+  printf '%s\n' "\${status}" > "\${EVAL_DIR}/exit_code.txt"
+  date --iso-8601=seconds > "\${EVAL_DIR}/finished_at.txt"
+  exit "\${status}"
+}
+trap record_exit EXIT
 export CUDA_VISIBLE_DEVICES='${GPUS}'
 export PATH='${VENV}/bin':"\$PATH"
 export PYTHONPATH='${REMOTE_ROOT}/external/revisiting_opd':"\${PYTHONPATH:-}"
@@ -70,6 +87,10 @@ export OUTLINES_CACHE_DIR='${LOCAL_CACHE_ROOT}/outlines'
 export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 cd '${REMOTE_ROOT}'
+thinking_args=()
+if [[ '${ENABLE_THINKING}' == 'true' ]]; then
+  thinking_args+=(--enable-thinking)
+fi
 if [[ ! -f '${MODEL_DIR}/config.json' ]]; then
   '${VENV}/bin/python' external/revisiting_opd/scripts/model_merger.py merge \
     --backend fsdp \
@@ -86,7 +107,10 @@ fi
   --top-p '${TOP_P}' \
   --max-tokens '${MAX_TOKENS}' \
   --gpus '${GPUS}' \
-  --length-tokenizer-path '${LENGTH_TOKENIZER_PATH}'
+  --eval-seed '${EVAL_SEED}' \
+  --grader '${GRADER}' \
+  --length-tokenizer-path '${LENGTH_TOKENIZER_PATH}' \
+  "\${thinking_args[@]}"
 CMD
 chmod +x '${EVAL_DIR}/command.sh'
 if [[ -f '${EVAL_DIR}/eval.pid' ]] && ps -p \"\$(cat '${EVAL_DIR}/eval.pid')\" >/dev/null 2>&1; then

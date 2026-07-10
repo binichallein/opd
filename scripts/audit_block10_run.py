@@ -35,12 +35,29 @@ def checkpoint_issues(run_dir: Path, step: int) -> list[str]:
 
 
 def eval_issues(run_dir: Path, step: int) -> list[str]:
-    summary_path = run_dir / f"eval_step_{step}_n8" / "outputs" / "summary.json"
+    eval_dir = run_dir / f"eval_step_{step}_n8"
+    summary_path = eval_dir / "outputs" / "summary.json"
     if not summary_path.is_file():
         return [f"step {step}: missing n=8 eval summary"]
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     tasks = summary.get("tasks", {})
     issues = []
+    expected_eval = {
+        "n_expected": 8,
+        "grader": "verl",
+        "eval_seed": 21,
+        "rollout_seeds": list(range(21, 29)),
+        "enable_thinking": False,
+    }
+    for key, expected in expected_eval.items():
+        if summary.get(key) != expected:
+            issues.append(
+                f"step {step}: eval summary {key} expected {expected!r}, "
+                f"got {summary.get(key)!r}"
+            )
+    exit_code_path = eval_dir / "exit_code.txt"
+    if not exit_code_path.is_file() or exit_code_path.read_text().strip() != "0":
+        issues.append(f"step {step}: eval exit_code.txt is missing or nonzero")
     if set(tasks) != EXPECTED_TASKS:
         issues.append(f"step {step}: eval task set is {sorted(tasks)}")
     for task, values in tasks.items():
@@ -77,6 +94,7 @@ def main() -> None:
         "opd_diag_interval": 5,
         "opd_diag_topk": 16,
         "rollout_gpu_memory_utilization": 0.6,
+        "ref_log_prob_micro_batch_size_per_gpu": 1,
         "filter_overlong_prompts": False,
     }
     for key, expected in expected_card.items():
@@ -94,6 +112,9 @@ def main() -> None:
     ):
         if not (run_dir / required).is_file():
             issues.append(f"missing {required}")
+    exit_code_path = run_dir / "exit_code.txt"
+    if not exit_code_path.is_file() or exit_code_path.read_text().strip() != "0":
+        issues.append("training exit_code.txt is missing or nonzero")
     manifest_check = run_dir / "revisiting_opd_manifest_check.txt"
     if manifest_check.is_file():
         manifest_lines = manifest_check.read_text(encoding="utf-8").splitlines()
