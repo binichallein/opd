@@ -34,6 +34,8 @@ SAVE_FREQ="${SAVE_FREQ:-100}"
 TEST_FREQ="${TEST_FREQ:-1000000}"
 VAL_N="${VAL_N:-1}"
 TRAINER_LOGGER="${TRAINER_LOGGER:-['console']}"
+ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.7}"
+ROLLOUT_MAX_NUM_BATCHED_TOKENS="${ROLLOUT_MAX_NUM_BATCHED_TOKENS:-18432}"
 OPD_DIAGNOSTICS="${OPD_DIAGNOSTICS:-false}"
 OPD_DIAG_INTERVAL="${OPD_DIAG_INTERVAL:-5}"
 OPD_DIAG_TOPK="${OPD_DIAG_TOPK:-16}"
@@ -92,7 +94,7 @@ sha256sum \
   hostname
   echo 'python=${VENV}/bin/python'
   '${VENV}/bin/python' --version || true
-  '${VENV}/bin/python' -c 'import torch, transformers, vllm; print("torch=" + torch.__version__); print("transformers=" + transformers.__version__); print("vllm=" + vllm.__version__)' || true
+  '${VENV}/bin/python' -c 'import torch, transformers, vllm; print(\"torch=\" + str(torch.__version__)); print(\"transformers=\" + transformers.__version__); print(\"vllm=\" + vllm.__version__)' || true
   nvidia-smi --query-gpu=index,name,memory.total --format=csv,noheader
 } > '${RUN_DIR}/env.txt'
 cat > '${RUN_DIR}/run_card.json' <<JSON
@@ -123,6 +125,8 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"save_freq\": ${SAVE_FREQ},
   \"test_freq\": ${TEST_FREQ},
   \"val_n\": ${VAL_N},
+  \"rollout_gpu_memory_utilization\": ${ROLLOUT_GPU_MEMORY_UTILIZATION},
+  \"rollout_max_num_batched_tokens\": ${ROLLOUT_MAX_NUM_BATCHED_TOKENS},
   \"opd_diagnostics\": ${OPD_DIAGNOSTICS},
   \"opd_diag_interval\": ${OPD_DIAG_INTERVAL},
   \"opd_diag_topk\": ${OPD_DIAG_TOPK},
@@ -175,6 +179,8 @@ TOTAL_TRAINING_STEPS='${TOTAL_TRAINING_STEPS}' \
 SAVE_FREQ='${SAVE_FREQ}' \
 TEST_FREQ='${TEST_FREQ}' \
 VAL_N='${VAL_N}' \
+ROLLOUT_GPU_MEMORY_UTILIZATION='${ROLLOUT_GPU_MEMORY_UTILIZATION}' \
+ROLLOUT_MAX_NUM_BATCHED_TOKENS='${ROLLOUT_MAX_NUM_BATCHED_TOKENS}' \
 TRAINER_LOGGER=\"${TRAINER_LOGGER}\" \
 OPD_DIAGNOSTICS='${OPD_DIAGNOSTICS}' \
 OPD_DIAG_INTERVAL='${OPD_DIAG_INTERVAL}' \
