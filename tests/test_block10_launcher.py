@@ -30,6 +30,14 @@ def test_block10_diagnostics_use_memory_safe_teacher_micro_batch():
     control = (ROOT / "scripts" / "block10_diagnostics_control.sh").read_text()
     runner = (ROOT / "scripts" / "run_revisiting_sampled_block_opd_math.sh").read_text()
 
-    assert "REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU=1" in control
+    assert 'REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-1}"' in control
+    assert 'REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU}"' in control
     assert 'ref_log_prob_micro_batch_size_per_gpu="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"' in runner
     assert 'actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu="${ref_log_prob_micro_batch_size_per_gpu}"' in runner
+
+
+def test_block10_control_can_target_one_host_for_probe_repair():
+    control = (ROOT / "scripts" / "block10_diagnostics_control.sh").read_text()
+
+    assert 'read -r -a HOSTS <<< "${BLOCK10_HOSTS:-train ml2}"' in control
+    assert 'for host in "${HOSTS[@]}"' in control

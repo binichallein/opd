@@ -8,9 +8,18 @@ DATE_TAG="${DATE_TAG:-20260710}"
 DIAG_STRIDE="${DIAG_STRIDE:-1}"
 ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.6}"
 ROLLOUT_MAX_NUM_BATCHED_TOKENS="${ROLLOUT_MAX_NUM_BATCHED_TOKENS:-18432}"
+REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-1}"
 FILTER_OVERLONG_PROMPTS="${FILTER_OVERLONG_PROMPTS:-false}"
+read -r -a HOSTS <<< "${BLOCK10_HOSTS:-train ml2}"
 SOURCE_COMMIT="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
 SUBMODULE_BASE_COMMIT="$(git -C "${ROOT_DIR}/external/revisiting_opd" rev-parse HEAD)"
+
+for host in "${HOSTS[@]}"; do
+  if [[ "${host}" != "train" && "${host}" != "ml2" ]]; then
+    echo "unsupported host: ${host}" >&2
+    exit 2
+  fi
+done
 
 run_root_for() {
   local host="$1"
@@ -81,7 +90,7 @@ launch_host() {
   VAL_N=1 \
   ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION}" \
   ROLLOUT_MAX_NUM_BATCHED_TOKENS="${ROLLOUT_MAX_NUM_BATCHED_TOKENS}" \
-  REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU=1 \
+  REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU}" \
   OPD_DIAGNOSTICS=true \
   SOURCE_COMMIT="${SOURCE_COMMIT}" \
   SUBMODULE_BASE_COMMIT="${SUBMODULE_BASE_COMMIT}" \
@@ -150,33 +159,36 @@ audit_host() {
   ssh "${host}" "'${venv}/bin/python' '${remote_root}/scripts/audit_block10_run.py' --run-dir '${run_dir}'"
 }
 
+for_selected_hosts() {
+  local function_name="$1"
+  shift
+  local host
+  for host in "${HOSTS[@]}"; do
+    "${function_name}" "${host}" "$@"
+  done
+}
+
 case "${ACTION}" in
   sync)
     bash "${ROOT_DIR}/scripts/sync_block10_diagnostics_to_hosts.sh"
     ;;
   probe1)
-    launch_host train probe 2 1 1 1 1
-    launch_host ml2 probe 2 1 1 1 1
+    for_selected_hosts launch_host probe 2 1 1 1 1
     ;;
   probe2)
-    launch_host train probe 2 1,2 1 1 -1
-    launch_host ml2 probe 2 1,2 1 1 -1
+    for_selected_hosts launch_host probe 2 1,2 1 1 -1
     ;;
   formal)
-    launch_host train formal 200 40,50,60,80,100,200 5 "${DIAG_STRIDE}" -1
-    launch_host ml2 formal 200 40,50,60,80,100,200 5 "${DIAG_STRIDE}" -1
+    for_selected_hosts launch_host formal 200 40,50,60,80,100,200 5 "${DIAG_STRIDE}" -1
     ;;
   status)
-    status_host train
-    status_host ml2
+    for_selected_hosts status_host
     ;;
   eval)
-    eval_host train
-    eval_host ml2
+    for_selected_hosts eval_host
     ;;
   audit)
-    audit_host train
-    audit_host ml2
+    for_selected_hosts audit_host
     ;;
   *)
     echo "usage: $0 {sync|probe1|probe2|formal|status|eval [step]|audit}" >&2
