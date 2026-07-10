@@ -146,6 +146,17 @@ JSON
 cat > '${RUN_DIR}/command.sh' <<'CMD'
 #!/usr/bin/env bash
 set -euo pipefail
+RUN_DIR='${RUN_DIR}'
+rm -f "\${RUN_DIR}/exit_code.txt" "\${RUN_DIR}/finished_at.txt"
+date --iso-8601=seconds > "\${RUN_DIR}/started_at.txt"
+record_exit() {
+  local status=\$?
+  trap - EXIT
+  printf '%s\n' "\${status}" > "\${RUN_DIR}/exit_code.txt"
+  date --iso-8601=seconds > "\${RUN_DIR}/finished_at.txt"
+  exit "\${status}"
+}
+trap record_exit EXIT
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 export TOKENIZERS_PARALLELISM=false
 export PATH='${VENV}/bin':"\$PATH"
