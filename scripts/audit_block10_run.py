@@ -72,6 +72,7 @@ def main() -> None:
         "rollout_seed": 21,
         "environment_seed": 21,
         "total_training_steps": 200,
+        "test_freq": -1,
         "opd_diagnostics": True,
         "opd_diag_interval": 5,
         "opd_diag_topk": 16,
