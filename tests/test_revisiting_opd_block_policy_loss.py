@@ -18,6 +18,7 @@ core_algos = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core_algos)
 aggregate_blockwise_policy_inputs = core_algos.aggregate_blockwise_policy_inputs
 compute_policy_loss_gspo = core_algos.compute_policy_loss_gspo
+compute_policy_loss = core_algos.compute_policy_loss
 validate_block_opd_compatibility = core_algos.validate_block_opd_compatibility
 
 
@@ -138,3 +139,55 @@ def test_full_kl_rejects_block_opd_with_clear_error():
         assert "full/top-k KL" in str(exc)
     else:
         raise AssertionError("full/top-k KL accepted block OPD settings")
+
+
+def test_diagnostic_reads_do_not_change_block10_loss_gradient_or_rng():
+    from opd_ext.diagnostics import (
+        compute_block_credit_diagnostics,
+        compute_block_ratio_diagnostics,
+    )
+
+    old_log_prob = torch.tensor([[-1.0, -1.1, -1.2, -1.3, -1.4]])
+    advantages = torch.tensor([[0.5, -0.2, 0.7, -0.1, 0.3]])
+    response_mask = torch.ones_like(old_log_prob)
+
+    def loss_and_gradient(with_diagnostics: bool):
+        current_log_prob = torch.tensor(
+            [[-0.98, -1.12, -1.18, -1.31, -1.39]], requires_grad=True
+        )
+        rng_before = torch.random.get_rng_state().clone()
+        if with_diagnostics:
+            compute_block_credit_diagnostics(
+                advantages=advantages,
+                response_mask=response_mask,
+                block_size=10,
+            )
+            compute_block_ratio_diagnostics(
+                old_log_prob=old_log_prob,
+                current_log_prob=current_log_prob,
+                response_mask=response_mask,
+                block_size=10,
+                cliprange_low=0.2,
+                cliprange_high=0.2,
+            )
+        rng_after = torch.random.get_rng_state().clone()
+        loss, *_ = compute_policy_loss(
+            old_log_prob=old_log_prob,
+            log_prob=current_log_prob,
+            advantages=advantages,
+            response_mask=response_mask,
+            cliprange=0.2,
+            cliprange_low=0.2,
+            cliprange_high=0.2,
+            opd_block_size=10,
+            opd_block_advantage_mode="mean",
+        )
+        loss.backward()
+        return loss.detach(), current_log_prob.grad.detach(), rng_before, rng_after
+
+    baseline_loss, baseline_grad, _, _ = loss_and_gradient(False)
+    diagnostic_loss, diagnostic_grad, rng_before, rng_after = loss_and_gradient(True)
+
+    torch.testing.assert_close(diagnostic_loss, baseline_loss)
+    torch.testing.assert_close(diagnostic_grad, baseline_grad)
+    assert torch.equal(rng_before, rng_after)

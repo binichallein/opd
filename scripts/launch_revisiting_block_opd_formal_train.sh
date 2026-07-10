@@ -8,6 +8,8 @@ VARIANT="${VARIANT:-token_opd}"
 VENV="${VENV:-/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/venv}"
 HF_HOME_DIR="${HF_HOME_DIR:-/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/hf_home}"
 LOCAL_CACHE_ROOT="${LOCAL_CACHE_ROOT:-/tmp/opd_block3_dapo17k}"
+SOURCE_COMMIT="${SOURCE_COMMIT:-unknown}"
+SUBMODULE_BASE_COMMIT="${SUBMODULE_BASE_COMMIT:-f32f284f25bae5b16d2d44ee336b52851dccc736}"
 
 PROJECT_NAME="${PROJECT_NAME:-opd_block3_dapo17k}"
 EXP_NAME="${EXP_NAME:-${VARIANT}-qwen3-dapo17k-paper}"
@@ -32,10 +34,18 @@ SAVE_FREQ="${SAVE_FREQ:-100}"
 TEST_FREQ="${TEST_FREQ:-1000000}"
 VAL_N="${VAL_N:-1}"
 TRAINER_LOGGER="${TRAINER_LOGGER:-['console']}"
+OPD_DIAGNOSTICS="${OPD_DIAGNOSTICS:-false}"
+OPD_DIAG_INTERVAL="${OPD_DIAG_INTERVAL:-5}"
+OPD_DIAG_TOPK="${OPD_DIAG_TOPK:-16}"
+OPD_DIAG_POSITION_BIN="${OPD_DIAG_POSITION_BIN:-128}"
+OPD_DIAG_POSITION_STRIDE="${OPD_DIAG_POSITION_STRIDE:-1}"
+OPD_DIAG_SIGN_EPS="${OPD_DIAG_SIGN_EPS:-1e-4}"
+DIAGNOSTIC_SAVE_STEPS="${DIAGNOSTIC_SAVE_STEPS:-40,50,60,80,100,200}"
 
 RUN_DIR="${RUN_ROOT}/${VARIANT}"
 CKPTS_DIR="${RUN_DIR}/checkpoints"
 LOG_DIR="${RUN_DIR}/logs"
+OPD_DIAG_OUTPUT_DIR="${OPD_DIAG_OUTPUT_DIR:-${RUN_DIR}/diagnostics}"
 
 ssh "${REMOTE}" "set -euo pipefail
 test -d '${REMOTE_ROOT}'
@@ -45,27 +55,51 @@ test -d '${MATH_TEACHER}'
 test -x '${VENV}/bin/python'
 test -f '${TRAIN_DATA}'
 test -f '${VAL_DATA}'
+test "\$(cat '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT')" = '${SUBMODULE_BASE_COMMIT}'
+if git -C '${REMOTE_ROOT}' rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  bash '${REMOTE_ROOT}/scripts/setup_revisiting_opd.sh' >/dev/null
+fi
 mkdir -p '${RUN_DIR}' '${CKPTS_DIR}' '${LOG_DIR}' '${RUN_DIR}/summaries' \
   '${LOCAL_CACHE_ROOT}/tmp' '${LOCAL_CACHE_ROOT}/vllm_cache' \
   '${LOCAL_CACHE_ROOT}/torchinductor' '${LOCAL_CACHE_ROOT}/triton' \
   '${LOCAL_CACHE_ROOT}/cuda_cache' '${LOCAL_CACHE_ROOT}/outlines'
+(cd '${REMOTE_ROOT}/external/revisiting_opd' && \
+  sha256sum -c '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256') \
+  > '${RUN_DIR}/revisiting_opd_manifest_check.txt'
 cp '${DATA_DIR}/manifest.json' '${RUN_DIR}/data_manifest.json'
 sha256sum \
+  '${REMOTE_ROOT}/scripts/launch_revisiting_block_opd_formal_train.sh' \
   '${REMOTE_ROOT}/scripts/run_revisiting_sampled_block_opd_math.sh' \
+  '${REMOTE_ROOT}/scripts/setup_revisiting_opd.sh' \
+  '${REMOTE_ROOT}/patches/revisiting_opd/blockwise_sampled_opd.patch' \
+  '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT' \
+  '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256' \
+  '${REMOTE_ROOT}/opd_ext/diagnostics.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/ppo/core_algos.py' \
+  '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/ppo/ray_trainer_multitask.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/actor/dp_actor.py' \
+  '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/fsdp_workers.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/config/ppo_trainer.yaml' \
   > '${RUN_DIR}/script_hashes.sha256'
 {
+  sha256sum '${TRAIN_DATA}' '${VAL_DATA}'
+  find '${STUDENT_MODEL}' '${MATH_TEACHER}' -maxdepth 1 -type f \
+    \( -name '*.safetensors' -o -name '*.bin' -o -name '*.json' -o -name '*.jinja' -o -name '*.txt' \) \
+    -print0 | sort -z | xargs -0 sha256sum
+} > '${RUN_DIR}/artifact_hashes.sha256'
+{
   date
   hostname
-  which python || true
-  python --version || true
+  echo 'python=${VENV}/bin/python'
+  '${VENV}/bin/python' --version || true
+  '${VENV}/bin/python' -c 'import torch, transformers, vllm; print("torch=" + torch.__version__); print("transformers=" + transformers.__version__); print("vllm=" + vllm.__version__)' || true
   nvidia-smi --query-gpu=index,name,memory.total --format=csv,noheader
 } > '${RUN_DIR}/env.txt'
 cat > '${RUN_DIR}/run_card.json' <<JSON
 {
   \"variant\": \"${VARIANT}\",
+  \"source_commit\": \"${SOURCE_COMMIT}\",
+  \"revisiting_opd_base_commit\": \"${SUBMODULE_BASE_COMMIT}\",
   \"project_name\": \"${PROJECT_NAME}\",
   \"experiment_name\": \"${EXP_NAME}\",
   \"student_model\": \"${STUDENT_MODEL}\",
@@ -74,6 +108,9 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"train_data\": \"${TRAIN_DATA}\",
   \"val_data\": \"${VAL_DATA}\",
   \"seed\": ${ENV_SEED},
+  \"data_seed\": ${ENV_SEED},
+  \"rollout_seed\": ${ENV_SEED},
+  \"environment_seed\": ${ENV_SEED},
   \"n_gpus_per_node\": ${N_GPUS_PER_NODE},
   \"ray_num_cpus\": ${RAY_NUM_CPUS},
   \"train_batch_size\": ${TRAIN_BATCH_SIZE},
@@ -86,7 +123,15 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"save_freq\": ${SAVE_FREQ},
   \"test_freq\": ${TEST_FREQ},
   \"val_n\": ${VAL_N},
-  \"checkpoint_policy\": \"preserve all saved checkpoints; no save_total_limit; save every 100 steps and final step\",
+  \"opd_diagnostics\": ${OPD_DIAGNOSTICS},
+  \"opd_diag_interval\": ${OPD_DIAG_INTERVAL},
+  \"opd_diag_topk\": ${OPD_DIAG_TOPK},
+  \"opd_diag_position_bin\": ${OPD_DIAG_POSITION_BIN},
+  \"opd_diag_position_stride\": ${OPD_DIAG_POSITION_STRIDE},
+  \"opd_diag_sign_epsilon\": ${OPD_DIAG_SIGN_EPS},
+  \"diagnostic_save_steps\": \"${DIAGNOSTIC_SAVE_STEPS}\",
+  \"diagnostic_output_dir\": \"${OPD_DIAG_OUTPUT_DIR}\",
+  \"checkpoint_policy\": \"preserve all milestone checkpoints; no automatic deletion\",
   \"baseline_alignment\": \"Blockwise/Rethinking-aligned Qwen3-1.7B-Base student, Qwen3-4B-Base-GRPO teacher, and raw 1,791,700-row DAPO-Math-17K pool; Revisiting OPD is codebase only\"
 }
 JSON
@@ -131,6 +176,14 @@ SAVE_FREQ='${SAVE_FREQ}' \
 TEST_FREQ='${TEST_FREQ}' \
 VAL_N='${VAL_N}' \
 TRAINER_LOGGER=\"${TRAINER_LOGGER}\" \
+OPD_DIAGNOSTICS='${OPD_DIAGNOSTICS}' \
+OPD_DIAG_INTERVAL='${OPD_DIAG_INTERVAL}' \
+OPD_DIAG_TOPK='${OPD_DIAG_TOPK}' \
+OPD_DIAG_POSITION_BIN='${OPD_DIAG_POSITION_BIN}' \
+OPD_DIAG_POSITION_STRIDE='${OPD_DIAG_POSITION_STRIDE}' \
+OPD_DIAG_SIGN_EPS='${OPD_DIAG_SIGN_EPS}' \
+DIAGNOSTIC_SAVE_STEPS='${DIAGNOSTIC_SAVE_STEPS}' \
+OPD_DIAG_OUTPUT_DIR='${OPD_DIAG_OUTPUT_DIR}' \
 bash scripts/run_revisiting_sampled_block_opd_math.sh
 CMD
 chmod +x '${RUN_DIR}/command.sh'

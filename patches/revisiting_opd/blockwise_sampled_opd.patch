@@ -13,13 +13,13 @@ index dcff326..ffb216f 100644
      invalid_action_penalty_coef: 0.1
      use_kl_loss: False # True for GRPO
 diff --git a/verl/trainer/ppo/core_algos.py b/verl/trainer/ppo/core_algos.py
-index f754f25..8c4492e 100644
+index f754f25..861eda5 100644
 --- a/verl/trainer/ppo/core_algos.py
 +++ b/verl/trainer/ppo/core_algos.py
 @@ -428,6 +428,98 @@ def agg_loss(loss_mat: torch.Tensor, loss_mask: torch.Tensor, loss_agg_mode: str
      return loss
-
-
+ 
+ 
 +def _pad_last_dim_to_multiple(tensor: torch.Tensor, multiple: int, value: float = 0.0) -> torch.Tensor:
 +    """Right-pad the last dimension so it can be reshaped into fixed-size blocks."""
 +    if multiple <= 1:
@@ -128,7 +128,7 @@ index f754f25..8c4492e 100644
 @@ -469,6 +564,16 @@ def compute_policy_loss(
      """
      assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
-
+ 
 +    old_log_prob, log_prob, advantages, response_mask = aggregate_blockwise_policy_inputs(
 +        old_log_prob=old_log_prob,
 +        log_prob=log_prob,
@@ -154,7 +154,7 @@ index f754f25..8c4492e 100644
      Compute the clipped policy objective and related metrics for GSPO.
 @@ -522,6 +630,11 @@ def compute_policy_loss_gspo(
      """
-
+ 
      assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
 +    validate_block_opd_compatibility(
 +        block_size=opd_block_size,
@@ -164,8 +164,367 @@ index f754f25..8c4492e 100644
      if cliprange_low is None:
          cliprange_low = cliprange
      if cliprange_high is None:
+diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
+index cbf1a4f..9f4552b 100644
+--- a/verl/trainer/ppo/ray_trainer_multitask.py
++++ b/verl/trainer/ppo/ray_trainer_multitask.py
+@@ -23,6 +23,7 @@ This trainer supports model-agonistic model initialization with huggingface
+ 
+ import json
+ import os
++from pathlib import Path
+ import uuid
+ from collections import defaultdict
+ from contextlib import contextmanager
+@@ -65,6 +66,20 @@ from verl.utils.tracking import ValidationGenerationsLogger
+ from verl.workers.rollout.async_server import AsyncLLMServerManager
+ from gigpo import core_gigpo
+ 
++from opd_ext.diagnostics import (
++    compute_block_credit_diagnostics,
++    compute_block_ratio_diagnostics,
++    compute_entropy_diagnostics,
++    compute_masked_summary,
++    compute_position_statistics,
++    compute_topk_alignment_diagnostics,
++    parse_milestone_steps,
++    save_diagnostic_snapshot,
++    scatter_position_statistics,
++    should_run_diagnostics,
++    should_save_checkpoint,
++)
++
+ from agent_system.multi_turn_rollout import TrajectoryCollector, adjust_batch
+ 
+ WorkerType = Type[Worker]
+@@ -1225,6 +1240,120 @@ class RayPPOTrainer:
+         global_balance_stats = log_seqlen_unbalance(seqlen_list=global_seqlen_lst, partitions=global_partition_lst, prefix=logging_prefix)
+         metrics.update(global_balance_stats)
+ 
++    def _build_opd_diagnostic_snapshot(
++        self,
++        batch: DataProto,
++        student_entropy: torch.Tensor,
++        actor_diagnostics: DataProto,
++        teacher_diagnostics: DataProto,
++        diagnostic_config,
++    ) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
++        """Build scalar and position summaries without retaining diagnostic logits."""
++        response_mask = batch.batch["response_mask"].bool()
++        advantages = batch.batch["advantages"]
++        response_length = response_mask.size(1)
++        block_size = int(self.config.actor_rollout_ref.actor.get("opd_block_size", 1))
++        sign_epsilon = float(diagnostic_config.get("sign_epsilon", 1e-4))
++
++        actor_positions = actor_diagnostics.batch["diagnostic_topk_positions"]
++        teacher_positions = teacher_diagnostics.batch["diagnostic_topk_positions"]
++        positions = actor_positions[0].to(torch.long)
++        if not torch.all(actor_positions == positions.unsqueeze(0)):
++            raise RuntimeError("actor diagnostic positions differ within the batch")
++        if not torch.all(teacher_positions == positions.unsqueeze(0)):
++            raise RuntimeError("teacher diagnostic positions differ from actor positions")
++
++        selected_mask = response_mask.index_select(1, positions)
++        alignment = compute_topk_alignment_diagnostics(
++            student_topk_ids=actor_diagnostics.batch["teacher_topk_indices"],
++            student_topk_log_probs=actor_diagnostics.batch["teacher_topk_log_probs"],
++            teacher_topk_ids=teacher_diagnostics.batch["teacher_topk_indices"],
++            teacher_topk_log_probs=teacher_diagnostics.batch["teacher_topk_log_probs"],
++            response_mask=selected_mask,
++        )
++        teacher_entropy = teacher_diagnostics.batch["teacher_entropy"]
++        entropy = compute_entropy_diagnostics(student_entropy, teacher_entropy, response_mask)
++        credit = compute_block_credit_diagnostics(
++            advantages=advantages,
++            response_mask=response_mask,
++            block_size=block_size,
++            sign_epsilon=sign_epsilon,
++        )
++        raw_advantage_summary = compute_masked_summary(advantages, response_mask)
++        block_advantage_summary = compute_masked_summary(
++            credit["block_advantage_per_token"], response_mask
++        )
++        student_entropy_summary = compute_masked_summary(student_entropy, response_mask)
++        teacher_entropy_summary = compute_masked_summary(teacher_entropy, response_mask)
++
++        def masked_metric_mean(values: torch.Tensor, mask: torch.Tensor) -> float:
++            summary = compute_masked_summary(values, mask)
++            return float(summary["mean"].item())
++
++        scalars = {
++            "diagnostics/student_entropy": float(entropy["student_mean"].item()),
++            "diagnostics/teacher_entropy": float(entropy["teacher_mean"].item()),
++            "diagnostics/entropy_gap_signed": float(entropy["signed_gap_mean"].item()),
++            "diagnostics/entropy_gap_absolute": float(entropy["absolute_gap_mean"].item()),
++            "diagnostics/topk_overlap_ratio": masked_metric_mean(
++                alignment["overlap_ratio"], selected_mask
++            ),
++            "diagnostics/student_overlap_mass": masked_metric_mean(
++                alignment["student_overlap_mass"], selected_mask
++            ),
++            "diagnostics/teacher_overlap_mass": masked_metric_mean(
++                alignment["teacher_overlap_mass"], selected_mask
++            ),
++            "diagnostics/overlap_token_advantage": masked_metric_mean(
++                alignment["overlap_token_advantage"], alignment["overlap_valid_mask"]
++            ),
++            "diagnostics/sign_flip_rate": float(credit["sign_flip_rate"].item()),
++            "diagnostics/weighted_sign_flip_rate": float(
++                credit["weighted_sign_flip_rate"].item()
++            ),
++            "diagnostics/leakage_magnitude": float(credit["leakage_magnitude"].item()),
++            "diagnostics/normalized_leakage": float(credit["normalized_leakage"].item()),
++            "diagnostics/student_entropy_nonfinite_count": float(
++                student_entropy_summary["nonfinite_count"].item()
++            ),
++            "diagnostics/teacher_entropy_nonfinite_count": float(
++                teacher_entropy_summary["nonfinite_count"].item()
++            ),
++        }
++        for prefix, summary in (
++            ("raw_token_advantage", raw_advantage_summary),
++            ("block_advantage", block_advantage_summary),
++        ):
++            for statistic in ("mean", "std", "p95", "max", "nonfinite_count"):
++                scalars[f"diagnostics/{prefix}_{statistic}"] = float(summary[statistic].item())
++
++        positions_numpy = positions.cpu().numpy()
++        position_stats = {
++            "student_entropy": compute_position_statistics(student_entropy, response_mask),
++            "teacher_entropy": compute_position_statistics(teacher_entropy, response_mask),
++            "entropy_gap_signed": compute_position_statistics(entropy["signed_gap"], response_mask),
++            "entropy_gap_absolute": compute_position_statistics(
++                entropy["absolute_gap"], response_mask
++            ),
++            "sign_flip": compute_position_statistics(
++                credit["sign_flip_mask"].to(torch.float32), credit["eligible_mask"]
++            ),
++            "leakage": compute_position_statistics(credit["leakage_per_token"], response_mask),
++        }
++        for metric_name, metric_mask in (
++            ("overlap_ratio", selected_mask),
++            ("student_overlap_mass", selected_mask),
++            ("teacher_overlap_mass", selected_mask),
++            ("overlap_token_advantage", alignment["overlap_valid_mask"]),
++        ):
++            sampled_stats = compute_position_statistics(alignment[metric_name], metric_mask)
++            position_stats[metric_name] = scatter_position_statistics(
++                sampled_stats,
++                positions=positions_numpy,
++                output_length=response_length,
++            )
++        return scalars, position_stats
++
+     def fit(self):
+         """
+         The training loop of PPO.
+@@ -1242,6 +1371,9 @@ class RayPPOTrainer:
+             default_backend=self.config.trainer.logger,
+             config=OmegaConf.to_container(self.config, resolve=True),
+         )
++        checkpoint_milestones = parse_milestone_steps(
++            self.config.trainer.get("checkpoint_milestones", "")
++        )
+ 
+         self.global_steps = 0
+ 
+@@ -1269,6 +1401,14 @@ class RayPPOTrainer:
+             for batch_dict in self.train_dataloader:
+                 metrics = {}
+                 timing_raw = {}
++                diagnostic_config = self.config.algorithm.get("opd_diagnostics", {})
++                run_opd_diagnostics = should_run_diagnostics(
++                    global_step=self.global_steps,
++                    enabled=bool(diagnostic_config.get("enabled", False)),
++                    interval=int(diagnostic_config.get("interval", 5)),
++                )
++                diagnostic_forward = None
++                diagnostic_snapshot = None
+                 batch: DataProto = DataProto.from_single_dict(batch_dict)
+ 
+                 # pop those keys for generation
+@@ -1481,6 +1621,27 @@ class RayPPOTrainer:
+                                     else:
+                                         ref_log_prob = self.actor_rollout_wg.compute_ref_log_prob(batch)
+                             batch = batch.union(ref_log_prob)
++
++                        if run_opd_diagnostics:
++                            with _timer("opd_diagnostics_forward", timing_raw):
++                                batch.meta_info["topk_k"] = int(diagnostic_config.get("topk", 16))
++                                batch.meta_info["diagnostic_position_stride"] = int(
++                                    diagnostic_config.get("position_stride", 1)
++                                )
++                                batch.meta_info["diagnostic_calculate_entropy"] = False
++                                actor_diagnostics = self.actor_rollout_wg.compute_log_prob_with_topk(
++                                    batch
++                                )
++                                batch.meta_info["diagnostic_calculate_entropy"] = True
++                                if not self.ref_in_actor:
++                                    teacher_diagnostics = (
++                                        self.ref_policy_wg.compute_ref_log_prob_with_topk(batch)
++                                    )
++                                else:
++                                    teacher_diagnostics = (
++                                        self.actor_rollout_wg.compute_ref_log_prob_with_topk(batch)
++                                    )
++                                diagnostic_forward = (actor_diagnostics, teacher_diagnostics)
+                         
+                         # Compute student's log probs for teacher's top-k indices if using OPD topk
+                         if use_opd_topk and "teacher_topk_indices" in batch.batch:
+@@ -1606,6 +1767,19 @@ class RayPPOTrainer:
+                                 clip_log_ratio=self.config.actor_rollout_ref.actor.get("clip_log_ratio", False), # this config is not that naturally related to OPD, but we keep it here for compatibility
+                             )
+ 
++                        if run_opd_diagnostics:
++                            if diagnostic_forward is None:
++                                raise RuntimeError("OPD diagnostics were scheduled but forward data is missing")
++                            with _timer("opd_diagnostics_aggregate", timing_raw):
++                                diagnostic_snapshot = self._build_opd_diagnostic_snapshot(
++                                    batch=batch,
++                                    student_entropy=entropys,
++                                    actor_diagnostics=diagnostic_forward[0],
++                                    teacher_diagnostics=diagnostic_forward[1],
++                                    diagnostic_config=diagnostic_config,
++                                )
++                                metrics.update(diagnostic_snapshot[0])
++
+                         if self.config.trainer.get("rollout_data_dir", None):
+                             self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
+ 
+@@ -1625,6 +1799,67 @@ class RayPPOTrainer:
+                         actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
+                         metrics.update(actor_output_metrics)
+ 
++                        if run_opd_diagnostics:
++                            with _timer("opd_diagnostics_post_update", timing_raw):
++                                post_update_output = self.actor_rollout_wg.compute_log_prob(batch)
++                                block_ratio = compute_block_ratio_diagnostics(
++                                    old_log_prob=batch.batch["old_log_probs"],
++                                    current_log_prob=post_update_output.batch["old_log_probs"],
++                                    response_mask=batch.batch["response_mask"],
++                                    block_size=int(
++                                        self.config.actor_rollout_ref.actor.get("opd_block_size", 1)
++                                    ),
++                                    cliprange_low=float(
++                                        self.config.actor_rollout_ref.actor.get(
++                                            "clip_ratio_low",
++                                            self.config.actor_rollout_ref.actor.clip_ratio,
++                                        )
++                                        or self.config.actor_rollout_ref.actor.clip_ratio
++                                    ),
++                                    cliprange_high=float(
++                                        self.config.actor_rollout_ref.actor.get(
++                                            "clip_ratio_high",
++                                            self.config.actor_rollout_ref.actor.clip_ratio,
++                                        )
++                                        or self.config.actor_rollout_ref.actor.clip_ratio
++                                    ),
++                                )
++                                post_update_ratio_metrics = {
++                                    "diagnostics/block_log_ratio_abs_mean": float(
++                                        block_ratio["log_ratio_abs_mean"].item()
++                                    ),
++                                    "diagnostics/block_log_ratio_abs_p95": float(
++                                        block_ratio["log_ratio_abs_p95"].item()
++                                    ),
++                                    "diagnostics/block_log_ratio_abs_max": float(
++                                        block_ratio["log_ratio_abs_max"].item()
++                                    ),
++                                    "diagnostics/block_ratio_p95": float(
++                                        block_ratio["ratio_p95"].item()
++                                    ),
++                                    "diagnostics/block_ratio_max": float(
++                                        block_ratio["ratio_max"].item()
++                                    ),
++                                    "diagnostics/block_ratio_clip_fraction": float(
++                                        block_ratio["clip_fraction"].item()
++                                    ),
++                                    "diagnostics/block_ratio_overflow_count": float(
++                                        block_ratio["overflow_count"].item()
++                                    ),
++                                    "diagnostics/block_ratio_underflow_count": float(
++                                        block_ratio["underflow_count"].item()
++                                    ),
++                                    "diagnostics/block_ratio_nonfinite_count": float(
++                                        block_ratio["nonfinite_count"].item()
++                                    ),
++                                }
++                                metrics.update(post_update_ratio_metrics)
++                                if diagnostic_snapshot is None:
++                                    raise RuntimeError(
++                                        "post-update OPD diagnostics require a pre-update snapshot"
++                                    )
++                                diagnostic_snapshot[0].update(post_update_ratio_metrics)
++
+                     # Log rollout generations if enabled
+                     rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
+                     if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
+@@ -1638,7 +1873,15 @@ class RayPPOTrainer:
+                                 last_val_metrics = val_metrics
+                         metrics.update(val_metrics)
+ 
+-                    if self.config.trainer.save_freq > 0 and (is_last_step or self.global_steps % self.config.trainer.save_freq == 0):
++                    periodic_save = (
++                        self.config.trainer.save_freq > 0
++                        and self.global_steps % self.config.trainer.save_freq == 0
++                    )
++                    if periodic_save or should_save_checkpoint(
++                        global_step=self.global_steps,
++                        is_last_step=is_last_step,
++                        milestone_steps=checkpoint_milestones,
++                    ):
+                         with _timer("save_checkpoint", timing_raw):
+                             self._save_checkpoint()
+ 
+@@ -1656,6 +1899,46 @@ class RayPPOTrainer:
+                 n_gpus = self.resource_pool_manager.get_n_gpus()
+                 metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
+ 
++                if diagnostic_snapshot is not None:
++                    diagnostic_scalars, diagnostic_position_stats = diagnostic_snapshot
++                    for key, value in metrics.items():
++                        if key in {
++                                "actor/grad_norm",
++                                "actor/pg_loss",
++                                "actor/pg_clipfrac",
++                                "response_length/mean",
++                                "response_length/max",
++                                "response_length/clip_ratio",
++                            }:
++                            diagnostic_scalars[key] = float(value)
++                    diagnostic_dir = Path(
++                        self.config.trainer.get(
++                            "opd_diagnostic_dir",
++                            os.path.join(
++                                self.config.trainer.default_local_dir,
++                                "..",
++                                "diagnostics",
++                            ),
++                        )
++                    )
++                    save_diagnostic_snapshot(
++                        output_dir=diagnostic_dir,
++                        step=self.global_steps,
++                        scalars=diagnostic_scalars,
++                        position_stats=diagnostic_position_stats,
++                        metadata={
++                            "topk": int(diagnostic_config.get("topk", 16)),
++                            "position_stride": int(
++                                diagnostic_config.get("position_stride", 1)
++                            ),
++                            "position_bin": int(diagnostic_config.get("position_bin", 128)),
++                            "sign_epsilon": float(
++                                diagnostic_config.get("sign_epsilon", 1e-4)
++                            ),
++                            "block_ratio_definition": "post_update_policy_vs_behavior_policy",
++                        },
++                    )
++
+                 # TODO: make a canonical logger that supports various backend
+                 logger.log(data=metrics, step=self.global_steps)
+ 
 diff --git a/verl/workers/actor/dp_actor.py b/verl/workers/actor/dp_actor.py
-index 5d6bab1..58e411a 100644
+index 5d6bab1..b4b67d7 100644
 --- a/verl/workers/actor/dp_actor.py
 +++ b/verl/workers/actor/dp_actor.py
 @@ -31,7 +31,7 @@ import verl.utils.torch_functional as verl_F
@@ -177,7 +536,255 @@ index 5d6bab1..58e411a 100644
  )
  from verl.utils.debug import GPUMemoryLogger
  from verl.utils.device import get_device_name, get_torch_device, is_cuda_available, is_npu_available
-@@ -1276,6 +1276,14 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -793,6 +793,10 @@ class DataParallelPPOActor(BasePPOActor):
+         micro_batch_size = data.meta_info["micro_batch_size"]
+         temperature = data.meta_info["temperature"]
+         use_dynamic_bsz = data.meta_info["use_dynamic_bsz"]
++        position_stride = int(data.meta_info.get("diagnostic_position_stride", 1))
++        calculate_entropy = bool(data.meta_info.get("diagnostic_calculate_entropy", False))
++        if position_stride < 1:
++            raise ValueError("diagnostic_position_stride must be positive")
+         
+         select_keys = ["responses", "input_ids", "attention_mask", "position_ids"]
+         batch = data.select(batch_keys=select_keys).batch
+@@ -811,22 +815,35 @@ class DataParallelPPOActor(BasePPOActor):
+         log_probs_lst = []
+         topk_indices_lst = []
+         topk_log_probs_lst = []
++        entropy_lst = []
++        topk_positions = None
+         
+         for micro_batch in micro_batches:
+             if isinstance(micro_batch, DataProto):
+                 micro_batch = {**micro_batch.batch, **micro_batch.non_tensor_batch}
+             with torch.no_grad():
+                 # Run forward with topk extraction
+-                log_probs, topk_indices, topk_log_probs = self._forward_micro_batch_with_topk(
+-                    micro_batch, temperature=temperature, topk_k=topk_k
++                log_probs, topk_indices, topk_log_probs, entropy, positions = self._forward_micro_batch_with_topk(
++                    micro_batch,
++                    temperature=temperature,
++                    topk_k=topk_k,
++                    position_stride=position_stride,
++                    calculate_entropy=calculate_entropy,
+                 )
+             log_probs_lst.append(log_probs)
+             topk_indices_lst.append(topk_indices)
+             topk_log_probs_lst.append(topk_log_probs)
++            if calculate_entropy:
++                entropy_lst.append(entropy)
++            if topk_positions is None:
++                topk_positions = positions
++            elif not torch.equal(topk_positions, positions):
++                raise RuntimeError("diagnostic top-k positions changed across micro-batches")
+         
+         log_probs = torch.concat(log_probs_lst, dim=0)
+         topk_indices = torch.concat(topk_indices_lst, dim=0)
+         topk_log_probs = torch.concat(topk_log_probs_lst, dim=0)
++        entropys = torch.concat(entropy_lst, dim=0) if calculate_entropy else None
+         
+         if use_dynamic_bsz:
+             indices = list(itertools.chain.from_iterable(indices))
+@@ -834,14 +851,25 @@ class DataParallelPPOActor(BasePPOActor):
+             log_probs = log_probs[revert_indices]
+             topk_indices = topk_indices[revert_indices]
+             topk_log_probs = topk_log_probs[revert_indices]
++            if calculate_entropy:
++                entropys = entropys[revert_indices]
+         
+         return {
+             "log_probs": log_probs,
+             "topk_indices": topk_indices,
+             "topk_log_probs": topk_log_probs,
++            "topk_positions": topk_positions,
++            "entropys": entropys,
+         }
+ 
+-    def _forward_micro_batch_with_topk(self, micro_batch, temperature, topk_k=50):
++    def _forward_micro_batch_with_topk(
++        self,
++        micro_batch,
++        temperature,
++        topk_k=50,
++        position_stride=1,
++        calculate_entropy=False,
++    ):
+         """Forward pass that returns log probs for selected tokens AND top-k info.
+         
+         Follows the same rmpad pattern as _forward_micro_batch for memory efficiency.
+@@ -849,6 +877,13 @@ class DataParallelPPOActor(BasePPOActor):
+         from verl.utils.torch_functional import topk_logprobs_from_logits, logprobs_from_logits
+         
+         response_length = micro_batch["responses"].size(-1)
++        topk_positions = torch.arange(
++            0,
++            response_length,
++            position_stride,
++            device=micro_batch["responses"].device,
++            dtype=torch.long,
++        )
+         multi_modal_inputs = {}
+         if "multi_modal_inputs" in micro_batch:
+             for key in micro_batch["multi_modal_inputs"][0].keys():
+@@ -917,10 +952,49 @@ class DataParallelPPOActor(BasePPOActor):
+                     inplace_backward=False,  # Can't use inplace since we need logits for top-k
+                 )
+ 
+-                # Compute top-k indices and log probs from rmpad logits
+-                topk_indices_rmpad, topk_log_probs_rmpad = topk_logprobs_from_logits(logits_rmpad, k=topk_k)
+-                # topk_indices_rmpad: (total_nnz, k)
+-                # topk_log_probs_rmpad: (total_nnz, k)
++                entropy_rmpad = None
++                if calculate_entropy:
++                    entropy_rmpad = self.compute_entropy_from_logits(logits_rmpad)
++
++                if self.use_ulysses_sp or position_stride == 1:
++                    # The SP path gathers before selecting response positions.
++                    topk_indices_rmpad, topk_log_probs_rmpad = topk_logprobs_from_logits(
++                        logits_rmpad, k=topk_k
++                    )
++                else:
++                    inverse_indices = torch.full(
++                        (batch_size * seqlen,),
++                        -1,
++                        dtype=torch.long,
++                        device=logits_rmpad.device,
++                    )
++                    inverse_indices[indices] = torch.arange(
++                        indices.numel(), device=logits_rmpad.device
++                    )
++                    predictor_positions = seqlen - response_length - 1 + topk_positions
++                    flat_predictor_positions = (
++                        torch.arange(batch_size, device=logits_rmpad.device).unsqueeze(-1) * seqlen
++                        + predictor_positions.unsqueeze(0)
++                    )
++                    rmpad_positions = inverse_indices[flat_predictor_positions]
++                    valid_topk_positions = rmpad_positions >= 0
++                    safe_rmpad_positions = rmpad_positions.clamp(min=0)
++                    selected_logits = logits_rmpad[safe_rmpad_positions.reshape(-1)].reshape(
++                        batch_size, topk_positions.numel(), -1
++                    )
++                    topk_indices, topk_log_probs = topk_logprobs_from_logits(
++                        selected_logits, k=topk_k
++                    )
++                    topk_indices = torch.where(
++                        valid_topk_positions.unsqueeze(-1),
++                        topk_indices,
++                        torch.zeros_like(topk_indices),
++                    )
++                    topk_log_probs = torch.where(
++                        valid_topk_positions.unsqueeze(-1),
++                        topk_log_probs,
++                        torch.full_like(topk_log_probs, float("-inf")),
++                    )
+ 
+                 # Gather if using ulysses sp
+                 if self.use_ulysses_sp:
+@@ -928,6 +1002,13 @@ class DataParallelPPOActor(BasePPOActor):
+                     # Gather top-k results
+                     topk_indices_rmpad = gather_outpus_and_unpad(topk_indices_rmpad, gather_dim=0, unpad_dim=0, padding_size=pad_size)
+                     topk_log_probs_rmpad = gather_outpus_and_unpad(topk_log_probs_rmpad, gather_dim=0, unpad_dim=0, padding_size=pad_size)
++                    if calculate_entropy:
++                        entropy_rmpad = gather_outpus_and_unpad(
++                            entropy_rmpad,
++                            gather_dim=0,
++                            unpad_dim=0,
++                            padding_size=pad_size,
++                        )
+ 
+                 # Pad back to (bsz, seqlen)
+                 full_log_probs = pad_input(
+@@ -937,25 +1018,41 @@ class DataParallelPPOActor(BasePPOActor):
+                     seqlen=seqlen,
+                 )
+ 
+-                # Pad back top-k results: need to handle (total_nnz, k) -> (bsz, seqlen, k)
+-                full_topk_indices = pad_input(
+-                    hidden_states=topk_indices_rmpad,  # (total_nnz, k)
+-                    indices=indices,
+-                    batch=batch_size,
+-                    seqlen=seqlen,
+-                )  # (bsz, seqlen, k)
++                if calculate_entropy:
++                    full_entropy = pad_input(
++                        hidden_states=entropy_rmpad.unsqueeze(-1),
++                        indices=indices,
++                        batch=batch_size,
++                        seqlen=seqlen,
++                    )
+ 
+-                full_topk_log_probs = pad_input(
+-                    hidden_states=topk_log_probs_rmpad,  # (total_nnz, k)
+-                    indices=indices,
+-                    batch=batch_size,
+-                    seqlen=seqlen,
+-                )  # (bsz, seqlen, k)
++                if self.use_ulysses_sp or position_stride == 1:
++                    full_topk_indices = pad_input(
++                        hidden_states=topk_indices_rmpad,
++                        indices=indices,
++                        batch=batch_size,
++                        seqlen=seqlen,
++                    )
++                    full_topk_log_probs = pad_input(
++                        hidden_states=topk_log_probs_rmpad,
++                        indices=indices,
++                        batch=batch_size,
++                        seqlen=seqlen,
++                    )
++                    topk_indices = full_topk_indices[
++                        :, -response_length - 1 : -1, :
++                    ].index_select(1, topk_positions)
++                    topk_log_probs = full_topk_log_probs[
++                        :, -response_length - 1 : -1, :
++                    ].index_select(1, topk_positions)
+ 
+                 # Extract response part
+                 log_probs = full_log_probs.squeeze(-1)[:, -response_length - 1 : -1]  # (bsz, response_length)
+-                topk_indices = full_topk_indices[:, -response_length - 1 : -1, :]  # (bsz, response_length, k)
+-                topk_log_probs = full_topk_log_probs[:, -response_length - 1 : -1, :]  # (bsz, response_length, k)
++                entropy = (
++                    full_entropy.squeeze(-1)[:, -response_length - 1 : -1]
++                    if calculate_entropy
++                    else None
++                )
+ 
+             else:  # not using rmpad
+                 output = self.actor_module(
+@@ -972,9 +1069,22 @@ class DataParallelPPOActor(BasePPOActor):
+ 
+                 # Compute log probs and top-k
+                 log_probs = logprobs_from_logits(response_logits, micro_batch["responses"])
+-                topk_indices, topk_log_probs = topk_logprobs_from_logits(response_logits, k=topk_k)
++                if position_stride == 1:
++                    topk_indices, topk_log_probs = topk_logprobs_from_logits(
++                        response_logits, k=topk_k
++                    )
++                else:
++                    selected_logits = response_logits.index_select(1, topk_positions)
++                    topk_indices, topk_log_probs = topk_logprobs_from_logits(
++                        selected_logits, k=topk_k
++                    )
++                entropy = (
++                    self.compute_entropy_from_logits(response_logits)
++                    if calculate_entropy
++                    else None
++                )
+ 
+-            return log_probs, topk_indices, topk_log_probs
++            return log_probs, topk_indices, topk_log_probs, entropy, topk_positions
+ 
+     @GPUMemoryLogger(role="dp actor", logger=logger)
+     def compute_log_prob_for_topk_indices(self, data: DataProto, topk_indices: torch.Tensor) -> torch.Tensor:
+@@ -1166,7 +1276,6 @@ class DataParallelPPOActor(BasePPOActor):
+ 
+         temperature = data.meta_info["temperature"]  # temperature must be in the data.meta_info to avoid silent error
+         multi_turn = data.meta_info.get("multi_turn", False)
+-
+         select_keys = ["responses", "input_ids", "attention_mask", "position_ids", "old_log_probs", "advantages"]
+         if multi_turn:
+             select_keys.append("loss_mask")
+@@ -1276,6 +1385,14 @@ class DataParallelPPOActor(BasePPOActor):
                          policy_loss_fn = compute_policy_loss_gspo
                      else:
                          raise ValueError(f"Unsupported loss_mode: {loss_mode}")
@@ -189,10 +796,10 @@ index 5d6bab1..58e411a 100644
 +                        loss_mode=loss_mode,
 +                        use_full_kl=use_full_kl,
 +                    )
-
+ 
                      pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower = policy_loss_fn(
                          old_log_prob=old_log_prob,
-@@ -1288,6 +1296,9 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1288,6 +1405,9 @@ class DataParallelPPOActor(BasePPOActor):
                          cliprange_high=clip_ratio_high,
                          clip_ratio_c=clip_ratio_c,
                          loss_agg_mode=loss_agg_mode,
@@ -200,7 +807,7 @@ index 5d6bab1..58e411a 100644
 +                        opd_block_advantage_mode=opd_block_advantage_mode,
 +                        opd_block_mix_lambda=opd_block_mix_lambda,
                      )
-
+ 
                      if entropy_coeff != 0:
 diff --git a/verl/workers/actor/megatron_actor.py b/verl/workers/actor/megatron_actor.py
 index cdabdea..d57ed31 100644
@@ -216,3 +823,52 @@ index cdabdea..d57ed31 100644
                  )
                  policy_loss = pg_loss
              if calculate_entropy:
+diff --git a/verl/workers/fsdp_workers.py b/verl/workers/fsdp_workers.py
+index 0874078..547d505 100644
+--- a/verl/workers/fsdp_workers.py
++++ b/verl/workers/fsdp_workers.py
+@@ -938,13 +938,17 @@ class ActorRolloutRefWorker(Worker):
+             data = self.ulysses_sharding_manager.preprocess_data(data)
+             with adapter_ctx:
+                 result = self.actor.compute_log_prob_with_topk(data=data, topk_k=topk_k)
+-            output = DataProto.from_dict(
+-                tensors={
+-                    "old_log_probs": result["log_probs"],
+-                    "teacher_topk_indices": result["topk_indices"],
+-                    "teacher_topk_log_probs": result["topk_log_probs"],
+-                },
+-            )
++            tensors = {
++                "old_log_probs": result["log_probs"],
++                "teacher_topk_indices": result["topk_indices"],
++                "teacher_topk_log_probs": result["topk_log_probs"],
++                "diagnostic_topk_positions": result["topk_positions"].unsqueeze(0).expand(
++                    result["log_probs"].size(0), -1
++                ),
++            }
++            if result["entropys"] is not None:
++                tensors["entropys"] = result["entropys"]
++            output = DataProto.from_dict(tensors=tensors)
+             output = self.ulysses_sharding_manager.postprocess_data(output)
+ 
+         output = output.to("cpu")
+@@ -987,11 +991,17 @@ class ActorRolloutRefWorker(Worker):
+         with self.ulysses_sharding_manager:
+             data = self.ulysses_sharding_manager.preprocess_data(data)
+             result = self.ref_policy.compute_log_prob_with_topk(data=data, topk_k=topk_k)
+-            output = DataProto.from_dict(tensors={
++            tensors = {
+                 "ref_log_prob": result["log_probs"],
+                 "teacher_topk_indices": result["topk_indices"],
+                 "teacher_topk_log_probs": result["topk_log_probs"],
+-            })
++                "diagnostic_topk_positions": result["topk_positions"].unsqueeze(0).expand(
++                    result["log_probs"].size(0), -1
++                ),
++            }
++            if result["entropys"] is not None:
++                tensors["teacher_entropy"] = result["entropys"]
++            output = DataProto.from_dict(tensors=tensors)
+             output = self.ulysses_sharding_manager.postprocess_data(output)
+ 
+         output = output.to("cpu")

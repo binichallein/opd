@@ -3,8 +3,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REVISITING_DIR="${ROOT_DIR}/external/revisiting_opd"
+export PYTHONPATH="${ROOT_DIR}:${REVISITING_DIR}:${PYTHONPATH:-}"
 
-if [[ -d "${ROOT_DIR}/.git" ]]; then
+if git -C "${ROOT_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   bash "${ROOT_DIR}/scripts/setup_revisiting_opd.sh" >/dev/null
 fi
 cd "${REVISITING_DIR}"
@@ -39,6 +40,15 @@ total_training_steps="${TOTAL_TRAINING_STEPS:-200}"
 ppo_mini_batch_size="${PPO_MINI_BATCH_SIZE:-32}"
 rollout_gpu_memory_utilization="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.7}"
 rollout_max_num_batched_tokens="${ROLLOUT_MAX_NUM_BATCHED_TOKENS:-$((max_prompt_length + max_response_length))}"
+opd_diagnostics="${OPD_DIAGNOSTICS:-false}"
+opd_diag_interval="${OPD_DIAG_INTERVAL:-5}"
+opd_diag_topk="${OPD_DIAG_TOPK:-16}"
+opd_diag_position_bin="${OPD_DIAG_POSITION_BIN:-128}"
+opd_diag_position_stride="${OPD_DIAG_POSITION_STRIDE:-1}"
+opd_diag_sign_eps="${OPD_DIAG_SIGN_EPS:-1e-4}"
+diagnostic_save_steps="${DIAGNOSTIC_SAVE_STEPS:-40,50,60,80,100,200}"
+diagnostic_save_steps_list="[${diagnostic_save_steps}]"
+opd_diag_output_dir="${OPD_DIAG_OUTPUT_DIR:-${CKPTS_DIR}/../diagnostics}"
 
 case "${VARIANT}" in
   token_opd)
@@ -89,6 +99,7 @@ python3 -m verl.trainer.main_ppo_multitask \
     +actor_rollout_ref.actor.opd_mask_special_tokens=False \
     actor_rollout_ref.rollout.temperature="${rollout_temperature}" \
     actor_rollout_ref.rollout.top_p="${rollout_top_p}" \
+    +actor_rollout_ref.rollout.seed="${ENV_SEED:-21}" \
     actor_rollout_ref.ref.model.path="${MATH_TEACHER}" \
     data.train_files="${TRAIN_DATA}" \
     data.val_files="${VAL_DATA}" \
@@ -99,6 +110,7 @@ python3 -m verl.trainer.main_ppo_multitask \
     data.filter_overlong_prompts=True \
     data.truncation=middle \
     data.return_raw_chat=True \
+    +data.seed="${ENV_SEED:-21}" \
     +data.batching_mode=sequential \
     actor_rollout_ref.model.path="${STUDENT_MODEL}" \
     actor_rollout_ref.actor.optim.lr="${learning_rate}" \
@@ -131,6 +143,12 @@ python3 -m verl.trainer.main_ppo_multitask \
     actor_rollout_ref.actor.use_invalid_action_penalty=False \
     actor_rollout_ref.actor.invalid_action_penalty_coef=0.0 \
     algorithm.use_kl_in_reward=True \
+    +algorithm.opd_diagnostics.enabled="${opd_diagnostics}" \
+    +algorithm.opd_diagnostics.interval="${opd_diag_interval}" \
+    +algorithm.opd_diagnostics.topk="${opd_diag_topk}" \
+    +algorithm.opd_diagnostics.position_bin="${opd_diag_position_bin}" \
+    +algorithm.opd_diagnostics.position_stride="${opd_diag_position_stride}" \
+    +algorithm.opd_diagnostics.sign_epsilon="${opd_diag_sign_eps}" \
     env.env_name=math \
     env.seed="${ENV_SEED:-21}" \
     env.max_steps=30 \
@@ -143,12 +161,14 @@ python3 -m verl.trainer.main_ppo_multitask \
     trainer.n_gpus_per_node="${N_GPUS_PER_NODE:-8}" \
     trainer.nnodes=1 \
     trainer.save_freq="${SAVE_FREQ:-100}" \
+    +trainer.checkpoint_milestones="${diagnostic_save_steps_list}" \
     trainer.test_freq="${TEST_FREQ:-1000000}" \
     trainer.total_training_steps="${total_training_steps}" \
     trainer.total_epochs=1 \
     trainer.val_before_train=False \
     trainer.val_only=False \
     trainer.default_local_dir="${CKPTS_DIR}" \
+    +trainer.opd_diagnostic_dir="${opd_diag_output_dir}" \
     trainer.resume_mode=auto \
     +trainer.val_generation_dir="${VAL_GENERATION_DIR:-${CKPTS_DIR}/val_generations}" \
     ray_init.num_cpus="${RAY_NUM_CPUS:-96}" \
