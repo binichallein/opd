@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ACTION="${1:-status}"
 STEP="${2:-200}"
-DATE_TAG="${DATE_TAG:-20260711v1}"
+DATE_TAG="${DATE_TAG:-20260711v2}"
 
 REMOTE="ml2"
 SOURCE_COMMIT="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
@@ -16,7 +16,7 @@ HF_HOME_DIR="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b
 STUDENT_MODEL="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base"
 MATH_TEACHER="${ASSET_ROOT}/models/Qwen3-4B-Base-GRPO"
 DATA_DIR="${ASSET_ROOT}/data/math_opd_dapo17k_hf_full_eval4"
-CACHE_ROOT="${ASSET_ROOT}/cache/block3_replication_${DATE_TAG}"
+CACHE_ROOT="/limx_embap/tos/b3r/${DATE_TAG#2026}"
 EXPECTED_TRAIN_SHA256="cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf"
 MIN_TOS_AVAILABLE_BYTES=100000000000
 

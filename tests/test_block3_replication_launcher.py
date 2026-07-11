@@ -34,7 +34,7 @@ def test_block3_control_fixes_the_approved_training_contract():
 def test_block3_control_uses_tos_cache_and_complete_eval_contract():
     control = (ROOT / "scripts" / "block3_replication_control.sh").read_text()
 
-    assert 'CACHE_ROOT="${ASSET_ROOT}/cache/block3_replication_${DATE_TAG}"' in control
+    assert 'CACHE_ROOT="/limx_embap/tos/b3r/${DATE_TAG#2026}"' in control
     assert "/tmp/opd" not in control
     assert 'N=8 TEMPERATURE=1.0 TOP_P=0.9 MAX_TOKENS=16384' in control
     assert 'EVAL_SEED=21 GRADER=verl ENABLE_THINKING=false' in control
