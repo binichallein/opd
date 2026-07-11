@@ -40,6 +40,8 @@ total_training_steps="${TOTAL_TRAINING_STEPS:-200}"
 ppo_mini_batch_size="${PPO_MINI_BATCH_SIZE:-32}"
 rollout_gpu_memory_utilization="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.7}"
 rollout_max_num_batched_tokens="${ROLLOUT_MAX_NUM_BATCHED_TOKENS:-$((max_prompt_length + max_response_length))}"
+actor_ppo_micro_batch_size_per_gpu="${ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU:-1}"
+rollout_log_prob_micro_batch_size_per_gpu="${ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"
 ref_log_prob_micro_batch_size_per_gpu="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"
 opd_diagnostics="${OPD_DIAGNOSTICS:-false}"
 opd_diag_interval="${OPD_DIAG_INTERVAL:-5}"
@@ -119,7 +121,7 @@ python3 -m verl.trainer.main_ppo_multitask \
     actor_rollout_ref.actor.optim.lr="${learning_rate}" \
     actor_rollout_ref.model.use_remove_padding=True \
     actor_rollout_ref.actor.ppo_mini_batch_size="${ppo_mini_batch_size}" \
-    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=1 \
+    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu="${actor_ppo_micro_batch_size_per_gpu}" \
     actor_rollout_ref.actor.entropy_coeff=0.0 \
     actor_rollout_ref.actor.use_kl_loss=False \
     actor_rollout_ref.actor.kl_loss_coef=1 \
@@ -129,7 +131,7 @@ python3 -m verl.trainer.main_ppo_multitask \
     actor_rollout_ref.model.enable_gradient_checkpointing=True \
     actor_rollout_ref.actor.fsdp_config.param_offload=True \
     actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
-    actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=4 \
+    actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu="${rollout_log_prob_micro_batch_size_per_gpu}" \
     actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
     actor_rollout_ref.rollout.name="${ENGINE}" \
     actor_rollout_ref.rollout.gpu_memory_utilization="${rollout_gpu_memory_utilization}" \
