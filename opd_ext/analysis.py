@@ -56,6 +56,15 @@ def bin_position_statistics(
     return means, rollout_coverage
 
 
+def sparse_tick_indices(length: int, max_ticks: int = 11) -> np.ndarray:
+    """Return evenly spaced tick indices without overcrowding an axis."""
+    if length < 1 or max_ticks < 2:
+        raise ValueError("length must be positive and max_ticks must be at least two")
+    if length <= max_ticks:
+        return np.arange(length, dtype=np.int64)
+    return np.linspace(0, length - 1, max_ticks, dtype=np.int64)
+
+
 def detect_sustained_onset(
     steps: np.ndarray,
     values: np.ndarray,

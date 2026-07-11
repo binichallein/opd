@@ -9,6 +9,7 @@ from opd_ext.analysis import (
     detect_sustained_onset,
     first_nonfinite_step,
     normalize_hash_manifest_lines,
+    sparse_tick_indices,
 )
 
 
@@ -36,6 +37,14 @@ def test_position_binning_masks_bins_without_enough_coverage():
 
     assert np.isnan(means).all()
     np.testing.assert_array_equal(counts, np.array([1, 0]))
+
+
+def test_sparse_tick_indices_keep_endpoints_and_cap_label_count():
+    np.testing.assert_array_equal(
+        sparse_tick_indices(length=41, max_ticks=11),
+        np.array([0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40]),
+    )
+    np.testing.assert_array_equal(sparse_tick_indices(length=3, max_ticks=11), np.arange(3))
 
 
 def test_one_rollout_cannot_satisfy_eight_rollout_heatmap_threshold():

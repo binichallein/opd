@@ -26,6 +26,7 @@ from opd_ext.analysis import (
     first_nonfinite_step,
     load_scalar_records,
     normalize_hash_manifest_lines,
+    sparse_tick_indices,
 )
 
 
@@ -194,8 +195,8 @@ def plot_heatmaps(
             axis.set_xlabel("Output position (K tokens)")
             ticks = np.linspace(0, matrix.shape[1] - 1, 6, dtype=int)
             axis.set_xticks(ticks, [f"{tick * bin_size / 1000:.1f}" for tick in ticks])
-            row_ticks = np.arange(len(steps_by_host[host]))
-            axis.set_yticks(row_ticks, steps_by_host[host])
+            row_ticks = sparse_tick_indices(len(steps_by_host[host]))
+            axis.set_yticks(row_ticks, steps_by_host[host][row_ticks])
             fig.colorbar(image, ax=axis, fraction=0.025)
     fig.savefig(output_path, dpi=180)
     plt.close(fig)

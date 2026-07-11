@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "experiment_id": "20260710v5_block10_collapse_diag_seed21",
+  "generated_at": "2026-07-11",
+  "source_commit": "af05c071e422fca02c5bbfba3f84277208b83b1e",
+  "revisiting_opd_base_commit": "f32f284f25bae5b16d2d44ee336b52851dccc736",
+  "hypothesis": "Treat each contiguous 10-token span as one sampled PPO action, using mean token advantage and a block-level importance ratio.",
+  "method": {
+    "variant": "block10_mean",
+    "block_size": 10,
+    "block_advantage_mode": "mean",
+    "block_old_and_current_log_prob_aggregation": "sum",
+    "block_importance_ratio": "exp(sum(current_log_prob - old_log_prob))",
+    "policy_objective": "clipped PPO with dual clipping for negative advantages",
+    "student_model": "Qwen3-1.7B-Base",
+    "teacher_model": "Qwen3-4B-Base-GRPO",
+    "train_data": "DAPO-Math-17K raw prompt pool",
+    "train_data_rows": 1791700,
+    "seed": 21,
+    "train_batch_size_prompts": 4,
+    "rollouts_per_prompt": 8,
+    "trajectories_per_step": 32,
+    "total_training_steps": 200,
+    "learning_rate": 0.000002,
+    "ppo_mini_batch_size": 32,
+    "actor_ppo_micro_batch_size_per_gpu": 1,
+    "ref_log_prob_micro_batch_size_per_gpu": 1,
+    "rollout_log_prob_micro_batch_size_per_gpu": 4,
+    "rollout_gpu_memory_utilization": 0.6,
+    "rollout_max_num_batched_tokens": 18432,
+    "max_prompt_length": 2048,
+    "max_response_length": 16384,
+    "rollout_temperature": 1.0,
+    "rollout_top_p": 0.9,
+    "n_gpus": 4,
+    "gradient_checkpointing": true,
+    "actor_parameter_offload": true,
+    "actor_optimizer_offload": true,
+    "diagnostic_steps": [
+      1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80,
+      85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155,
+      160, 165, 170, 175, 180, 185, 190, 195, 200
+    ],
+    "checkpoint_steps": [40, 50, 60, 80, 100, 200]
+  },
+  "eval_config": {
+    "tasks": {
+      "math500": 500,
+      "aime24": 30,
+      "aime25": 30,
+      "amc23": 83
+    },
+    "samples_per_problem": 8,
+    "rollout_seeds": [21, 22, 23, 24, 25, 26, 27, 28],
+    "temperature": 1.0,
+    "top_p": 0.9,
+    "max_tokens": 16384,
+    "enable_thinking": false,
+    "grader": "verl",
+    "macro_definition": "Unweighted arithmetic mean over the four tasks."
+  },
+  "hosts": {
+    "train-A800": {
+      "training_exit_code": 0,
+      "eval": {
+        "50": {
+          "macro_avg_at_8": 0.12654166666666666,
+          "macro_pass_at_8": 0.25633333333333336,
+          "tasks": {
+            "math500": {"avg_at_8": 0.452, "pass_at_8": 0.792, "format_errors": 727, "rollouts": 4000, "avg_response_tokens": 2075.3025},
+            "aime24": {"avg_at_8": 0.025, "pass_at_8": 0.13333333333333333, "format_errors": 69, "rollouts": 240, "avg_response_tokens": 4130.2625},
+            "aime25": {"avg_at_8": 0.029166666666666667, "pass_at_8": 0.1, "format_errors": 52, "rollouts": 240, "avg_response_tokens": 3013.445833333333},
+            "amc23": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 161, "rollouts": 664, "avg_response_tokens": 2830.965361445783}
+          }
+        },
+        "100": {
+          "macro_avg_at_8": 0.00675,
+          "macro_pass_at_8": 0.0415,
+          "tasks": {
+            "math500": {"avg_at_8": 0.027, "pass_at_8": 0.166, "format_errors": 3795, "rollouts": 4000, "avg_response_tokens": 4164.65075},
+            "aime24": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 235, "rollouts": 240, "avg_response_tokens": 3381.483333333333},
+            "aime25": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 235, "rollouts": 240, "avg_response_tokens": 3709.0833333333335},
+            "amc23": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 619, "rollouts": 664, "avg_response_tokens": 4101.3027108433735}
+          }
+        },
+        "200": {
+          "macro_avg_at_8": 0.0,
+          "macro_pass_at_8": 0.0,
+          "tasks": {
+            "math500": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 4000, "rollouts": 4000, "avg_response_tokens": 10808.3265},
+            "aime24": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 240, "rollouts": 240, "avg_response_tokens": 10517.1},
+            "aime25": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 240, "rollouts": 240, "avg_response_tokens": 9918.3},
+            "amc23": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 664, "rollouts": 664, "avg_response_tokens": 10061.465361445784}
+          }
+        }
+      },
+      "step_200_diagnostics": {
+        "student_entropy": 7.146,
+        "teacher_entropy": 6.745,
+        "student_overlap_mass": 0.226,
+        "teacher_overlap_mass": 0.237,
+        "top16_overlap_ratio": 0.837,
+        "weighted_sign_flip_rate": 0.324,
+        "normalized_leakage": 0.972,
+        "post_update_block_log_ratio_abs_p95": 0.465,
+        "post_update_block_ratio_outside_clip_fraction": 0.390,
+        "grad_norm": 3.30,
+        "response_length_mean": 16384.0,
+        "response_truncation_ratio": 1.0
+      },
+      "maximum_preclip_grad_norm": {"step": 191, "value": 867.495},
+      "sustained_onsets": {
+        "support_drift": 40,
+        "student_entropy": 45,
+        "block_ratio": 55,
+        "weighted_sign_flip": 80,
+        "normalized_leakage": null,
+        "numerical": null,
+        "student_entropy_front": 50,
+        "student_entropy_middle": 60,
+        "student_entropy_tail": 65
+      },
+      "leading_mechanism_classification": "support_drift",
+      "entropy_propagation": "simultaneous_or_non_tail_to_front",
+      "acceptance_passed": true,
+      "acceptance_issues": []
+    },
+    "ml2-A100": {
+      "training_exit_code": 0,
+      "eval": {
+        "50": {
+          "macro_avg_at_8": 0.11,
+          "macro_pass_at_8": 0.2798333333333333,
+          "tasks": {
+            "math500": {"avg_at_8": 0.3775, "pass_at_8": 0.786, "format_errors": 1159, "rollouts": 4000, "avg_response_tokens": 3659.1615},
+            "aime24": {"avg_at_8": 0.041666666666666664, "pass_at_8": 0.2, "format_errors": 94, "rollouts": 240, "avg_response_tokens": 5572.1},
+            "aime25": {"avg_at_8": 0.020833333333333332, "pass_at_8": 0.13333333333333333, "format_errors": 106, "rollouts": 240, "avg_response_tokens": 4289.541666666667},
+            "amc23": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 259, "rollouts": 664, "avg_response_tokens": 4162.263554216867}
+          }
+        },
+        "100": {
+          "macro_avg_at_8": 0.0024375,
+          "macro_pass_at_8": 0.018,
+          "tasks": {
+            "math500": {"avg_at_8": 0.00975, "pass_at_8": 0.072, "format_errors": 3891, "rollouts": 4000, "avg_response_tokens": 5956.95875},
+            "aime24": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 235, "rollouts": 240, "avg_response_tokens": 5809.575},
+            "aime25": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 237, "rollouts": 240, "avg_response_tokens": 6045.916666666667},
+            "amc23": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 618, "rollouts": 664, "avg_response_tokens": 5758.222891566265}
+          }
+        },
+        "200": {
+          "macro_avg_at_8": 0.0,
+          "macro_pass_at_8": 0.0,
+          "tasks": {
+            "math500": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 4000, "rollouts": 4000, "avg_response_tokens": 11333.8345},
+            "aime24": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 240, "rollouts": 240, "avg_response_tokens": 11624.8375},
+            "aime25": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 240, "rollouts": 240, "avg_response_tokens": 10799.954166666666},
+            "amc23": {"avg_at_8": 0.0, "pass_at_8": 0.0, "format_errors": 664, "rollouts": 664, "avg_response_tokens": 10095.0828313253}
+          }
+        }
+      },
+      "step_200_diagnostics": {
+        "student_entropy": 7.576,
+        "teacher_entropy": 6.962,
+        "student_overlap_mass": 0.166,
+        "teacher_overlap_mass": 0.186,
+        "top16_overlap_ratio": 0.793,
+        "weighted_sign_flip_rate": 0.330,
+        "normalized_leakage": 0.968,
+        "post_update_block_log_ratio_abs_p95": 0.497,
+        "post_update_block_ratio_outside_clip_fraction": 0.421,
+        "grad_norm": 4.51,
+        "response_length_mean": 10509.5,
+        "response_truncation_ratio": 0.25
+      },
+      "maximum_preclip_grad_norm": {"step": 1, "value": 865.207},
+      "sustained_onsets": {
+        "support_drift": 60,
+        "student_entropy": 50,
+        "block_ratio": 50,
+        "weighted_sign_flip": 60,
+        "normalized_leakage": null,
+        "numerical": null,
+        "student_entropy_front": 45,
+        "student_entropy_middle": 70,
+        "student_entropy_tail": 75
+      },
+      "leading_mechanism_classification": "block_ratio_amplification",
+      "entropy_propagation": "simultaneous_or_non_tail_to_front",
+      "acceptance_passed": true,
+      "acceptance_issues": []
+    }
+  },
+  "cross_host": {
+    "prompt_hashes_match_at_all_shared_diagnostic_steps": true,
+    "script_and_artifact_manifests_match": true,
+    "all_nonfinite_overflow_underflow_counts_zero": true,
+    "cuda_oom_observed": false,
+    "collapse_observed_on_both_single_seed_hosts": true,
+    "stable_single_leading_mechanism": false,
+    "stable_tail_to_front_entropy_propagation": false
+  },
+  "conclusion": {
+    "idea_supported": false,
+    "statement": "The tested combination of 10-token mean advantage and block-level PPO ratio is not viable under this configuration: both single-seed host runs lose nearly all task performance by step 100 and score zero at step 200.",
+    "supported_mechanism_claim": "Support drift and block-ratio amplification both occur around the collapse window, but their causal order is not stable across hosts and credit mixing has no sustained early onset.",
+    "unsupported_claims": [
+      "Credit leakage is the unique root cause.",
+      "Credit leakage is a demonstrated causal amplifier.",
+      "A single leading mechanism is stable across hardware.",
+      "Entropy collapse propagates from tail to front in this experiment.",
+      "Training failed because of CUDA OOM or non-finite gradients.",
+      "Mean advantage alone caused the collapse.",
+      "This experiment demonstrates a compute-efficiency tradeoff against token OPD."
+    ]
+  }
+}
