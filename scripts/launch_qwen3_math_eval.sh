@@ -43,6 +43,12 @@ if [[ -f '${EVAL_DIR}/eval.pid' ]] && ps -p \"\$(cat '${EVAL_DIR}/eval.pid')\" >
   echo \"already_running pid=\$(cat '${EVAL_DIR}/eval.pid') eval_dir=${EVAL_DIR}\"
   exit 0
 fi
+sha256sum \
+  '${EVAL_DATA_DIR}/math500.jsonl' \
+  '${EVAL_DATA_DIR}/aime24.jsonl' \
+  '${EVAL_DATA_DIR}/aime25.jsonl' \
+  '${EVAL_DATA_DIR}/amc23.jsonl' \
+  > '${EVAL_DIR}/eval_data_hashes.sha256'
 cat > '${EVAL_DIR}/eval_card.json' <<JSON
 {
   \"variant\": \"${VARIANT}\",

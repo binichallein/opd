@@ -10,6 +10,8 @@ import math
 from pathlib import Path
 import re
 
+import numpy as np
+
 
 EXPECTED_DIAGNOSTIC_STEPS = [1, *range(5, 201, 5)]
 EXPECTED_CHECKPOINT_STEPS = [40, 50, 60, 80, 100, 200]
@@ -21,6 +23,68 @@ EXPECTED_TASK_EXAMPLES = {
     "aime25": 30,
     "amc23": 83,
 }
+EXPECTED_EVAL_SHA256 = {
+    "math500": "cc164b47b60771eeda257bcb9a2068940cc0706bb8bb79b6635af4c1d4534501",
+    "aime24": "6aee5ed24b811ebc210de62f4606600744bd7e90ed143d835781c1a8783f8fa8",
+    "aime25": "daedf1e406b9d73ca25e9696c92614e300e34c4d09376dacaa465b01bb398d43",
+    "amc23": "a07c52c0098a536a2d03e01e531b02c5e9d0a1f4e66d04a0793c0345e1730b45",
+}
+REQUIRED_POSITION_METRICS = (
+    "student_entropy",
+    "teacher_entropy",
+    "entropy_gap_signed",
+    "entropy_gap_absolute",
+    "overlap_ratio",
+    "student_overlap_mass",
+    "teacher_overlap_mass",
+    "overlap_token_advantage",
+    "sign_flip",
+    "leakage",
+    "post_update_block_log_ratio_abs",
+    "post_update_block_outside_clip",
+)
+REQUIRED_SCALAR_METRICS = (
+    "diagnostics/student_entropy",
+    "diagnostics/teacher_entropy",
+    "diagnostics/entropy_gap_signed",
+    "diagnostics/entropy_gap_absolute",
+    "diagnostics/topk_overlap_ratio",
+    "diagnostics/student_overlap_mass",
+    "diagnostics/teacher_overlap_mass",
+    "diagnostics/overlap_token_advantage",
+    "diagnostics/sign_flip_rate",
+    "diagnostics/weighted_sign_flip_rate",
+    "diagnostics/leakage_magnitude",
+    "diagnostics/normalized_leakage",
+    "diagnostics/student_entropy_nonfinite_count",
+    "diagnostics/teacher_entropy_nonfinite_count",
+    "diagnostics/raw_token_advantage_mean",
+    "diagnostics/raw_token_advantage_std",
+    "diagnostics/raw_token_advantage_p95",
+    "diagnostics/raw_token_advantage_max",
+    "diagnostics/raw_token_advantage_nonfinite_count",
+    "diagnostics/block_advantage_mean",
+    "diagnostics/block_advantage_std",
+    "diagnostics/block_advantage_p95",
+    "diagnostics/block_advantage_max",
+    "diagnostics/block_advantage_nonfinite_count",
+    "diagnostics/post_update_block_log_ratio_abs_mean",
+    "diagnostics/post_update_block_log_ratio_abs_p95",
+    "diagnostics/post_update_block_log_ratio_abs_max",
+    "diagnostics/post_update_block_ratio_p95",
+    "diagnostics/post_update_block_ratio_max",
+    "diagnostics/post_update_block_ratio_outside_clip_fraction",
+    "diagnostics/post_update_block_ratio_overflow_count",
+    "diagnostics/post_update_block_ratio_underflow_count",
+    "diagnostics/post_update_block_ratio_nonfinite_count",
+    "actor/pg_loss",
+    "actor/pg_clipfrac",
+    "actor/grad_norm",
+    "response_length/mean",
+    "response_length/max",
+    "response_length/clip_ratio",
+    "prompt_batch_sha256",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -46,6 +110,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-resume-mode", default="disable")
     parser.add_argument("--expected-resume-from-path")
     parser.add_argument("--expected-source-commit")
+    parser.add_argument("--expected-eval-data-dir")
     return parser.parse_args()
 
 
@@ -164,7 +229,68 @@ def artifact_hash_issues(
     return []
 
 
-def eval_issues(run_dir: Path, step: int) -> list[str]:
+def diagnostic_snapshot_issues(
+    path: Path, expected_step: int, response_length: int = 16384
+) -> list[str]:
+    issues = []
+    if not path.is_file() or path.stat().st_size == 0:
+        return [f"step {expected_step}: missing or empty diagnostic NPZ"]
+    try:
+        with np.load(path, allow_pickle=False) as data:
+            if int(data["step"].item()) != expected_step:
+                issues.append(
+                    f"step {expected_step}: NPZ records step {int(data['step'].item())}"
+                )
+            for metric in REQUIRED_POSITION_METRICS:
+                keys = {
+                    statistic: f"{metric}__{statistic}"
+                    for statistic in ("sum", "squared_sum", "valid_count")
+                }
+                missing = [key for key in keys.values() if key not in data.files]
+                if missing:
+                    issues.extend(
+                        f"step {expected_step}: missing position array {key}"
+                        for key in missing
+                    )
+                    continue
+                arrays = {name: np.asarray(data[key]) for name, key in keys.items()}
+                if any(array.shape != (response_length,) for array in arrays.values()):
+                    issues.append(
+                        f"step {expected_step}: {metric} position arrays must have "
+                        f"shape ({response_length},)"
+                    )
+                    continue
+                if not np.isfinite(arrays["sum"]).all() or not np.isfinite(
+                    arrays["squared_sum"]
+                ).all():
+                    issues.append(
+                        f"step {expected_step}: {metric} position sums are non-finite"
+                    )
+                counts = arrays["valid_count"]
+                if np.any(counts < 0) or not np.any(counts > 0):
+                    issues.append(
+                        f"step {expected_step}: {metric} position coverage is invalid"
+                    )
+    except Exception as error:
+        issues.append(f"step {expected_step}: cannot parse diagnostic NPZ: {error}")
+    return issues
+
+
+def scalar_record_issues(records: list[dict[str, object]]) -> list[str]:
+    issues = []
+    for record in records:
+        step = int(record["step"])
+        missing = [key for key in REQUIRED_SCALAR_METRICS if key not in record]
+        if missing:
+            issues.append(f"step {step}: missing scalar metrics {missing}")
+    return issues
+
+
+def eval_issues(
+    run_dir: Path,
+    step: int,
+    expected_eval_data_dir: str | None = None,
+) -> list[str]:
     eval_dir = run_dir / f"eval_step_{step}_n8"
     summary_path = eval_dir / "outputs" / "summary.json"
     if not summary_path.is_file():
@@ -230,12 +356,29 @@ def eval_issues(run_dir: Path, step: int) -> list[str]:
             / "actor"
             / "huggingface"
         ),
+        "tasks": ["math500", "aime24", "aime25", "amc23"],
     }
+    if expected_eval_data_dir is not None:
+        expected_config["eval_jsonl_dir"] = expected_eval_data_dir
     for key, expected in expected_config.items():
         if config.get(key) != expected:
             issues.append(
                 f"step {step}: eval config {key} expected {expected!r}, "
                 f"got {config.get(key)!r}"
+            )
+
+    hash_path = eval_dir / "eval_data_hashes.sha256"
+    observed_hashes = {}
+    if not hash_path.is_file():
+        issues.append(f"step {step}: missing eval_data_hashes.sha256")
+    else:
+        for line in hash_path.read_text(encoding="utf-8").splitlines():
+            fields = line.split(maxsplit=1)
+            if len(fields) == 2:
+                observed_hashes[Path(fields[1].strip()).stem] = fields[0]
+        if observed_hashes != EXPECTED_EVAL_SHA256:
+            issues.append(
+                f"step {step}: eval data SHA-256 mismatch: {observed_hashes}"
             )
 
     expected_seeds = set(range(21, 29))
@@ -357,6 +500,8 @@ def main() -> None:
         missing = sorted(set(expected_diagnostic_steps) - set(diagnostic_steps))
         extra = sorted(set(diagnostic_steps) - set(expected_diagnostic_steps))
         issues.append(f"diagnostic steps mismatch; missing={missing}, extra={extra}")
+    for path, step in zip(diagnostic_paths, diagnostic_steps):
+        issues.extend(diagnostic_snapshot_issues(path, expected_step=step))
 
     scalar_path = run_dir / "diagnostics" / "scalars.jsonl"
     scalar_steps = []
@@ -368,6 +513,7 @@ def main() -> None:
                 latest[int(record["step"])] = record
         scalar_steps = sorted(latest)
         issues.extend(numerical_scalar_issues(list(latest.values())))
+        issues.extend(scalar_record_issues(list(latest.values())))
     else:
         issues.append("missing diagnostics/scalars.jsonl")
     if scalar_steps != expected_diagnostic_steps:
@@ -376,7 +522,13 @@ def main() -> None:
     for step in checkpoint_steps:
         issues.extend(checkpoint_issues(run_dir, step, world_size=args.world_size))
     for step in eval_steps:
-        issues.extend(eval_issues(run_dir, step))
+        issues.extend(
+            eval_issues(
+                run_dir,
+                step,
+                expected_eval_data_dir=args.expected_eval_data_dir,
+            )
+        )
 
     result = {
         "passed": not issues,

@@ -34,7 +34,7 @@ def test_block3_control_fixes_the_approved_training_contract():
 def test_block3_control_uses_tos_cache_and_complete_eval_contract():
     control = (ROOT / "scripts" / "block3_replication_control.sh").read_text()
 
-    assert 'CACHE_ROOT="${REMOTE_ROOT}/cache/block3_replication_${DATE_TAG}"' in control
+    assert 'CACHE_ROOT="${ASSET_ROOT}/cache/block3_replication_${DATE_TAG}"' in control
     assert "/tmp/opd" not in control
     assert 'N=8 TEMPERATURE=1.0 TOP_P=0.9 MAX_TOKENS=16384' in control
     assert 'EVAL_SEED=21 GRADER=verl ENABLE_THINKING=false' in control
@@ -59,6 +59,8 @@ def test_block3_control_exposes_probe_resume_and_formal_actions():
     assert "launch_train probe 2 1 1 1 disable" in control
     assert "launch_train probe 2 1,2 -1 1 resume_path" in control
     assert "verify_probe_resume" in control
+    assert "verify_probe1" in control
+    assert "machine_preflight" in control
     assert "formal_preflight" in control
     assert "assert_checkpoint_complete" in control
 
@@ -105,13 +107,36 @@ def test_training_run_card_records_all_micro_batch_controls():
     assert 'rollout_log_prob_micro_batch_size_per_gpu="${ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"' in runner
 
 
-def test_sync_stages_files_before_installing_them_into_runtime_root():
+def test_sync_publishes_an_immutable_release_with_an_atomic_rename():
     sync = (ROOT / "scripts" / "sync_block3_replication_to_ml2.sh").read_text()
+    control = (ROOT / "scripts" / "block3_replication_control.sh").read_text()
 
     assert "SYNC_STAGE" in sync
+    assert "RELEASE_DIR" in sync
+    assert "DEPLOYED_COMMIT" in sync
     assert "sha256sum -c" in sync
-    assert "install -D" in sync
-    assert sync.index("sha256sum -c") < sync.index("install -D")
+    assert "mv -- '${SYNC_STAGE}' '${RELEASE_DIR}'" in sync
+    assert "install -D" not in sync
+    assert sync.index("sha256sum -c") < sync.index("mv -- '${SYNC_STAGE}' '${RELEASE_DIR}'")
+    assert 'RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"' in control
+
+
+def test_probe_launch_history_preserves_logs_and_lifecycle_evidence():
+    launcher = (ROOT / "scripts" / "launch_revisiting_block_opd_formal_train.sh").read_text()
+
+    for evidence in (
+        "run_card.json",
+        "command.sh",
+        "env.txt",
+        "artifact_hashes.sha256",
+        "script_hashes.sha256",
+        "started_at.txt",
+        "finished_at.txt",
+        "exit_code.txt",
+        "train.pid",
+        "logs/nohup.log",
+    ):
+        assert evidence in launcher
 
 
 def test_eval_launcher_checks_live_pid_before_overwriting_eval_evidence():

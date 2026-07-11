@@ -61,6 +61,9 @@ OPD_DIAG_OUTPUT_DIR="${OPD_DIAG_OUTPUT_DIR:-${RUN_DIR}/diagnostics}"
 
 ssh "${REMOTE}" "set -euo pipefail
 test -d '${REMOTE_ROOT}'
+if [[ '${SOURCE_COMMIT}' != unknown ]]; then
+  test \"\$(cat '${REMOTE_ROOT}/DEPLOYED_COMMIT')\" = '${SOURCE_COMMIT}'
+fi
 test -f '${REMOTE_ROOT}/scripts/run_revisiting_sampled_block_opd_math.sh'
 test -d '${STUDENT_MODEL}'
 test -d '${MATH_TEACHER}'
@@ -89,11 +92,15 @@ if [[ -f '${RUN_DIR}/train.pid' ]] && ps -p \"\$(cat '${RUN_DIR}/train.pid')\" >
 fi
 mkdir -p '${RUN_DIR}/launch_history'
 launch_archive=\$(date +%Y%m%dT%H%M%S)
-for evidence in run_card.json command.sh env.txt artifact_hashes.sha256 script_hashes.sha256; do
+for evidence in run_card.json command.sh env.txt artifact_hashes.sha256 script_hashes.sha256 \
+  started_at.txt finished_at.txt exit_code.txt train.pid acceptance.json; do
   if [[ -f '${RUN_DIR}/'\"\${evidence}\" ]]; then
     cp '${RUN_DIR}/'\"\${evidence}\" '${RUN_DIR}/launch_history/'\"\${launch_archive}_\${evidence}\"
   fi
 done
+if [[ -f '${RUN_DIR}/logs/nohup.log' ]]; then
+  cp '${RUN_DIR}/logs/nohup.log' '${RUN_DIR}/launch_history/'\"\${launch_archive}_nohup.log\"
+fi
 (cd '${REMOTE_ROOT}/external/revisiting_opd' && \
   sha256sum -c '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256') \
   > '${RUN_DIR}/revisiting_opd_manifest_check.txt'

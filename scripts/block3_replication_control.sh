@@ -7,13 +7,16 @@ STEP="${2:-200}"
 DATE_TAG="${DATE_TAG:-20260711v1}"
 
 REMOTE="ml2"
-REMOTE_ROOT="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd"
+SOURCE_COMMIT="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
+ASSET_ROOT="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd"
+RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"
+REMOTE_ROOT="${RUNTIME_ROOT}"
 VENV="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl"
 HF_HOME_DIR="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/hf_home"
 STUDENT_MODEL="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base"
-MATH_TEACHER="${REMOTE_ROOT}/models/Qwen3-4B-Base-GRPO"
-DATA_DIR="${REMOTE_ROOT}/data/math_opd_dapo17k_hf_full_eval4"
-CACHE_ROOT="${REMOTE_ROOT}/cache/block3_replication_${DATE_TAG}"
+MATH_TEACHER="${ASSET_ROOT}/models/Qwen3-4B-Base-GRPO"
+DATA_DIR="${ASSET_ROOT}/data/math_opd_dapo17k_hf_full_eval4"
+CACHE_ROOT="${ASSET_ROOT}/cache/block3_replication_${DATE_TAG}"
 EXPECTED_TRAIN_SHA256="cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf"
 MIN_TOS_AVAILABLE_BYTES=100000000000
 
@@ -23,15 +26,14 @@ REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-
 ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU="${ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU:-1}"
 ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"
 FORMAL_OPD_DIAG_INTERVAL=5
-SOURCE_COMMIT="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
 SUBMODULE_BASE_COMMIT="$(git -C "${ROOT_DIR}/external/revisiting_opd" rev-parse HEAD)"
 
 run_root_for() {
   local kind="$1"
   if [[ "${kind}" == "probe" ]]; then
-    echo "${REMOTE_ROOT}/runs/${DATE_TAG}_block3_replication_probe_seed21_ml2"
+    echo "${ASSET_ROOT}/runs/${DATE_TAG}_block3_replication_probe_seed21_ml2"
   else
-    echo "${REMOTE_ROOT}/runs/${DATE_TAG}_block3_replication_seed21_ml2"
+    echo "${ASSET_ROOT}/runs/${DATE_TAG}_block3_replication_seed21_ml2"
   fi
 }
 
@@ -127,17 +129,54 @@ assert_run_stopped_successfully() {
     test \"\$(cat '${run_dir}/exit_code.txt')\" = 0"
 }
 
+machine_preflight() {
+  ssh "${REMOTE}" "set -euo pipefail
+    test \"\$(cat '${RUNTIME_ROOT}/DEPLOYED_COMMIT')\" = '${SOURCE_COMMIT}'
+    test -w '${ASSET_ROOT}'
+    available=\$(df -PB1 '${ASSET_ROOT}' | awk 'NR == 2 {print \$4}')
+    test \"\${available}\" -ge '${MIN_TOS_AVAILABLE_BYTES}'
+    nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader,nounits | \
+      awk -F, '{gsub(/ /, \"\", \$1); gsub(/ /, \"\", \$2); if (\$1 > 1024 || \$2 > 0) busy=1} END {exit busy}'
+    if ps -eo cmd | grep -E '[m]ain_ppo_multitask|[r]aylet|[r]ay::|[V]LLMWorker|[e]val_qwen3_math_vllm' >/dev/null; then
+      echo 'active training, Ray, or evaluation process detected' >&2
+      exit 1
+    fi"
+}
+
 probe1_preflight() {
   local run_dir
   run_dir="$(run_dir_for probe)"
+  machine_preflight
   ssh "${REMOTE}" "test ! -e '${run_dir}'"
+}
+
+verify_probe1() {
+  local run_dir
+  run_dir="$(run_dir_for probe)"
+  assert_run_stopped_successfully probe
+  assert_checkpoint_complete probe 1
+  ssh "${REMOTE}" "'${VENV}/bin/python' '${RUNTIME_ROOT}/scripts/audit_block10_run.py' \
+    --run-dir '${run_dir}' \
+    --variant block3_mean \
+    --checkpoint-steps 1 \
+    --skip-eval \
+    --expected-total-training-steps 2 \
+    --expected-diagnostic-steps 1 \
+    --expected-diag-interval 1 \
+    --expected-resume-mode disable \
+    --expected-resume-from-path '' \
+    --expected-source-commit '${SOURCE_COMMIT}' \
+    --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
+    --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
+    --expected-student-model-suffix Qwen3-1.7B-Base \
+    --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
 }
 
 probe2_preflight() {
   local run_dir
   run_dir="$(run_dir_for probe)"
-  assert_run_stopped_successfully probe
-  assert_checkpoint_complete probe 1
+  verify_probe1
+  machine_preflight
   ssh "${REMOTE}" "test ! -e '${run_dir}/checkpoints/global_step_2'"
 }
 
@@ -170,17 +209,10 @@ formal_preflight() {
   local run_dir
   run_dir="$(run_dir_for formal)"
   verify_probe_resume
+  machine_preflight
   ssh "${REMOTE}" "set -euo pipefail
     test ! -e '${run_dir}'
-    test -w '${REMOTE_ROOT}'
-    available=\$(df -PB1 '${REMOTE_ROOT}' | awk 'NR == 2 {print \$4}')
-    test \"\${available}\" -ge '${MIN_TOS_AVAILABLE_BYTES}'
-    nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader,nounits | \
-      awk -F, '{gsub(/ /, \"\", \$1); gsub(/ /, \"\", \$2); if (\$1 > 1024 || \$2 > 0) busy=1} END {exit busy}'
-    if ps -eo cmd | grep -E '[m]ain_ppo_multitask|[r]aylet|[r]ay::|[V]LLMWorker' >/dev/null; then
-      echo 'stale training, Ray, or vLLM process detected' >&2
-      exit 1
-    fi"
+    test -w '${ASSET_ROOT}'"
 }
 
 status_run() {
@@ -202,6 +234,7 @@ launch_eval() {
   local run_root
   run_root="$(run_root_for formal)"
   audit_checkpoints
+  machine_preflight
   assert_checkpoint_complete formal "${STEP}"
   REMOTE="${REMOTE}" \
   REMOTE_ROOT="${REMOTE_ROOT}" \
@@ -229,6 +262,7 @@ audit_checkpoints() {
     --skip-eval \
     --expected-source-commit '${SOURCE_COMMIT}' \
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
+    --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
     --expected-student-model-suffix Qwen3-1.7B-Base \
     --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
 }
@@ -240,13 +274,14 @@ audit_formal() {
     --run-dir '${run_dir}' --variant block3_mean --checkpoint-steps 50,100,200 --eval-steps 50,100,200 \
     --expected-source-commit '${SOURCE_COMMIT}' \
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
+    --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
     --expected-student-model-suffix Qwen3-1.7B-Base \
     --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
 }
 
 case "${ACTION}" in
   sync)
-    ML2_ROOT="${REMOTE_ROOT}" bash "${ROOT_DIR}/scripts/sync_block3_replication_to_ml2.sh"
+    ML2_ROOT="${ASSET_ROOT}" bash "${ROOT_DIR}/scripts/sync_block3_replication_to_ml2.sh"
     ;;
   probe1)
     probe1_preflight

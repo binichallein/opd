@@ -3,6 +3,7 @@ import json
 import math
 from pathlib import Path
 
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "audit_block10_run.py"
@@ -125,6 +126,8 @@ def test_eval_audit_requires_exact_dataset_size_config_and_rollout_seeds(tmp_pat
                 "model_path": str(
                     tmp_path / "checkpoints" / "global_step_50" / "actor" / "huggingface"
                 ),
+                "eval_jsonl_dir": "/data/eval_jsonl",
+                "tasks": ["math500", "aime24", "aime25", "amc23"],
                 "n": 8,
                 "temperature": 1.0,
                 "top_p": 0.9,
@@ -137,6 +140,12 @@ def test_eval_audit_requires_exact_dataset_size_config_and_rollout_seeds(tmp_pat
         )
     )
     (eval_dir / "exit_code.txt").write_text("0\n")
+    (eval_dir / "eval_data_hashes.sha256").write_text(
+        "".join(
+            f"{digest}  /data/eval_jsonl/{task}.jsonl\n"
+            for task, digest in audit.EXPECTED_EVAL_SHA256.items()
+        )
+    )
     for task, count in audit.EXPECTED_TASK_EXAMPLES.items():
         rows = []
         for example_id in range(count):
@@ -144,12 +153,19 @@ def test_eval_audit_requires_exact_dataset_size_config_and_rollout_seeds(tmp_pat
                 rows.append(json.dumps({"example_id": str(example_id), "seed": seed}))
         (outputs / f"{task}_graded.jsonl").write_text("\n".join(rows) + "\n")
 
-    assert audit.eval_issues(tmp_path, step=50) == []
+    assert audit.eval_issues(
+        tmp_path, step=50, expected_eval_data_dir="/data/eval_jsonl"
+    ) == []
 
     config = json.loads((outputs / "eval_config.json").read_text())
     config["top_p"] = 0.8
     (outputs / "eval_config.json").write_text(json.dumps(config))
-    assert any("top_p" in issue for issue in audit.eval_issues(tmp_path, step=50))
+    assert any(
+        "top_p" in issue
+        for issue in audit.eval_issues(
+            tmp_path, step=50, expected_eval_data_dir="/data/eval_jsonl"
+        )
+    )
 
 
 def test_artifact_manifest_checks_expected_train_sha(tmp_path):
@@ -159,3 +175,33 @@ def test_artifact_manifest_checks_expected_train_sha(tmp_path):
 
     assert audit.artifact_hash_issues(manifest, "abc123") == []
     assert "train.parquet SHA-256" in audit.artifact_hash_issues(manifest, "wrong")[0]
+
+
+def test_position_snapshot_audit_requires_all_twelve_finite_metrics(tmp_path):
+    audit = load_audit_module()
+    path = tmp_path / "step_00005.npz"
+    arrays = {"step": np.asarray(5)}
+    for metric in audit.REQUIRED_POSITION_METRICS:
+        arrays[f"{metric}__sum"] = np.zeros(16384)
+        arrays[f"{metric}__squared_sum"] = np.zeros(16384)
+        arrays[f"{metric}__valid_count"] = np.ones(16384, dtype=np.int64)
+    np.savez_compressed(path, **arrays)
+
+    assert audit.diagnostic_snapshot_issues(path, expected_step=5) == []
+
+    arrays.pop("teacher_overlap_mass__sum")
+    np.savez_compressed(path, **arrays)
+    assert any(
+        "teacher_overlap_mass__sum" in issue
+        for issue in audit.diagnostic_snapshot_issues(path, expected_step=5)
+    )
+
+
+def test_scalar_record_audit_requires_every_monitored_metric():
+    audit = load_audit_module()
+    record = {"step": 5, **{name: 0.0 for name in audit.REQUIRED_SCALAR_METRICS}}
+
+    assert audit.scalar_record_issues([record]) == []
+
+    del record["actor/grad_norm"]
+    assert "actor/grad_norm" in audit.scalar_record_issues([record])[0]
