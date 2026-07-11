@@ -56,6 +56,27 @@ def test_position_and_entropy_plots_support_one_host(tmp_path):
     assert entropy_path.stat().st_size > 0
 
 
+def test_position_heatmaps_cover_all_saved_alignment_and_policy_drift_metrics():
+    pytest.importorskip("matplotlib")
+    analyzer = load_analyzer()
+    names = {name for name, *_rest in analyzer.HEATMAP_METRICS}
+
+    assert {
+        "student_entropy",
+        "teacher_entropy",
+        "entropy_gap_signed",
+        "entropy_gap_absolute",
+        "overlap_ratio",
+        "student_overlap_mass",
+        "teacher_overlap_mass",
+        "overlap_token_advantage",
+        "sign_flip",
+        "leakage",
+        "post_update_block_log_ratio_abs",
+        "post_update_block_outside_clip",
+    } <= names
+
+
 def test_single_run_entrypoint_declares_all_required_artifacts():
     script = SINGLE_ANALYZER_PATH.read_text()
 

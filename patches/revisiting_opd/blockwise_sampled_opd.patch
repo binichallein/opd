@@ -165,7 +165,7 @@ index f754f25..861eda5 100644
          cliprange_low = cliprange
      if cliprange_high is None:
 diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
-index cbf1a4f..06ecb47 100644
+index cbf1a4f..b34b5da 100644
 --- a/verl/trainer/ppo/ray_trainer_multitask.py
 +++ b/verl/trainer/ppo/ray_trainer_multitask.py
 @@ -23,6 +23,7 @@ This trainer supports model-agonistic model initialization with huggingface
@@ -176,7 +176,7 @@ index cbf1a4f..06ecb47 100644
  import uuid
  from collections import defaultdict
  from contextlib import contextmanager
-@@ -65,6 +66,22 @@ from verl.utils.tracking import ValidationGenerationsLogger
+@@ -65,6 +66,23 @@ from verl.utils.tracking import ValidationGenerationsLogger
  from verl.workers.rollout.async_server import AsyncLLMServerManager
  from gigpo import core_gigpo
  
@@ -184,6 +184,7 @@ index cbf1a4f..06ecb47 100644
 +    compute_block_credit_diagnostics,
 +    compute_block_ratio_diagnostics,
 +    compute_entropy_diagnostics,
++    expand_block_values_to_tokens,
 +    compute_masked_summary,
 +    compute_position_statistics,
 +    compute_topk_alignment_diagnostics,
@@ -199,7 +200,7 @@ index cbf1a4f..06ecb47 100644
  from agent_system.multi_turn_rollout import TrajectoryCollector, adjust_batch
  
  WorkerType = Type[Worker]
-@@ -1225,6 +1242,120 @@ class RayPPOTrainer:
+@@ -1225,6 +1243,120 @@ class RayPPOTrainer:
          global_balance_stats = log_seqlen_unbalance(seqlen_list=global_seqlen_lst, partitions=global_partition_lst, prefix=logging_prefix)
          metrics.update(global_balance_stats)
  
@@ -320,7 +321,7 @@ index cbf1a4f..06ecb47 100644
      def fit(self):
          """
          The training loop of PPO.
-@@ -1242,6 +1373,17 @@ class RayPPOTrainer:
+@@ -1242,6 +1374,17 @@ class RayPPOTrainer:
              default_backend=self.config.trainer.logger,
              config=OmegaConf.to_container(self.config, resolve=True),
          )
@@ -338,7 +339,7 @@ index cbf1a4f..06ecb47 100644
  
          self.global_steps = 0
  
-@@ -1269,6 +1411,13 @@ class RayPPOTrainer:
+@@ -1269,6 +1412,13 @@ class RayPPOTrainer:
              for batch_dict in self.train_dataloader:
                  metrics = {}
                  timing_raw = {}
@@ -352,7 +353,7 @@ index cbf1a4f..06ecb47 100644
                  batch: DataProto = DataProto.from_single_dict(batch_dict)
  
                  # pop those keys for generation
-@@ -1481,6 +1630,27 @@ class RayPPOTrainer:
+@@ -1481,6 +1631,27 @@ class RayPPOTrainer:
                                      else:
                                          ref_log_prob = self.actor_rollout_wg.compute_ref_log_prob(batch)
                              batch = batch.union(ref_log_prob)
@@ -380,7 +381,7 @@ index cbf1a4f..06ecb47 100644
                          
                          # Compute student's log probs for teacher's top-k indices if using OPD topk
                          if use_opd_topk and "teacher_topk_indices" in batch.batch:
-@@ -1606,6 +1776,19 @@ class RayPPOTrainer:
+@@ -1606,6 +1777,19 @@ class RayPPOTrainer:
                                  clip_log_ratio=self.config.actor_rollout_ref.actor.get("clip_log_ratio", False), # this config is not that naturally related to OPD, but we keep it here for compatibility
                              )
  
@@ -400,7 +401,7 @@ index cbf1a4f..06ecb47 100644
                          if self.config.trainer.get("rollout_data_dir", None):
                              self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
  
-@@ -1625,6 +1808,67 @@ class RayPPOTrainer:
+@@ -1625,6 +1809,108 @@ class RayPPOTrainer:
                          actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                          metrics.update(actor_output_metrics)
  
@@ -464,11 +465,52 @@ index cbf1a4f..06ecb47 100644
 +                                        "post-update OPD diagnostics require a pre-update snapshot"
 +                                    )
 +                                diagnostic_snapshot[0].update(post_update_ratio_metrics)
++                                block_size = int(
++                                    self.config.actor_rollout_ref.actor.get(
++                                        "opd_block_size", 1
++                                    )
++                                )
++                                expanded_log_ratio, response_valid = (
++                                    expand_block_values_to_tokens(
++                                        block_ratio["block_log_ratio"].abs(),
++                                        batch.batch["response_mask"],
++                                        block_size,
++                                    )
++                                )
++                                expanded_finite, _ = expand_block_values_to_tokens(
++                                    block_ratio["finite_mask"].to(torch.float32),
++                                    batch.batch["response_mask"],
++                                    block_size,
++                                )
++                                expanded_outside_clip, _ = (
++                                    expand_block_values_to_tokens(
++                                        block_ratio["outside_clip_mask"].to(torch.float32),
++                                        batch.batch["response_mask"],
++                                        block_size,
++                                    )
++                                )
++                                finite_response = response_valid & expanded_finite.bool()
++                                diagnostic_snapshot[1].update(
++                                    {
++                                        "post_update_block_log_ratio_abs": (
++                                            compute_position_statistics(
++                                                expanded_log_ratio,
++                                                finite_response,
++                                            )
++                                        ),
++                                        "post_update_block_outside_clip": (
++                                            compute_position_statistics(
++                                                expanded_outside_clip,
++                                                finite_response,
++                                            )
++                                        ),
++                                    }
++                                )
 +
                      # Log rollout generations if enabled
                      rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
                      if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
-@@ -1638,10 +1882,6 @@ class RayPPOTrainer:
+@@ -1638,10 +1924,6 @@ class RayPPOTrainer:
                                  last_val_metrics = val_metrics
                          metrics.update(val_metrics)
  
@@ -479,7 +521,7 @@ index cbf1a4f..06ecb47 100644
                  # training metrics
                  metrics.update(
                      {
-@@ -1656,10 +1896,71 @@ class RayPPOTrainer:
+@@ -1656,10 +1938,71 @@ class RayPPOTrainer:
                  n_gpus = self.resource_pool_manager.get_n_gpus()
                  metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
  

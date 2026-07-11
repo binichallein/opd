@@ -31,12 +31,18 @@ from opd_ext.analysis import (
 
 
 HEATMAP_METRICS = (
-    ("student_entropy", "Student entropy", 0.0, 12.0),
-    ("teacher_entropy", "Teacher entropy", 0.0, 12.0),
-    ("entropy_gap_absolute", "Absolute entropy gap", 0.0, None),
-    ("overlap_ratio", "Top-16 overlap ratio", 0.0, 1.0),
-    ("sign_flip", "SignFlipRate", 0.0, 1.0),
-    ("leakage", "LeakageMagnitude", 0.0, None),
+    ("student_entropy", "Student entropy", 0.0, 12.0, "viridis", False),
+    ("teacher_entropy", "Teacher entropy", 0.0, 12.0, "viridis", False),
+    ("entropy_gap_signed", "Signed entropy gap (teacher - student)", None, None, "coolwarm", True),
+    ("entropy_gap_absolute", "Absolute entropy gap", 0.0, None, "viridis", False),
+    ("overlap_ratio", "Top-16 overlap ratio", 0.0, 1.0, "viridis", False),
+    ("student_overlap_mass", "Student overlap mass", 0.0, 1.0, "viridis", False),
+    ("teacher_overlap_mass", "Teacher overlap mass", 0.0, 1.0, "viridis", False),
+    ("overlap_token_advantage", "Overlap-token advantage", None, None, "coolwarm", True),
+    ("sign_flip", "SignFlipRate", 0.0, 1.0, "viridis", False),
+    ("leakage", "LeakageMagnitude", 0.0, None, "viridis", False),
+    ("post_update_block_log_ratio_abs", "Post-update block |log-ratio|", 0.0, None, "magma", False),
+    ("post_update_block_outside_clip", "Post-update block outside-clip fraction", 0.0, 1.0, "magma", False),
 )
 
 
@@ -173,11 +179,18 @@ def plot_heatmaps(
     fig, axes = plt.subplots(
         len(HEATMAP_METRICS),
         len(hosts),
-        figsize=(8 * len(hosts), 18),
+        figsize=(8 * len(hosts), 3.1 * len(HEATMAP_METRICS)),
         constrained_layout=True,
         squeeze=False,
     )
-    for row_index, (metric, title, fixed_min, fixed_max) in enumerate(HEATMAP_METRICS):
+    for row_index, (
+        metric,
+        title,
+        fixed_min,
+        fixed_max,
+        cmap_name,
+        symmetric,
+    ) in enumerate(HEATMAP_METRICS):
         matrices = {}
         steps_by_host = {}
         for host in hosts:
@@ -187,13 +200,18 @@ def plot_heatmaps(
         finite_values = np.concatenate(
             [matrix[np.isfinite(matrix)] for matrix in matrices.values() if np.isfinite(matrix).any()]
         )
+        dynamic_min = float(np.quantile(finite_values, 0.01)) if finite_values.size else 0.0
         dynamic_max = float(np.quantile(finite_values, 0.99)) if finite_values.size else 1.0
-        vmin = fixed_min
-        vmax = fixed_max if fixed_max is not None else max(dynamic_max, 1e-8)
+        if symmetric:
+            limit = max(abs(dynamic_min), abs(dynamic_max), 1e-8)
+            vmin, vmax = -limit, limit
+        else:
+            vmin = fixed_min if fixed_min is not None else dynamic_min
+            vmax = fixed_max if fixed_max is not None else max(dynamic_max, vmin + 1e-8)
         for column_index, host in enumerate(hosts):
             axis = axes[row_index, column_index]
             matrix = matrices[host]
-            cmap = plt.get_cmap("viridis").copy()
+            cmap = plt.get_cmap(cmap_name).copy()
             cmap.set_bad("#d1d5db")
             image = axis.imshow(matrix, aspect="auto", interpolation="nearest", cmap=cmap, vmin=vmin, vmax=vmax)
             axis.set_title(f"{host}: {title}")

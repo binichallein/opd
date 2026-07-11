@@ -36,6 +36,8 @@ VAL_N="${VAL_N:-1}"
 TRAINER_LOGGER="${TRAINER_LOGGER:-['console']}"
 ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.7}"
 ROLLOUT_MAX_NUM_BATCHED_TOKENS="${ROLLOUT_MAX_NUM_BATCHED_TOKENS:-18432}"
+ROLLOUT_TEMPERATURE="${ROLLOUT_TEMPERATURE:-1.0}"
+ROLLOUT_TOP_P="${ROLLOUT_TOP_P:-0.9}"
 ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU="${ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU:-1}"
 ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"
 REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-4}"
@@ -48,6 +50,9 @@ OPD_DIAG_SIGN_EPS="${OPD_DIAG_SIGN_EPS:-1e-4}"
 DIAGNOSTIC_SAVE_STEPS="${DIAGNOSTIC_SAVE_STEPS:-40,50,60,80,100,200}"
 STOP_AFTER_STEP="${STOP_AFTER_STEP:--1}"
 FILTER_OVERLONG_PROMPTS="${FILTER_OVERLONG_PROMPTS:-true}"
+EXPECTED_TRAIN_SHA256="${EXPECTED_TRAIN_SHA256:-}"
+RESUME_MODE="${RESUME_MODE:-disable}"
+RESUME_FROM_PATH="${RESUME_FROM_PATH:-}"
 
 RUN_DIR="${RUN_ROOT}/${VARIANT}"
 CKPTS_DIR="${RUN_DIR}/checkpoints"
@@ -67,6 +72,10 @@ test -f '${DATA_DIR}/eval_jsonl/aime24.jsonl'
 test -f '${DATA_DIR}/eval_jsonl/aime25.jsonl'
 test -f '${DATA_DIR}/eval_jsonl/amc23.jsonl'
 test \$(cat '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT') = '${SUBMODULE_BASE_COMMIT}'
+if [[ -n '${EXPECTED_TRAIN_SHA256}' ]]; then
+  actual_train_sha256=\$(sha256sum '${TRAIN_DATA}' | awk '{print \$1}')
+  test \"\${actual_train_sha256}\" = '${EXPECTED_TRAIN_SHA256}'
+fi
 if git -C '${REMOTE_ROOT}' rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   bash '${REMOTE_ROOT}/scripts/setup_revisiting_opd.sh' >/dev/null
 fi
@@ -74,6 +83,17 @@ mkdir -p '${RUN_DIR}' '${CKPTS_DIR}' '${LOG_DIR}' '${RUN_DIR}/summaries' \
   '${LOCAL_CACHE_ROOT}/tmp' '${LOCAL_CACHE_ROOT}/vllm_cache' \
   '${LOCAL_CACHE_ROOT}/torchinductor' '${LOCAL_CACHE_ROOT}/triton' \
   '${LOCAL_CACHE_ROOT}/cuda_cache' '${LOCAL_CACHE_ROOT}/outlines'
+if [[ -f '${RUN_DIR}/train.pid' ]] && ps -p \"\$(cat '${RUN_DIR}/train.pid')\" >/dev/null 2>&1; then
+  echo \"already_running pid=\$(cat '${RUN_DIR}/train.pid') run_dir=${RUN_DIR}\"
+  exit 0
+fi
+mkdir -p '${RUN_DIR}/launch_history'
+launch_archive=\$(date +%Y%m%dT%H%M%S)
+for evidence in run_card.json command.sh env.txt artifact_hashes.sha256 script_hashes.sha256; do
+  if [[ -f '${RUN_DIR}/'\"\${evidence}\" ]]; then
+    cp '${RUN_DIR}/'\"\${evidence}\" '${RUN_DIR}/launch_history/'\"\${launch_archive}_\${evidence}\"
+  fi
+done
 (cd '${REMOTE_ROOT}/external/revisiting_opd' && \
   sha256sum -c '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256') \
   > '${RUN_DIR}/revisiting_opd_manifest_check.txt'
@@ -85,6 +105,9 @@ sha256sum \
   '${REMOTE_ROOT}/scripts/launch_qwen3_math_eval.sh' \
   '${REMOTE_ROOT}/scripts/eval_qwen3_math_vllm.py' \
   '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
+  '${REMOTE_ROOT}/scripts/block3_replication_control.sh' \
+  '${REMOTE_ROOT}/scripts/analyze_block10_collapse_diagnostics.py' \
+  '${REMOTE_ROOT}/scripts/analyze_single_opd_diagnostics.py' \
   '${REMOTE_ROOT}/patches/revisiting_opd/blockwise_sampled_opd.patch' \
   '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT' \
   '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256' \
@@ -144,6 +167,8 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"val_n\": ${VAL_N},
   \"rollout_gpu_memory_utilization\": ${ROLLOUT_GPU_MEMORY_UTILIZATION},
   \"rollout_max_num_batched_tokens\": ${ROLLOUT_MAX_NUM_BATCHED_TOKENS},
+  \"rollout_temperature\": ${ROLLOUT_TEMPERATURE},
+  \"rollout_top_p\": ${ROLLOUT_TOP_P},
   \"actor_ppo_micro_batch_size_per_gpu\": ${ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU},
   \"rollout_log_prob_micro_batch_size_per_gpu\": ${ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU},
   \"ref_log_prob_micro_batch_size_per_gpu\": ${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU},
@@ -156,6 +181,9 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"diagnostic_save_steps\": \"${DIAGNOSTIC_SAVE_STEPS}\",
   \"stop_after_step\": ${STOP_AFTER_STEP},
   \"filter_overlong_prompts\": ${FILTER_OVERLONG_PROMPTS},
+  \"expected_train_sha256\": \"${EXPECTED_TRAIN_SHA256}\",
+  \"resume_mode\": \"${RESUME_MODE}\",
+  \"resume_from_path\": \"${RESUME_FROM_PATH}\",
   \"diagnostic_output_dir\": \"${OPD_DIAG_OUTPUT_DIR}\",
   \"checkpoint_policy\": \"preserve all milestone checkpoints; no automatic deletion\",
   \"baseline_alignment\": \"Blockwise/Rethinking-aligned Qwen3-1.7B-Base student, Qwen3-4B-Base-GRPO teacher, and raw 1,791,700-row DAPO-Math-17K pool; Revisiting OPD is codebase only\"
@@ -214,6 +242,8 @@ TEST_FREQ='${TEST_FREQ}' \
 VAL_N='${VAL_N}' \
 ROLLOUT_GPU_MEMORY_UTILIZATION='${ROLLOUT_GPU_MEMORY_UTILIZATION}' \
 ROLLOUT_MAX_NUM_BATCHED_TOKENS='${ROLLOUT_MAX_NUM_BATCHED_TOKENS}' \
+ROLLOUT_TEMPERATURE='${ROLLOUT_TEMPERATURE}' \
+ROLLOUT_TOP_P='${ROLLOUT_TOP_P}' \
 ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU='${ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU}' \
 ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU='${ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU}' \
 REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU='${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU}' \
@@ -227,14 +257,12 @@ OPD_DIAG_SIGN_EPS='${OPD_DIAG_SIGN_EPS}' \
 DIAGNOSTIC_SAVE_STEPS='${DIAGNOSTIC_SAVE_STEPS}' \
 STOP_AFTER_STEP='${STOP_AFTER_STEP}' \
 FILTER_OVERLONG_PROMPTS='${FILTER_OVERLONG_PROMPTS}' \
+RESUME_MODE='${RESUME_MODE}' \
+RESUME_FROM_PATH='${RESUME_FROM_PATH}' \
 OPD_DIAG_OUTPUT_DIR='${OPD_DIAG_OUTPUT_DIR}' \
 bash scripts/run_revisiting_sampled_block_opd_math.sh
 CMD
 chmod +x '${RUN_DIR}/command.sh'
-if [[ -f '${RUN_DIR}/train.pid' ]] && ps -p \"\$(cat '${RUN_DIR}/train.pid')\" >/dev/null 2>&1; then
-  echo \"already_running pid=\$(cat '${RUN_DIR}/train.pid') run_dir=${RUN_DIR}\"
-  exit 0
-fi
 nohup bash '${RUN_DIR}/command.sh' > '${LOG_DIR}/nohup.log' 2>&1 &
 echo \$! > '${RUN_DIR}/train.pid'
 echo \"pid=\$(cat '${RUN_DIR}/train.pid') run_dir=${RUN_DIR} log=${LOG_DIR}/nohup.log\"

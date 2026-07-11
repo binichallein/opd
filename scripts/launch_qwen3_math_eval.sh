@@ -39,6 +39,10 @@ mkdir -p '${EVAL_DIR}' '${LOG_DIR}' \
   '${LOCAL_CACHE_ROOT}/tmp' '${LOCAL_CACHE_ROOT}/vllm_cache' \
   '${LOCAL_CACHE_ROOT}/torchinductor' '${LOCAL_CACHE_ROOT}/triton' \
   '${LOCAL_CACHE_ROOT}/cuda_cache' '${LOCAL_CACHE_ROOT}/outlines'
+if [[ -f '${EVAL_DIR}/eval.pid' ]] && ps -p \"\$(cat '${EVAL_DIR}/eval.pid')\" >/dev/null 2>&1; then
+  echo \"already_running pid=\$(cat '${EVAL_DIR}/eval.pid') eval_dir=${EVAL_DIR}\"
+  exit 0
+fi
 cat > '${EVAL_DIR}/eval_card.json' <<JSON
 {
   \"variant\": \"${VARIANT}\",
@@ -113,10 +117,6 @@ fi
   "\${thinking_args[@]}"
 CMD
 chmod +x '${EVAL_DIR}/command.sh'
-if [[ -f '${EVAL_DIR}/eval.pid' ]] && ps -p \"\$(cat '${EVAL_DIR}/eval.pid')\" >/dev/null 2>&1; then
-  echo \"already_running pid=\$(cat '${EVAL_DIR}/eval.pid') eval_dir=${EVAL_DIR}\"
-  exit 0
-fi
 nohup bash '${EVAL_DIR}/command.sh' > '${LOG_DIR}/eval.log' 2>&1 &
 echo \$! > '${EVAL_DIR}/eval.pid'
 echo \"pid=\$(cat '${EVAL_DIR}/eval.pid') eval_dir=${EVAL_DIR} log=${LOG_DIR}/eval.log\"

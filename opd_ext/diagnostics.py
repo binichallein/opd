@@ -57,6 +57,32 @@ def _pad_last_dim(tensor: torch.Tensor, multiple: int, value: float = 0.0) -> to
 
 
 @torch.no_grad()
+def expand_block_values_to_tokens(
+    block_values: torch.Tensor,
+    response_mask: torch.Tensor,
+    block_size: int,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Repeat each block value over its response-token positions."""
+    if block_values.ndim != 2 or response_mask.ndim != 2:
+        raise ValueError("block values and response_mask must be rank-two tensors")
+    if block_values.size(0) != response_mask.size(0):
+        raise ValueError("block values and response_mask must share batch size")
+    if block_size < 1:
+        raise ValueError("block_size must be positive")
+    expected_blocks = (response_mask.size(1) + block_size - 1) // block_size
+    if block_values.size(1) != expected_blocks:
+        raise ValueError(
+            f"expected {expected_blocks} block values for response length "
+            f"{response_mask.size(1)}, got {block_values.size(1)}"
+        )
+    valid = response_mask.bool()
+    expanded = block_values.repeat_interleave(block_size, dim=-1)[
+        :, : response_mask.size(1)
+    ]
+    return torch.where(valid, expanded, torch.zeros_like(expanded)), valid
+
+
+@torch.no_grad()
 def compute_block_credit_diagnostics(
     advantages: torch.Tensor,
     response_mask: torch.Tensor,
@@ -185,6 +211,8 @@ def compute_block_ratio_diagnostics(
         "block_log_ratio": block_log_ratio,
         "block_ratio": block_ratio,
         "block_valid_mask": block_valid,
+        "finite_mask": finite,
+        "outside_clip_mask": clipped,
         "clip_fraction": clip_fraction,
         "overflow_count": overflow_count,
         "underflow_count": underflow_count,

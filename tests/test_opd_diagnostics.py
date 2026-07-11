@@ -5,6 +5,7 @@ from opd_ext.diagnostics import (
     compute_block_credit_diagnostics,
     compute_block_ratio_diagnostics,
     compute_entropy_diagnostics,
+    expand_block_values_to_tokens,
     compute_masked_summary,
     compute_position_statistics,
     compute_topk_alignment_diagnostics,
@@ -161,6 +162,19 @@ def test_block_ratio_diagnostics_uses_summed_log_ratio_and_reports_clipping():
     assert result["overflow_count"].item() == 0
     assert result["underflow_count"].item() == 0
     assert result["nonfinite_count"].item() == 0
+    torch.testing.assert_close(
+        result["outside_clip_mask"], torch.tensor([[True, True]])
+    )
+
+
+def test_block_values_expand_to_response_positions_and_respect_partial_tail():
+    values = torch.tensor([[0.3, -0.2]])
+    response_mask = torch.tensor([[1, 1, 1, 1, 0]])
+
+    expanded, valid = expand_block_values_to_tokens(values, response_mask, block_size=3)
+
+    torch.testing.assert_close(expanded, torch.tensor([[0.3, 0.3, 0.3, -0.2, 0.0]]))
+    torch.testing.assert_close(valid, response_mask.bool())
 
 
 def test_block_ratio_diagnostics_counts_both_exponential_extremes():

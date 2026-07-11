@@ -7,6 +7,15 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 CORE_ALGOS = ROOT / "external" / "revisiting_opd" / "verl" / "trainer" / "ppo" / "core_algos.py"
+RAY_TRAINER = (
+    ROOT
+    / "external"
+    / "revisiting_opd"
+    / "verl"
+    / "trainer"
+    / "ppo"
+    / "ray_trainer_multitask.py"
+)
 
 torch_functional = types.SimpleNamespace(masked_mean=lambda x, mask: (x * mask).sum() / mask.sum())
 sys.modules.setdefault("verl", types.ModuleType("verl"))
@@ -191,3 +200,11 @@ def test_diagnostic_reads_do_not_change_block10_loss_gradient_or_rng():
     torch.testing.assert_close(diagnostic_loss, baseline_loss)
     torch.testing.assert_close(diagnostic_grad, baseline_grad)
     assert torch.equal(rng_before, rng_after)
+
+
+def test_post_update_block_drift_is_saved_as_position_statistics():
+    trainer = RAY_TRAINER.read_text()
+
+    assert '"post_update_block_log_ratio_abs"' in trainer
+    assert '"post_update_block_outside_clip"' in trainer
+    assert "expand_block_values_to_tokens" in trainer

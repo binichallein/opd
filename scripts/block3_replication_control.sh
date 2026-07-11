@@ -14,6 +14,8 @@ STUDENT_MODEL="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_
 MATH_TEACHER="${REMOTE_ROOT}/models/Qwen3-4B-Base-GRPO"
 DATA_DIR="${REMOTE_ROOT}/data/math_opd_dapo17k_hf_full_eval4"
 CACHE_ROOT="${REMOTE_ROOT}/cache/block3_replication_${DATE_TAG}"
+EXPECTED_TRAIN_SHA256="cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf"
+MIN_TOS_AVAILABLE_BYTES=100000000000
 
 VARIANT="block3_mean"
 ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.6}"
@@ -33,12 +35,19 @@ run_root_for() {
   fi
 }
 
+run_dir_for() {
+  local kind="$1"
+  echo "$(run_root_for "${kind}")/${VARIANT}"
+}
+
 launch_train() {
   local kind="$1"
   local total_steps="$2"
   local milestones="$3"
   local stop_after_step="$4"
   local diag_interval="${5:-${FORMAL_OPD_DIAG_INTERVAL}}"
+  local resume_mode="${6:-disable}"
+  local resume_from_path="${7:-}"
   local run_root
   run_root="$(run_root_for "${kind}")"
 
@@ -61,6 +70,8 @@ launch_train() {
   MAX_PROMPT_LENGTH=2048 \
   MAX_RESPONSE_LENGTH=16384 \
   LEARNING_RATE=2e-6 \
+  ROLLOUT_TEMPERATURE=1.0 \
+  ROLLOUT_TOP_P=0.9 \
   TOTAL_TRAINING_STEPS="${total_steps}" \
   SAVE_FREQ=-1 \
   TEST_FREQ=-1 \
@@ -79,9 +90,97 @@ launch_train() {
   DIAGNOSTIC_SAVE_STEPS="${milestones}" \
   STOP_AFTER_STEP="${stop_after_step}" \
   FILTER_OVERLONG_PROMPTS=false \
+  EXPECTED_TRAIN_SHA256="${EXPECTED_TRAIN_SHA256}" \
+  RESUME_MODE="${resume_mode}" \
+  RESUME_FROM_PATH="${resume_from_path}" \
   SOURCE_COMMIT="${SOURCE_COMMIT}" \
   SUBMODULE_BASE_COMMIT="${SUBMODULE_BASE_COMMIT}" \
   bash "${ROOT_DIR}/scripts/launch_revisiting_block_opd_formal_train.sh"
+}
+
+assert_checkpoint_complete() {
+  local kind="$1"
+  local step="$2"
+  local run_dir
+  run_dir="$(run_dir_for "${kind}")"
+  ssh "${REMOTE}" "set -euo pipefail
+    checkpoint='${run_dir}/checkpoints/global_step_${step}'
+    test -s \"\${checkpoint}/data.pt\"
+    for prefix in model optim extra_state; do
+      for rank in 0 1 2 3; do
+        test -s \"\${checkpoint}/actor/\${prefix}_world_size_4_rank_\${rank}.pt\"
+      done
+    done"
+}
+
+assert_run_stopped_successfully() {
+  local kind="$1"
+  local run_dir
+  run_dir="$(run_dir_for "${kind}")"
+  ssh "${REMOTE}" "set -euo pipefail
+    test -f '${run_dir}/train.pid'
+    pid=\$(cat '${run_dir}/train.pid')
+    if ps -p \"\${pid}\" >/dev/null 2>&1; then
+      echo 'run is still active: pid='\"\${pid}\" >&2
+      exit 1
+    fi
+    test \"\$(cat '${run_dir}/exit_code.txt')\" = 0"
+}
+
+probe1_preflight() {
+  local run_dir
+  run_dir="$(run_dir_for probe)"
+  ssh "${REMOTE}" "test ! -e '${run_dir}'"
+}
+
+probe2_preflight() {
+  local run_dir
+  run_dir="$(run_dir_for probe)"
+  assert_run_stopped_successfully probe
+  assert_checkpoint_complete probe 1
+  ssh "${REMOTE}" "test ! -e '${run_dir}/checkpoints/global_step_2'"
+}
+
+verify_probe_resume() {
+  local run_dir step1
+  run_dir="$(run_dir_for probe)"
+  step1="${run_dir}/checkpoints/global_step_1"
+  assert_run_stopped_successfully probe
+  assert_checkpoint_complete probe 1
+  assert_checkpoint_complete probe 2
+  ssh "${REMOTE}" "set -euo pipefail
+    grep -F 'Resuming from ${step1}' '${run_dir}/logs/nohup.log' >/dev/null
+    '${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
+      --run-dir '${run_dir}' \
+      --variant block3_mean \
+      --checkpoint-steps 1,2 \
+      --skip-eval \
+      --expected-total-training-steps 2 \
+      --expected-diagnostic-steps 1,2 \
+      --expected-diag-interval 1 \
+      --expected-resume-mode resume_path \
+      --expected-resume-from-path '${step1}' \
+      --expected-source-commit '${SOURCE_COMMIT}' \
+      --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
+      --expected-student-model-suffix Qwen3-1.7B-Base \
+      --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
+}
+
+formal_preflight() {
+  local run_dir
+  run_dir="$(run_dir_for formal)"
+  verify_probe_resume
+  ssh "${REMOTE}" "set -euo pipefail
+    test ! -e '${run_dir}'
+    test -w '${REMOTE_ROOT}'
+    available=\$(df -PB1 '${REMOTE_ROOT}' | awk 'NR == 2 {print \$4}')
+    test \"\${available}\" -ge '${MIN_TOS_AVAILABLE_BYTES}'
+    nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader,nounits | \
+      awk -F, '{gsub(/ /, \"\", \$1); gsub(/ /, \"\", \$2); if (\$1 > 1024 || \$2 > 0) busy=1} END {exit busy}'
+    if ps -eo cmd | grep -E '[m]ain_ppo_multitask|[r]aylet|[r]ay::|[V]LLMWorker' >/dev/null; then
+      echo 'stale training, Ray, or vLLM process detected' >&2
+      exit 1
+    fi"
 }
 
 status_run() {
@@ -102,6 +201,8 @@ status_run() {
 launch_eval() {
   local run_root
   run_root="$(run_root_for formal)"
+  audit_checkpoints
+  assert_checkpoint_complete formal "${STEP}"
   REMOTE="${REMOTE}" \
   REMOTE_ROOT="${REMOTE_ROOT}" \
   RUN_ROOT="${run_root}" \
@@ -118,11 +219,29 @@ launch_eval() {
   bash "${ROOT_DIR}/scripts/launch_qwen3_math_eval.sh"
 }
 
+audit_checkpoints() {
+  local run_dir
+  run_dir="$(run_root_for formal)/${VARIANT}"
+  ssh "${REMOTE}" "'${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
+    --run-dir '${run_dir}' \
+    --variant block3_mean \
+    --checkpoint-steps 50,100,200 \
+    --skip-eval \
+    --expected-source-commit '${SOURCE_COMMIT}' \
+    --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
+    --expected-student-model-suffix Qwen3-1.7B-Base \
+    --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
+}
+
 audit_formal() {
   local run_dir
   run_dir="$(run_root_for formal)/${VARIANT}"
   ssh "${REMOTE}" "'${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
-    --run-dir '${run_dir}' --variant block3_mean --checkpoint-steps 50,100,200 --eval-steps 50,100,200"
+    --run-dir '${run_dir}' --variant block3_mean --checkpoint-steps 50,100,200 --eval-steps 50,100,200 \
+    --expected-source-commit '${SOURCE_COMMIT}' \
+    --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
+    --expected-student-model-suffix Qwen3-1.7B-Base \
+    --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
 }
 
 case "${ACTION}" in
@@ -130,13 +249,20 @@ case "${ACTION}" in
     ML2_ROOT="${REMOTE_ROOT}" bash "${ROOT_DIR}/scripts/sync_block3_replication_to_ml2.sh"
     ;;
   probe1)
-    launch_train probe 2 1 1 1
+    probe1_preflight
+    launch_train probe 2 1 1 1 disable
     ;;
   probe2)
-    launch_train probe 2 1,2 -1 1
+    probe2_preflight
+    probe_step1="$(run_dir_for probe)/checkpoints/global_step_1"
+    launch_train probe 2 1,2 -1 1 resume_path "${probe_step1}"
+    ;;
+  probe-audit)
+    verify_probe_resume
     ;;
   formal)
-    launch_train formal 200 50,100,200 -1 "${FORMAL_OPD_DIAG_INTERVAL}"
+    formal_preflight
+    launch_train formal 200 50,100,200 -1 "${FORMAL_OPD_DIAG_INTERVAL}" disable
     ;;
   status)
     status_run
@@ -144,11 +270,14 @@ case "${ACTION}" in
   eval)
     launch_eval
     ;;
+  audit-checkpoints)
+    audit_checkpoints
+    ;;
   audit)
     audit_formal
     ;;
   *)
-    echo "usage: $0 {sync|probe1|probe2|formal|status|eval [step]|audit}" >&2
+    echo "usage: $0 {sync|probe1|probe2|probe-audit|formal|status|eval [step]|audit-checkpoints|audit}" >&2
     exit 2
     ;;
 esac
