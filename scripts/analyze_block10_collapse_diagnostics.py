@@ -170,7 +170,13 @@ def plot_heatmaps(
     min_count: int,
 ) -> None:
     hosts = tuple(snapshots_by_host)
-    fig, axes = plt.subplots(len(HEATMAP_METRICS), len(hosts), figsize=(16, 18), constrained_layout=True)
+    fig, axes = plt.subplots(
+        len(HEATMAP_METRICS),
+        len(hosts),
+        figsize=(8 * len(hosts), 18),
+        constrained_layout=True,
+        squeeze=False,
+    )
     for row_index, (metric, title, fixed_min, fixed_max) in enumerate(HEATMAP_METRICS):
         matrices = {}
         steps_by_host = {}
@@ -206,7 +212,14 @@ def plot_entropy_segments(
     snapshots_by_host: dict[str, list[dict[str, object]]], output_path: Path
 ) -> None:
     segments = ((0, 4096, "0-4K"), (4096, 12288, "4-12K"), (12288, 16384, "12-16K"))
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10), constrained_layout=True)
+    host_count = len(snapshots_by_host)
+    fig, axes = plt.subplots(
+        2,
+        host_count,
+        figsize=(7 * host_count, 10),
+        constrained_layout=True,
+        squeeze=False,
+    )
     for column, (host, snapshots) in enumerate(snapshots_by_host.items()):
         for row, (metric, model_name) in enumerate(
             (("student_entropy", "Student"), ("teacher_entropy", "Teacher"))

@@ -18,6 +18,7 @@ FILES=(
   scripts/block3_replication_control.sh
   scripts/sync_block3_replication_to_ml2.sh
   scripts/analyze_block10_collapse_diagnostics.py
+  scripts/analyze_single_opd_diagnostics.py
   external/revisiting_opd.UPSTREAM_COMMIT
   manifests/revisiting_opd_runtime.sha256
   external/revisiting_opd/verl/trainer/config/ppo_trainer.yaml
