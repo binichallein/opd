@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit one completed Block10 diagnostic run before cross-host analysis."""
+"""Audit one completed OPD diagnostic run before analysis."""
 
 from __future__ import annotations
 
@@ -18,19 +18,62 @@ EXPECTED_TASKS = {"math500", "aime24", "aime25", "amc23"}
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-dir", type=Path, required=True)
+    parser.add_argument("--variant", default="block10_mean")
+    parser.add_argument(
+        "--checkpoint-steps",
+        default=",".join(str(step) for step in EXPECTED_CHECKPOINT_STEPS),
+    )
+    parser.add_argument(
+        "--eval-steps",
+        default=",".join(str(step) for step in EXPECTED_EVAL_STEPS),
+    )
+    parser.add_argument("--world-size", type=int, default=4)
+    parser.add_argument("--skip-eval", action="store_true")
     return parser.parse_args()
 
 
-def checkpoint_issues(run_dir: Path, step: int) -> list[str]:
+def parse_step_list(value: str) -> list[int]:
+    """Parse a comma-separated milestone list into sorted unique positive steps."""
+    if not value.strip():
+        return []
+    steps = sorted({int(part.strip()) for part in value.split(",") if part.strip()})
+    if any(step <= 0 for step in steps):
+        raise ValueError("milestone steps must be positive")
+    return steps
+
+
+def expected_run_card(variant: str) -> dict[str, object]:
+    """Return the invariant run-card fields required for diagnostic experiments."""
+    return {
+        "variant": variant,
+        "seed": 21,
+        "data_seed": 21,
+        "rollout_seed": 21,
+        "environment_seed": 21,
+        "total_training_steps": 200,
+        "test_freq": -1,
+        "opd_diagnostics": True,
+        "opd_diag_interval": 5,
+        "opd_diag_topk": 16,
+        "opd_diag_position_stride": 1,
+        "rollout_gpu_memory_utilization": 0.6,
+        "ref_log_prob_micro_batch_size_per_gpu": 1,
+        "filter_overlong_prompts": False,
+    }
+
+
+def checkpoint_issues(run_dir: Path, step: int, world_size: int = 4) -> list[str]:
     root = run_dir / "checkpoints" / f"global_step_{step}"
     actor = root / "actor"
     issues = []
     if not (root / "data.pt").is_file():
         issues.append(f"step {step}: missing data.pt")
     for prefix in ("model", "optim", "extra_state"):
-        files = list(actor.glob(f"{prefix}_world_size_4_rank_*.pt"))
-        if len(files) != 4 or any(path.stat().st_size == 0 for path in files):
-            issues.append(f"step {step}: expected four nonempty {prefix} shards")
+        files = list(actor.glob(f"{prefix}_world_size_{world_size}_rank_*.pt"))
+        if len(files) != world_size or any(path.stat().st_size == 0 for path in files):
+            issues.append(
+                f"step {step}: expected {world_size} nonempty {prefix} shards"
+            )
     return issues
 
 
@@ -73,6 +116,8 @@ def eval_issues(run_dir: Path, step: int) -> list[str]:
 def main() -> None:
     args = parse_args()
     run_dir = args.run_dir
+    checkpoint_steps = parse_step_list(args.checkpoint_steps)
+    eval_steps = [] if args.skip_eval else parse_step_list(args.eval_steps)
     issues: list[str] = []
     warnings: list[str] = []
 
@@ -82,21 +127,7 @@ def main() -> None:
         card = {}
     else:
         card = json.loads(card_path.read_text(encoding="utf-8"))
-    expected_card = {
-        "variant": "block10_mean",
-        "seed": 21,
-        "data_seed": 21,
-        "rollout_seed": 21,
-        "environment_seed": 21,
-        "total_training_steps": 200,
-        "test_freq": -1,
-        "opd_diagnostics": True,
-        "opd_diag_interval": 5,
-        "opd_diag_topk": 16,
-        "rollout_gpu_memory_utilization": 0.6,
-        "ref_log_prob_micro_batch_size_per_gpu": 1,
-        "filter_overlong_prompts": False,
-    }
+    expected_card = expected_run_card(args.variant)
     for key, expected in expected_card.items():
         if card.get(key) != expected:
             issues.append(f"run_card {key}: expected {expected!r}, got {card.get(key)!r}")
@@ -153,9 +184,9 @@ def main() -> None:
     if scalar_steps != EXPECTED_DIAGNOSTIC_STEPS:
         issues.append("scalar JSONL steps do not match expected diagnostic schedule")
 
-    for step in EXPECTED_CHECKPOINT_STEPS:
-        issues.extend(checkpoint_issues(run_dir, step))
-    for step in EXPECTED_EVAL_STEPS:
+    for step in checkpoint_steps:
+        issues.extend(checkpoint_issues(run_dir, step, world_size=args.world_size))
+    for step in eval_steps:
         issues.extend(eval_issues(run_dir, step))
 
     result = {
@@ -163,8 +194,8 @@ def main() -> None:
         "run_dir": str(run_dir),
         "source_commit": card.get("source_commit"),
         "diagnostic_steps": diagnostic_steps,
-        "checkpoint_steps": EXPECTED_CHECKPOINT_STEPS,
-        "eval_steps": EXPECTED_EVAL_STEPS,
+        "checkpoint_steps": checkpoint_steps,
+        "eval_steps": eval_steps,
         "issues": issues,
         "warnings": warnings,
     }
