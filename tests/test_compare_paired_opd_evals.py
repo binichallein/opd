@@ -159,6 +159,10 @@ def write_run(run_dir: Path, *, right: bool, drop_last: bool = False):
             "\n".join(json.dumps(row) for row in rows) + "\n",
             encoding="utf-8",
         )
+        (outputs / f"{task}_graded.jsonl").write_text(
+            "\n".join(json.dumps(row) for row in rows) + "\n",
+            encoding="utf-8",
+        )
         raw_path = outputs / f"{task}_t1.0_p0.9_n8-MNT16384.jsonl"
         raw_path.write_text(
             "\n".join(
@@ -174,6 +178,7 @@ def write_run(run_dir: Path, *, right: bool, drop_last: bool = False):
             "pass_at_n": 1.0 if right else 0.0,
         }
     write_json(view / "summary.json", summary)
+    write_json(outputs / "summary.json", {**summary, "grader": "verl"})
     grader = run_dir / "grading" / "historical_utils_sha04f7.py"
     grader.parent.mkdir(parents=True, exist_ok=True)
     grader.write_bytes(FIXTURE_GRADER)
@@ -183,6 +188,17 @@ def write_run(run_dir: Path, *, right: bool, drop_last: bool = False):
         manifest.append(
             f"{hashlib.sha256(raw_path.read_bytes()).hexdigest()}  {raw_path}"
         )
+    for task in TASKS:
+        primary_graded = outputs / f"{task}_graded.jsonl"
+        manifest.append(
+            f"{hashlib.sha256(primary_graded.read_bytes()).hexdigest()}  {primary_graded}"
+        )
+    for path in (
+        outputs / "eval_config.json",
+        outputs / "summary.json",
+        run_dir / "acceptance.json",
+    ):
+        manifest.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path}")
     manifest.append(
         f"{FIXTURE_GRADER_SHA256}  "
         f"{grader}"
@@ -517,6 +533,47 @@ def test_comparison_requires_correct_to_be_json_boolean(tmp_path):
     )
 
     with pytest.raises(ValueError, match="correct must be a JSON boolean"):
+        module.compare_runs(
+            left,
+            right,
+            steps=(200,),
+            view="historical_external_grader",
+            bootstrap_replicates=10,
+        )
+
+
+def test_comparison_rejects_raw_that_no_longer_matches_primary_graded_evidence(tmp_path):
+    module = load_module()
+    left = tmp_path / "token"
+    right = tmp_path / "block3"
+    write_run(left, right=False)
+    write_run(right, right=True)
+    raw_path = (
+        right
+        / "eval_step_200_n8"
+        / "outputs"
+        / "math500_t1.0_p0.9_n8-MNT16384.jsonl"
+    )
+    rows = raw_path.read_text(encoding="utf-8").splitlines()
+    first = json.loads(rows[0])
+    first["response"] = "tampered-after-acceptance"
+    rows[0] = json.dumps(first)
+    raw_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    manifest = (
+        right
+        / "eval_step_200_n8"
+        / "historical_external_grader"
+        / "input_hashes.sha256"
+    )
+    manifest_lines = []
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        _, recorded_path = line.split(maxsplit=1)
+        if Path(recorded_path) == raw_path:
+            line = f"{hashlib.sha256(raw_path.read_bytes()).hexdigest()}  {raw_path}"
+        manifest_lines.append(line)
+    manifest.write_text("\n".join(manifest_lines) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="raw output differs from primary graded evidence"):
         module.compare_runs(
             left,
             right,

@@ -28,6 +28,15 @@ def make_eval_fixture(tmp_path: Path, *, incomplete: bool = False):
     run_dir = tmp_path / "run"
     output_dir = run_dir / "eval_step_50_n8" / "outputs"
     write_json(
+        run_dir / "acceptance.json",
+        {
+            "passed": True,
+            "issues": [],
+            "checkpoint_steps": [50, 100, 200],
+            "eval_steps": [50, 100, 200],
+        },
+    )
+    write_json(
         output_dir / "eval_config.json",
         {
             "tasks": list(TASK_COUNTS),
@@ -72,6 +81,11 @@ def make_eval_fixture(tmp_path: Path, *, incomplete: bool = False):
             "\n".join(json.dumps(row) for row in rows) + "\n",
             encoding="utf-8",
         )
+        primary_graded = output_dir / f"{task}_graded.jsonl"
+        primary_graded.write_text(
+            "\n".join(json.dumps({**row, "correct": False}) for row in rows) + "\n",
+            encoding="utf-8",
+        )
         primary_summary["tasks"][task] = {
             "num_examples": count,
             "total_rollouts": len(rows),
@@ -113,7 +127,7 @@ def test_regrade_writes_exact_external_view_and_input_manifest(tmp_path):
     view = run_dir / "eval_step_50_n8" / "historical_external_grader"
     assert len((view / "math500_graded.jsonl").read_text().splitlines()) == 4000
     manifest = (view / "input_hashes.sha256").read_text()
-    assert manifest.count("\n") == 5
+    assert manifest.count("\n") == 12
     assert grader_sha in manifest
     assert str(run_dir / "grading" / "historical_utils_sha04f7.py") in manifest
     assert str(
@@ -122,6 +136,10 @@ def test_regrade_writes_exact_external_view_and_input_manifest(tmp_path):
         / "outputs"
         / "math500_t1.0_p0.9_n8-MNT16384.jsonl"
     ) in manifest
+    assert str(
+        run_dir / "eval_step_50_n8" / "outputs" / "math500_graded.jsonl"
+    ) in manifest
+    assert str(run_dir / "acceptance.json") in manifest
     output_manifest = (view / "output_hashes.sha256").read_text().splitlines()
     assert len(output_manifest) == 5
     for line in output_manifest:
@@ -173,6 +191,31 @@ def test_regrade_refuses_to_overwrite_evidence_without_replace(tmp_path):
     )
 
     with pytest.raises(FileExistsError, match="already exists"):
+        module.regrade_run(
+            run_dir,
+            grader,
+            steps=(50,),
+            expected_grader_sha256=grader_sha,
+        )
+
+
+def test_regrade_rejects_raw_output_that_differs_from_primary_graded_evidence(tmp_path):
+    module = load_module()
+    run_dir, grader = make_eval_fixture(tmp_path)
+    grader_sha = hashlib.sha256(grader.read_bytes()).hexdigest()
+    raw_path = (
+        run_dir
+        / "eval_step_50_n8"
+        / "outputs"
+        / "math500_t1.0_p0.9_n8-MNT16384.jsonl"
+    )
+    rows = raw_path.read_text(encoding="utf-8").splitlines()
+    first = json.loads(rows[0])
+    first["response"] = "tampered-after-acceptance"
+    rows[0] = json.dumps(first)
+    raw_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="raw output differs from primary graded evidence"):
         module.regrade_run(
             run_dir,
             grader,

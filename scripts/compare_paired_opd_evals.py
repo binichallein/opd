@@ -346,22 +346,40 @@ def validate_external_manifest(
         / f"{task}_t1.0_p0.9_n8-MNT16384.jsonl"
         for task in TASKS
     }
-    if len(input_entries) != 5:
+    expected_primary = {
+        task: run_dir
+        / f"eval_step_{step}_n8"
+        / "outputs"
+        / f"{task}_graded.jsonl"
+        for task in TASKS
+    }
+    expected_metadata = (
+        run_dir / f"eval_step_{step}_n8" / "outputs" / "eval_config.json",
+        run_dir / f"eval_step_{step}_n8" / "outputs" / "summary.json",
+        run_dir / "acceptance.json",
+    )
+    if len(input_entries) != 12:
         raise ValueError(f"step {step} {run_dir}: external input hash set is incomplete")
     input_by_path = {str(path): digest for digest, path in input_entries}
-    raw_rows: dict[str, dict[tuple[str, str, int, int], dict[str, Any]]] = {}
-    for task, expected_path in expected_raw.items():
+
+    def verified_input_path(expected_path: Path, label: str) -> Path:
         matching = [
-            (path, digest)
+            (Path(path_string), digest)
             for path_string, digest in input_by_path.items()
             if path_string.endswith(str(expected_path))
-            for path in (Path(path_string),)
         ]
         if len(matching) != 1:
-            raise ValueError(f"step {step} {run_dir}: external raw-output path is invalid for {task}")
+            raise ValueError(f"step {step} {run_dir}: {label} input path is invalid")
         path, digest = matching[0]
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-            raise ValueError(f"step {step} {run_dir}: raw-output SHA mismatch: {path}")
+            raise ValueError(f"step {step} {run_dir}: {label} input SHA mismatch: {path}")
+        return path
+
+    for metadata_path in expected_metadata:
+        verified_input_path(metadata_path, "accepted metadata")
+    raw_rows: dict[str, dict[tuple[str, str, int, int], dict[str, Any]]] = {}
+    for task, expected_path in expected_raw.items():
+        path = verified_input_path(expected_path, f"raw-output {task}")
         task_rows: dict[tuple[str, str, int, int], dict[str, Any]] = {}
         for row in load_jsonl(path):
             key = (
@@ -374,6 +392,36 @@ def validate_external_manifest(
                 raise ValueError(f"step {step} {run_dir}: duplicate raw rollout key {key}")
             task_rows[key] = row
         raw_rows[task] = task_rows
+
+    for task, expected_path in expected_primary.items():
+        path = verified_input_path(expected_path, f"primary graded {task}")
+        primary_rows: dict[tuple[str, str, int, int], dict[str, Any]] = {}
+        for row in load_jsonl(path):
+            key = (
+                str(row.get("task")),
+                str(row["example_id"]),
+                int(row["rollout_id"]),
+                int(row["seed"]),
+            )
+            if type(row.get("correct")) is not bool:
+                raise ValueError(
+                    f"step {step} {run_dir}: primary correct must be a JSON boolean"
+                )
+            if key in primary_rows:
+                raise ValueError(f"step {step} {run_dir}: duplicate primary key {key}")
+            primary_rows[key] = row
+        if set(primary_rows) != set(raw_rows[task]):
+            raise ValueError(
+                f"step {step} {run_dir}: raw output differs from primary graded evidence"
+            )
+        for key, raw in raw_rows[task].items():
+            primary_without_score = {
+                name: value for name, value in primary_rows[key].items() if name != "correct"
+            }
+            if primary_without_score != raw:
+                raise ValueError(
+                    f"step {step} {run_dir}: raw output differs from primary graded evidence"
+                )
 
     output_entries = load_sha256_manifest(view / "output_hashes.sha256")
     expected_outputs = {

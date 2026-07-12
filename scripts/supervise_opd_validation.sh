@@ -37,6 +37,7 @@ log() {
 }
 
 REMOTE_LOCK_HELD=0
+LOCK_OWNER_TOKEN="${LOCK_OWNER_TOKEN_OVERRIDE:-$(hostname)-$$-$(cat /proc/sys/kernel/random/uuid)}"
 
 ensure_remote_run_root() {
   local status
@@ -205,43 +206,142 @@ REMOTE_IDLE
 }
 
 acquire_launch_lock() {
-  local lock_dir="${RUN_ROOT}/.supervisor-launch.lock"
-  local state
+  local lock_path="${RUN_ROOT}/.supervisor-launch.lock"
+  local output
   local status
-  if "${SSH_BIN}" "${REMOTE}" "mkdir '${lock_dir}'"; then
-    REMOTE_LOCK_HELD=1
-    log "acquired remote launch lock ${lock_dir}"
+  local owner_state
+
+  # Mark ownership as uncertain before the SSH call. Cleanup verifies the token
+  # before removing anything, so a lost SSH reply cannot orphan our lock.
+  REMOTE_LOCK_HELD=1
+  if output="$("${SSH_BIN}" "${REMOTE}" bash -s -- "${lock_path}" "${LOCK_OWNER_TOKEN}" <<'REMOTE_ACQUIRE'
+set -u
+lock_path="$1"
+token="$2"
+if (set -o noclobber; printf '%s\n' "${token}" > "${lock_path}") 2>/dev/null; then
+  echo acquired
+  exit 0
+fi
+owner="$(cat "${lock_path}" 2>/dev/null || true)"
+if [[ "${owner}" == "${token}" ]]; then
+  echo recovered
+  exit 0
+fi
+exit 3
+REMOTE_ACQUIRE
+)"; then
+    if [[ "${output}" == "recovered" ]]; then
+      log "recovered remote launch lock ownership ${lock_path}"
+    else
+      log "acquired remote launch lock ${lock_path}"
+    fi
     return 0
   else
     status=$?
   fi
-  if remote_dir_state "${lock_dir}"; then
-    log "cannot continue: remote launch lock is already held: ${lock_dir}"
+  if [[ "${status}" == "3" ]]; then
+    REMOTE_LOCK_HELD=0
+    log "cannot continue: remote launch lock is held by another owner: ${lock_path}"
     return 1
+  fi
+  if remote_lock_owner_state "${lock_path}"; then
+    log "recovered remote launch lock ownership after SSH failure ${lock_path}"
+    return 0
   else
-    state=$?
+    owner_state=$?
   fi
-  if [[ "${state}" == "2" ]]; then
-    return 2
+  if [[ "${owner_state}" == "1" || "${owner_state}" == "3" ]]; then
+    REMOTE_LOCK_HELD=0
   fi
-  log "cannot continue: mkdir failed status=${status} for ${lock_dir}"
-  return 1
+  log "SSH failure status=${status} while acquiring ${lock_path}; owner_state=${owner_state}"
+  return 2
+}
+
+remote_lock_owner_state() {
+  local lock_path="$1"
+  local status
+  if "${SSH_BIN}" "${REMOTE}" bash -s -- "${lock_path}" "${LOCK_OWNER_TOKEN}" <<'REMOTE_OWNER'
+set -u
+lock_path="$1"
+token="$2"
+if [[ ! -e "${lock_path}" ]]; then
+  exit 1
+fi
+if [[ ! -f "${lock_path}" ]]; then
+  exit 3
+fi
+owner="$(cat "${lock_path}" 2>/dev/null || true)"
+if [[ "${owner}" == "${token}" ]]; then
+  exit 0
+fi
+exit 3
+REMOTE_OWNER
+  then
+    return 0
+  else
+    status=$?
+  fi
+  return "${status}"
+}
+
+remove_owned_remote_lock() {
+  local lock_path="$1"
+  "${SSH_BIN}" "${REMOTE}" bash -s -- "${lock_path}" "${LOCK_OWNER_TOKEN}" <<'REMOTE_RELEASE'
+set -u
+lock_path="$1"
+token="$2"
+if [[ ! -e "${lock_path}" ]]; then
+  exit 0
+fi
+if [[ ! -f "${lock_path}" ]]; then
+  exit 3
+fi
+owner="$(cat "${lock_path}" 2>/dev/null || true)"
+if [[ "${owner}" != "${token}" ]]; then
+  exit 3
+fi
+rm -- "${lock_path}"
+REMOTE_RELEASE
 }
 
 release_launch_lock() {
-  local lock_dir="${RUN_ROOT}/.supervisor-launch.lock"
+  local lock_path="${RUN_ROOT}/.supervisor-launch.lock"
+  local attempt
   local status
+  local owner_state
   if [[ "${REMOTE_LOCK_HELD}" != "1" ]]; then
     return 0
   fi
-  if "${SSH_BIN}" "${REMOTE}" "rmdir '${lock_dir}'"; then
-    REMOTE_LOCK_HELD=0
-    log "released remote launch lock ${lock_dir}"
-    return 0
-  else
-    status=$?
-  fi
-  log "SSH failure or stale lock status=${status} while releasing ${lock_dir}"
+  for attempt in 1 2; do
+    if remove_owned_remote_lock "${lock_path}"; then
+      REMOTE_LOCK_HELD=0
+      log "released remote launch lock ${lock_path}"
+      return 0
+    else
+      status=$?
+    fi
+    if [[ "${status}" == "3" ]]; then
+      REMOTE_LOCK_HELD=0
+      log "cannot release foreign remote launch lock ${lock_path}"
+      return 2
+    fi
+    if remote_lock_owner_state "${lock_path}"; then
+      owner_state=0
+    else
+      owner_state=$?
+    fi
+    if [[ "${owner_state}" == "1" ]]; then
+      REMOTE_LOCK_HELD=0
+      log "confirmed remote launch lock already released ${lock_path}"
+      return 0
+    fi
+    if [[ "${owner_state}" == "3" ]]; then
+      REMOTE_LOCK_HELD=0
+      log "cannot release foreign remote launch lock ${lock_path}"
+      return 2
+    fi
+  done
+  log "SSH failure status=${status} while releasing owned lock ${lock_path}"
   return 2
 }
 

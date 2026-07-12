@@ -28,9 +28,10 @@ def test_supervisor_covers_train_pair_and_ml2_token_targets():
 def test_supervisor_uses_remote_atomic_launch_lock_and_tristate_ssh():
     script = SUPERVISOR.read_text(encoding="utf-8")
 
-    assert 'lock_dir="${RUN_ROOT}/.supervisor-launch.lock"' in script
-    assert 'mkdir \'${lock_dir}\'' in script
-    assert 'rmdir \'${lock_dir}\'' in script
+    assert 'lock_path="${RUN_ROOT}/.supervisor-launch.lock"' in script
+    assert "LOCK_OWNER_TOKEN" in script
+    assert "set -o noclobber" in script
+    assert 'owner="$(cat "${lock_path}"' in script
     assert "remote_dir_state" in script
     assert "SSH failure" in script
     assert "wait_for_idle" in script
@@ -322,3 +323,82 @@ def test_new_run_root_is_created_and_remote_lock_is_cleaned_on_launch_failure(tm
     assert control_log.read_text(encoding="utf-8").strip() == (
         "ml2-token token_opd formal"
     )
+
+
+def test_uncertain_lock_acquisition_recovers_its_owner_token(tmp_path):
+    ssh = tmp_path / "ssh-local"
+    driver = tmp_path / "control"
+    control_log = tmp_path / "control.log"
+    make_executable(ssh, '#!/bin/sh\nshift\nexec /bin/bash -c "$*"\n')
+    make_executable(
+        driver,
+        '#!/bin/sh\nprintf "%s\\n" "$*" >> "$CONTROL_LOG"\nexit 7\n',
+    )
+    run_root = tmp_path / "runs"
+    run_root.mkdir()
+    lock = run_root / ".supervisor-launch.lock"
+    lock.write_text("owner-token\n", encoding="utf-8")
+    env = {
+        **os.environ,
+        "SSH_BIN": str(ssh),
+        "CONTROL_DRIVER": str(driver),
+        "CONTROL_LOG": str(control_log),
+        "RUN_ROOT_OVERRIDE": str(run_root),
+        "LOCK_FILE_OVERRIDE": str(tmp_path / "supervisor.lock"),
+        "LOCK_OWNER_TOKEN_OVERRIDE": "owner-token",
+        "POLL_SECONDS": "0.01",
+    }
+
+    result = subprocess.run(
+        ["bash", str(SUPERVISOR), "ml2-token"],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "recovered remote launch lock ownership" in result.stdout
+    assert not lock.exists()
+    assert control_log.read_text(encoding="utf-8").strip() == (
+        "ml2-token token_opd formal"
+    )
+
+
+def test_foreign_remote_lock_is_never_removed(tmp_path):
+    ssh = tmp_path / "ssh-local"
+    driver = tmp_path / "control"
+    control_log = tmp_path / "control.log"
+    make_executable(ssh, '#!/bin/sh\nshift\nexec /bin/bash -c "$*"\n')
+    make_executable(
+        driver,
+        '#!/bin/sh\nprintf "%s\\n" "$*" >> "$CONTROL_LOG"\n',
+    )
+    run_root = tmp_path / "runs"
+    run_root.mkdir()
+    lock = run_root / ".supervisor-launch.lock"
+    lock.write_text("foreign-owner\n", encoding="utf-8")
+    env = {
+        **os.environ,
+        "SSH_BIN": str(ssh),
+        "CONTROL_DRIVER": str(driver),
+        "CONTROL_LOG": str(control_log),
+        "RUN_ROOT_OVERRIDE": str(run_root),
+        "LOCK_FILE_OVERRIDE": str(tmp_path / "supervisor.lock"),
+        "LOCK_OWNER_TOKEN_OVERRIDE": "our-owner",
+        "POLL_SECONDS": "0.01",
+    }
+
+    result = subprocess.run(
+        ["bash", str(SUPERVISOR), "ml2-token"],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert lock.read_text(encoding="utf-8") == "foreign-owner\n"
+    assert not control_log.exists()

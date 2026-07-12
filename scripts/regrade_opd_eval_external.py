@@ -147,15 +147,23 @@ def validate_task_rows(
 
 def validate_step_inputs(
     run_dir: Path, step: int
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, Path], dict[str, list[dict[str, Any]]]]:
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    tuple[Path, ...],
+    dict[str, list[dict[str, Any]]],
+]:
     output_dir = run_dir / f"eval_step_{step}_n8" / "outputs"
-    config = load_json(output_dir / "eval_config.json")
+    config_path = output_dir / "eval_config.json"
+    summary_path = output_dir / "summary.json"
+    config = load_json(config_path)
     validate_eval_config(config, step)
-    primary = load_json(output_dir / "summary.json")
+    primary = load_json(summary_path)
     if set(primary.get("tasks", {})) != set(TASK_COUNTS):
         raise ValueError(f"step {step}: primary summary task set is incomplete")
 
-    paths: dict[str, Path] = {}
+    raw_paths: dict[str, Path] = {}
+    primary_paths: dict[str, Path] = {}
     rows_by_task: dict[str, list[dict[str, Any]]] = {}
     for task, expected_examples in TASK_COUNTS.items():
         path = raw_output_path(output_dir, task, config)
@@ -166,11 +174,57 @@ def validate_step_inputs(
             raise ValueError(f"step {step} {task}: primary example count mismatch")
         if int(primary_task.get("total_rollouts", -1)) != len(rows):
             raise ValueError(f"step {step} {task}: primary rollout count mismatch")
-        paths[task] = path.resolve(strict=True)
+        primary_path = output_dir / f"{task}_graded.jsonl"
+        primary_rows = load_jsonl(primary_path)
+        primary_by_key = {}
+        for primary_row in primary_rows:
+            if type(primary_row.get("correct")) is not bool:
+                raise ValueError(
+                    f"step {step} {task}: primary correct must be a JSON boolean"
+                )
+            key = (
+                str(primary_row.get("example_id")),
+                int(primary_row.get("rollout_id", -1)),
+                int(primary_row.get("seed", -1)),
+            )
+            if key in primary_by_key:
+                raise ValueError(f"step {step} {task}: duplicate primary rollout key {key}")
+            primary_by_key[key] = primary_row
+        raw_by_key = {
+            (
+                str(row["example_id"]),
+                int(row["rollout_id"]),
+                int(row["seed"]),
+            ): row
+            for row in rows
+        }
+        if set(primary_by_key) != set(raw_by_key):
+            raise ValueError(
+                f"step {step} {task}: raw output differs from primary graded evidence"
+            )
+        for key, row in raw_by_key.items():
+            primary_without_score = {
+                name: value
+                for name, value in primary_by_key[key].items()
+                if name != "correct"
+            }
+            if primary_without_score != row:
+                raise ValueError(
+                    f"step {step} {task}: raw output differs from primary graded evidence"
+                )
+        raw_paths[task] = path.resolve(strict=True)
+        primary_paths[task] = primary_path.resolve(strict=True)
         rows_by_task[task] = rows
     if sum(len(rows) for rows in rows_by_task.values()) != 5144:
         raise ValueError(f"step {step}: expected exactly 5,144 rollouts")
-    return config, primary, paths, rows_by_task
+    evidence_paths = (
+        *(raw_paths[task] for task in TASK_COUNTS),
+        *(primary_paths[task] for task in TASK_COUNTS),
+        config_path.resolve(strict=True),
+        summary_path.resolve(strict=True),
+        (run_dir / "acceptance.json").resolve(strict=True),
+    )
+    return config, primary, evidence_paths, rows_by_task
 
 
 def load_grader(path: Path) -> Callable[[str, str], Any]:
@@ -227,7 +281,7 @@ def write_external_view(
     step: int,
     config: dict[str, Any],
     primary: dict[str, Any],
-    paths: dict[str, Path],
+    evidence_paths: tuple[Path, ...],
     rows_by_task: dict[str, list[dict[str, Any]]],
     grader_path: Path,
     grade_answer: Callable[[str, str], Any],
@@ -292,9 +346,7 @@ def write_external_view(
             + "\n",
             encoding="utf-8",
         )
-        manifest_lines = [
-            f"{sha256_file(paths[task])}  {paths[task]}" for task in TASK_COUNTS
-        ]
+        manifest_lines = [f"{sha256_file(path)}  {path}" for path in evidence_paths]
         manifest_lines.append(f"{sha256_file(grader_path)}  {grader_path}")
         (temporary / "input_hashes.sha256").write_text(
             "\n".join(manifest_lines) + "\n", encoding="utf-8"
@@ -316,6 +368,13 @@ def regrade_run(
     run_dir = run_dir.resolve(strict=True)
     grader_source = grader_source.resolve(strict=True)
     validate_grader_hash(grader_source, expected_grader_sha256)
+    acceptance = load_json(run_dir / "acceptance.json")
+    if acceptance.get("passed") is not True or acceptance.get("issues"):
+        raise ValueError("final acceptance must pass before external regrading")
+    accepted_checkpoints = {int(step) for step in acceptance.get("checkpoint_steps", [])}
+    accepted_evals = {int(step) for step in acceptance.get("eval_steps", [])}
+    if not set(steps).issubset(accepted_checkpoints & accepted_evals):
+        raise ValueError("final acceptance does not cover every requested regrade step")
 
     validated = {}
     for step in steps:
@@ -330,14 +389,14 @@ def regrade_run(
     grade_answer = load_grader(grader_path)
     results = {}
     for step in steps:
-        config, primary, paths, rows_by_task = validated[step]
+        config, primary, evidence_paths, rows_by_task = validated[step]
         destination = run_dir / f"eval_step_{step}_n8" / "historical_external_grader"
         results[step] = write_external_view(
             destination,
             step,
             config,
             primary,
-            paths,
+            evidence_paths,
             rows_by_task,
             grader_path,
             grade_answer,
