@@ -19,7 +19,7 @@ def test_train_wrapper_locks_models_revisions_host_and_shared_contract():
         'RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"',
         'REMOTE_ROOT="${RUNTIME_ROOT}"',
         'export VARIANT="${VARIANT}"',
-        'SOURCE_COMMIT="${DEEPSEEK_JUSTRL_RUNTIME_COMMIT:-9277137da4abc0bce8424f263df4806ac63cf3ac}"',
+        'SOURCE_COMMIT="${DEEPSEEK_JUSTRL_RUNTIME_COMMIT:-87274bfb3d1956a385fd0f43591319cb723577d2}"',
         'STUDENT_MODEL="${ASSET_ROOT}/models/DeepSeek-R1-Distill-Qwen-1.5B"',
         'MATH_TEACHER="${ASSET_ROOT}/models/JustRL-DeepSeek-1.5B"',
         'EXPECTED_STUDENT_MODEL_SUFFIX="DeepSeek-R1-Distill-Qwen-1.5B"',
