@@ -30,6 +30,10 @@ def parse_args() -> argparse.Namespace:
         "--steps",
         default=",".join(str(step) for step in DEFAULT_STEPS),
     )
+    parser.add_argument(
+        "--view-name",
+        default="historical_external_grader",
+    )
     return parser.parse_args()
 
 
@@ -38,6 +42,17 @@ def parse_steps(value: str) -> tuple[int, ...]:
     if not steps or any(step <= 0 for step in steps):
         raise ValueError("steps must be positive")
     return steps
+
+
+def validate_view_name(value: str) -> str:
+    allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.")
+    if (
+        not value.startswith("historical_external_grader")
+        or not value
+        or any(character not in allowed for character in value)
+    ):
+        raise ValueError(f"invalid external grader view name: {value!r}")
+    return value
 
 
 def sha256_file(path: Path) -> str:
@@ -364,9 +379,11 @@ def regrade_run(
     *,
     steps: tuple[int, ...] = DEFAULT_STEPS,
     expected_grader_sha256: str = HISTORICAL_GRADER_SHA256,
+    view_name: str = "historical_external_grader",
 ) -> dict[int, dict[str, Any]]:
     run_dir = run_dir.resolve(strict=True)
     grader_source = grader_source.resolve(strict=True)
+    view_name = validate_view_name(view_name)
     validate_grader_hash(grader_source, expected_grader_sha256)
     acceptance = load_json(run_dir / "acceptance.json")
     if acceptance.get("passed") is not True or acceptance.get("issues"):
@@ -378,7 +395,7 @@ def regrade_run(
 
     validated = {}
     for step in steps:
-        destination = run_dir / f"eval_step_{step}_n8" / "historical_external_grader"
+        destination = run_dir / f"eval_step_{step}_n8" / view_name
         if destination.exists():
             raise FileExistsError(f"external grader evidence already exists: {destination}")
         validated[step] = validate_step_inputs(run_dir, step)
@@ -390,7 +407,7 @@ def regrade_run(
     results = {}
     for step in steps:
         config, primary, evidence_paths, rows_by_task = validated[step]
-        destination = run_dir / f"eval_step_{step}_n8" / "historical_external_grader"
+        destination = run_dir / f"eval_step_{step}_n8" / view_name
         results[step] = write_external_view(
             destination,
             step,
@@ -410,6 +427,7 @@ def main() -> None:
         args.run_dir,
         args.grader_source,
         steps=parse_steps(args.steps),
+        view_name=args.view_name,
     )
     print(json.dumps(results, indent=2, ensure_ascii=False, sort_keys=True))
 

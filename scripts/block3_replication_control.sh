@@ -12,6 +12,7 @@ SOURCE_COMMIT="${SOURCE_COMMIT:-$(git -C "${ROOT_DIR}" rev-parse HEAD)}"
 ASSET_ROOT="${ASSET_ROOT:-/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd}"
 RUNTIME_ROOT="${RUNTIME_ROOT:-${ASSET_ROOT}/deployments/${SOURCE_COMMIT}}"
 REMOTE_ROOT="${REMOTE_ROOT:-${RUNTIME_ROOT}}"
+AUDIT_SCRIPT="${AUDIT_SCRIPT_OVERRIDE:-${REMOTE_ROOT}/scripts/audit_block10_run.py}"
 VENV="${VENV:-/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl}"
 HF_HOME_DIR="${HF_HOME_DIR:-/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/hf_home}"
 STUDENT_MODEL="${STUDENT_MODEL:-/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base}"
@@ -177,7 +178,7 @@ verify_probe1() {
   run_dir="$(run_dir_for probe)"
   assert_run_stopped_successfully probe
   assert_checkpoint_complete probe 1
-  ssh "${REMOTE}" "'${VENV}/bin/python' '${RUNTIME_ROOT}/scripts/audit_block10_run.py' \
+  ssh "${REMOTE}" "'${VENV}/bin/python' '${AUDIT_SCRIPT}' \
     --run-dir '${run_dir}' \
     --variant "${VARIANT}" \
     --checkpoint-steps 1 \
@@ -211,7 +212,7 @@ verify_probe_resume() {
   assert_checkpoint_complete probe 2
   ssh "${REMOTE}" "set -euo pipefail
     grep -F 'Resuming from ${step1}' '${run_dir}/logs/nohup.log' >/dev/null
-    '${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
+    '${VENV}/bin/python' '${AUDIT_SCRIPT}' \
       --run-dir '${run_dir}' \
       --variant "${VARIANT}" \
       --checkpoint-steps 1,2 \
@@ -277,7 +278,7 @@ launch_eval() {
 audit_checkpoints() {
   local run_dir
   run_dir="$(run_root_for formal)/${VARIANT}"
-  ssh "${REMOTE}" "'${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
+  ssh "${REMOTE}" "'${VENV}/bin/python' '${AUDIT_SCRIPT}' \
     --run-dir '${run_dir}' \
     --variant "${VARIANT}" \
     --checkpoint-steps 50,100,200 \
@@ -292,7 +293,7 @@ audit_checkpoints() {
 audit_formal() {
   local run_dir
   run_dir="$(run_root_for formal)/${VARIANT}"
-  ssh "${REMOTE}" "'${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
+  ssh "${REMOTE}" "'${VENV}/bin/python' '${AUDIT_SCRIPT}' \
     --run-dir '${run_dir}' --variant "${VARIANT}" --checkpoint-steps 50,100,200 --eval-steps 50,100,200 \
     --expected-source-commit '${SOURCE_COMMIT}' \
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \

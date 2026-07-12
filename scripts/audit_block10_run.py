@@ -7,8 +7,10 @@ import argparse
 from collections import defaultdict
 import json
 import math
+import os
 from pathlib import Path
 import re
+import tempfile
 
 import numpy as np
 
@@ -29,6 +31,21 @@ EXPECTED_EVAL_SHA256 = {
     "aime25": "daedf1e406b9d73ca25e9696c92614e300e34c4d09376dacaa465b01bb398d43",
     "amc23": "a07c52c0098a536a2d03e01e531b02c5e9d0a1f4e66d04a0793c0345e1730b45",
 }
+
+
+def atomic_write_json(path: Path, value: object) -> None:
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(json.dumps(value, indent=2, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 REQUIRED_POSITION_METRICS = (
     "student_entropy",
     "teacher_entropy",
@@ -573,7 +590,7 @@ def main() -> None:
         "warnings": warnings,
     }
     output_path = run_dir / "acceptance.json"
-    output_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_json(output_path, result)
     print(json.dumps(result, indent=2, sort_keys=True))
     if issues:
         raise SystemExit(1)

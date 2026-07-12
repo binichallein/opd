@@ -25,6 +25,9 @@ export ASSET_ROOT="/mnt/data/cpfs/Yaleon/opd"
 export SOURCE_COMMIT="${DEEPSEEK_JUSTRL_RUNTIME_COMMIT:-87274bfb3d1956a385fd0f43591319cb723577d2}"
 export RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"
 export REMOTE_ROOT="${RUNTIME_ROOT}"
+if [[ -n "${OPD_ANALYSIS_COMMIT:-}" ]]; then
+  export AUDIT_SCRIPT_OVERRIDE="${ASSET_ROOT}/analysis_deployments/${OPD_ANALYSIS_COMMIT}/scripts/audit_block10_run.py"
+fi
 export VENV="/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/venv"
 export HF_HOME_DIR="/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/hf_home"
 export STUDENT_MODEL="${ASSET_ROOT}/models/DeepSeek-R1-Distill-Qwen-1.5B"

@@ -23,6 +23,27 @@ def test_parse_step_list_accepts_sorted_unique_steps():
     assert audit.parse_step_list("200,50,100,50") == [50, 100, 200]
 
 
+def test_acceptance_json_is_published_with_atomic_replace(tmp_path, monkeypatch):
+    audit = load_audit_module()
+    output = tmp_path / "acceptance.json"
+    replacements = []
+    real_replace = audit.os.replace
+
+    def recording_replace(source, destination):
+        replacements.append((Path(source), Path(destination)))
+        real_replace(source, destination)
+
+    monkeypatch.setattr(audit.os, "replace", recording_replace)
+    audit.atomic_write_json(output, {"passed": True})
+
+    assert json.loads(output.read_text()) == {"passed": True}
+    assert len(replacements) == 1
+    temporary, destination = replacements[0]
+    assert destination == output
+    assert temporary.parent == output.parent
+    assert not temporary.exists()
+
+
 def test_parse_step_list_rejects_nonpositive_steps():
     audit = load_audit_module()
 

@@ -26,6 +26,8 @@ def test_generic_control_keeps_block3_defaults_but_accepts_variant_overrides():
     assert '--expected-teacher-model-revision' in control
     assert 'if [[ -n "${EXPECTED_STUDENT_REVISION}" || -n "${EXPECTED_TEACHER_REVISION}" ]]' in control
     assert control.count("${MODEL_REVISION_AUDIT_ARGS}") == 4
+    assert 'AUDIT_SCRIPT="${AUDIT_SCRIPT_OVERRIDE:-${REMOTE_ROOT}/scripts/audit_block10_run.py}"' in control
+    assert control.count("${AUDIT_SCRIPT}") == 4
 
 
 def test_token_control_locks_the_paired_ml2_contract_and_immutable_runtime():
@@ -48,6 +50,7 @@ def test_token_control_locks_the_paired_ml2_contract_and_immutable_runtime():
         'ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU="1"',
         'ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="4"',
         'REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="1"',
+        'AUDIT_SCRIPT_OVERRIDE="${ASSET_ROOT}/analysis_deployments/${OPD_ANALYSIS_COMMIT}/scripts/audit_block10_run.py"',
         'exec bash "${ROOT_DIR}/scripts/block3_replication_control.sh" "$@"',
     )
     for fragment in expected_fragments:

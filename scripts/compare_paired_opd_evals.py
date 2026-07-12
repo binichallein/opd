@@ -101,7 +101,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--view",
-        choices=("outputs", "historical_external_grader"),
+        choices=(
+            "outputs",
+            "historical_external_grader",
+            "historical_external_grader_audited",
+        ),
         default="historical_external_grader",
     )
     parser.add_argument("--bootstrap-replicates", type=int, default=10_000)
@@ -324,9 +328,9 @@ def validate_eval_config(run_dir: Path, step: int) -> dict[str, Any]:
 
 
 def validate_external_manifest(
-    run_dir: Path, step: int
+    run_dir: Path, step: int, view_name: str
 ) -> dict[str, dict[tuple[str, str, int, int], dict[str, Any]]]:
-    view = run_dir / f"eval_step_{step}_n8" / "historical_external_grader"
+    view = run_dir / f"eval_step_{step}_n8" / view_name
     input_entries = load_sha256_manifest(view / "input_hashes.sha256")
     grader_entries = [
         (digest, path)
@@ -452,8 +456,8 @@ def load_step_view(
     root = _view_dir(run_dir, step, view)
     config = validate_eval_config(run_dir, step)
     raw_rows = None
-    if view == "historical_external_grader":
-        raw_rows = validate_external_manifest(run_dir, step)
+    if view != "outputs":
+        raw_rows = validate_external_manifest(run_dir, step, view)
     summary = load_json(root / "summary.json")
     expected_grader = _expected_grader(view)
     if summary.get("grader") != expected_grader:
@@ -709,7 +713,11 @@ def compare_runs(
     left_label: str = "token_opd",
     right_label: str = "block3_mean",
 ) -> dict[str, Any]:
-    if view not in {"outputs", "historical_external_grader"}:
+    if view not in {
+        "outputs",
+        "historical_external_grader",
+        "historical_external_grader_audited",
+    }:
         raise ValueError(f"unsupported view: {view}")
     left_run = left_run.resolve(strict=True)
     right_run = right_run.resolve(strict=True)

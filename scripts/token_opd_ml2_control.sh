@@ -10,6 +10,9 @@ export ASSET_ROOT="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/op
 export SOURCE_COMMIT="9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977"
 export RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"
 export REMOTE_ROOT="${RUNTIME_ROOT}"
+if [[ -n "${OPD_ANALYSIS_COMMIT:-}" ]]; then
+  export AUDIT_SCRIPT_OVERRIDE="${ASSET_ROOT}/analysis_deployments/${OPD_ANALYSIS_COMMIT}/scripts/audit_block10_run.py"
+fi
 export DATE_TAG="20260712v1"
 export VARIANT="token_opd"
 export RUN_TAG="token_opd_replication"

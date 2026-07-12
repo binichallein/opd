@@ -37,6 +37,7 @@ def test_train_wrapper_locks_models_revisions_host_and_shared_contract():
         'CACHE_TAG="b3"',
         'CACHE_ROOT="/tmp/djr/${CACHE_TAG}"',
         'BASELINE_ALIGNMENT="DeepSeek-R1-Distill-Qwen-1.5B student and its post-RL JustRL-DeepSeek-1.5B teacher; identical tokenizer and architecture; DAPO-Math-17K"',
+        'AUDIT_SCRIPT_OVERRIDE="${ASSET_ROOT}/analysis_deployments/${OPD_ANALYSIS_COMMIT}/scripts/audit_block10_run.py"',
     )
     for fragment in expected:
         assert fragment in control

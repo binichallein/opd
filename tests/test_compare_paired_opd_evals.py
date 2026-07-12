@@ -28,8 +28,14 @@ def write_json(path: Path, value):
     path.write_text(json.dumps(value), encoding="utf-8")
 
 
-def write_run(run_dir: Path, *, right: bool, drop_last: bool = False):
-    view = run_dir / "eval_step_200_n8" / "historical_external_grader"
+def write_run(
+    run_dir: Path,
+    *,
+    right: bool,
+    drop_last: bool = False,
+    view_name: str = "historical_external_grader",
+):
+    view = run_dir / "eval_step_200_n8" / view_name
     outputs = run_dir / "eval_step_200_n8" / "outputs"
     write_json(
         run_dir / "acceptance.json",
@@ -581,3 +587,23 @@ def test_comparison_rejects_raw_that_no_longer_matches_primary_graded_evidence(t
             view="historical_external_grader",
             bootstrap_replicates=10,
         )
+
+
+def test_comparison_supports_non_destructive_audited_external_view(tmp_path):
+    module = load_module()
+    left = tmp_path / "token"
+    right = tmp_path / "block3"
+    view = "historical_external_grader_audited"
+    write_run(left, right=False, view_name=view)
+    write_run(right, right=True, view_name=view)
+
+    result = module.compare_runs(
+        left,
+        right,
+        steps=(200,),
+        view=view,
+        bootstrap_replicates=10,
+    )
+
+    assert result["grader_view"] == view
+    assert result["decision"]["status"] == "strong_single_seed_support"

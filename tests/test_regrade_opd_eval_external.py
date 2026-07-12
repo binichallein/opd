@@ -222,3 +222,28 @@ def test_regrade_rejects_raw_output_that_differs_from_primary_graded_evidence(tm
             steps=(50,),
             expected_grader_sha256=grader_sha,
         )
+
+
+def test_regrade_can_write_separate_audited_view_without_touching_legacy_view(tmp_path):
+    module = load_module()
+    run_dir, grader = make_eval_fixture(tmp_path)
+    grader_sha = hashlib.sha256(grader.read_bytes()).hexdigest()
+    legacy = run_dir / "eval_step_50_n8" / "historical_external_grader"
+    legacy.mkdir()
+    (legacy / "legacy.txt").write_text("preserve\n", encoding="utf-8")
+
+    module.regrade_run(
+        run_dir,
+        grader,
+        steps=(50,),
+        expected_grader_sha256=grader_sha,
+        view_name="historical_external_grader_audited",
+    )
+
+    assert (legacy / "legacy.txt").read_text(encoding="utf-8") == "preserve\n"
+    assert (
+        run_dir
+        / "eval_step_50_n8"
+        / "historical_external_grader_audited"
+        / "summary.json"
+    ).is_file()
