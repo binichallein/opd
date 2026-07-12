@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block3 mean ml2 复现实验</title>
+<style>
+:root { --ink:#172033; --muted:#596474; --line:#d8dee8; --soft:#f5f7fa; --green:#1f6f5f; --red:#a43d32; --blue:#2463a6; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:#fff; font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif; line-height:1.58; letter-spacing:0; }
+main { width:min(1380px,calc(100% - 32px)); margin:28px auto 72px; }
+header { border-left:5px solid var(--green); padding:4px 0 4px 18px; margin-bottom:26px; }
+h1 { margin:0 0 7px; font-size:clamp(27px,3vw,42px); }
+h2 { margin:34px 0 12px; font-size:23px; }
+h3 { margin:0 0 10px; font-size:18px; }
+p { margin:8px 0; }
+.lead { color:var(--muted); font-size:17px; max-width:1000px; }
+.verdict { border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:20px 0; margin:24px 0; }
+.verdict strong { color:var(--red); font-size:21px; }
+.facts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border:1px solid var(--line); }
+.fact { min-width:0; padding:13px 15px; border-right:1px solid var(--line); }
+.fact:last-child { border-right:0; }
+.fact span { display:block; color:var(--muted); font-size:12px; }
+.fact b { display:block; overflow-wrap:anywhere; font-size:18px; }
+.note { border-left:4px solid var(--blue); background:var(--soft); padding:12px 15px; margin:14px 0; }
+.warn { border-left-color:var(--red); }
+table { width:100%; border-collapse:collapse; margin:12px 0 24px; }
+th,td { border:1px solid var(--line); padding:9px 11px; text-align:left; vertical-align:top; }
+thead th { background:var(--soft); }
+tbody th { background:#fafbfc; white-space:nowrap; }
+figure { margin:0 0 34px; }
+img { display:block; width:100%; height:auto; border:1px solid var(--line); background:#fff; }
+code { overflow-wrap:anywhere; }
+ul { padding-left:22px; }
+@media (max-width:780px) {
+  main { width:min(100% - 20px,1380px); margin-top:18px; }
+  .facts { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .fact:nth-child(2) { border-right:0; }
+  .fact:nth-child(-n+2) { border-bottom:1px solid var(--line); }
+  table { display:block; overflow-x:auto; white-space:nowrap; }
+}
+</style>
+</head>
+<body><main>
+<header>
+<h1>Block3 mean ml2 复现实验</h1>
+<p class="lead">DAPO-Math-17K、Qwen3-1.7B-Base 学生、Qwen3-4B-Base-GRPO 教师；200-step Block3 mean，完整诊断与 Step 50/100/200 n=8 评估。</p>
+</header>
+
+<section class="verdict">
+<strong>结论：未观察到持续性数值或固定评测崩塌，但尾部高熵/截断风险仍存在；Block3 相对 token OPD 的收益尚未被第二台机器独立验证。</strong>
+<p>ml2 没有同机 token baseline；Step 200 虽优于本次 Step 50/100，但历史 grader 重评分的 macro Avg@8/Pass@8 为 0.2404/0.4739，低于 train 旧 Block3 的 0.3188/0.5148。两次 eval 的 rollout seed 实现不同，因此也不能把差值完全归因于硬件或训练。</p>
+</section>
+
+<section class="facts">
+<div class="fact"><span>Training</span><b>200 / 200</b></div>
+<div class="fact"><span>Diagnostics</span><b>41 snapshots</b></div>
+<div class="fact"><span>Full eval rollouts</span><b>15,432</b></div>
+<div class="fact"><span>Audit</span><b>0 issues / 0 warnings</b></div>
+</section>
+
+<h2>实验契约</h2>
+<table><tbody>
+<tr><th>模型</th><td>Student: <code>Qwen3-1.7B-Base</code>；Teacher: <code>Qwen3-4B-Base-GRPO</code>。</td></tr>
+<tr><th>训练数据</th><td>DAPO-Math-17K raw 1,791,700-row pool；SHA-256 <code>cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf</code>。seed=21 的确定性索引排列，每步 4 prompt、每 prompt 8 rollout。</td></tr>
+<tr><th>目标</th><td>Block size 3；连续 token advantage 取 mean；block current/old log-prob 求和并做 block-level PPO ratio/clipping。</td></tr>
+<tr><th>优化</th><td>200 steps；LR 2e-06；actor micro-batch/GPU=1；reference log-prob micro-batch/GPU=1；vLLM utilization=0.6；最大响应 16,384。</td></tr>
+<tr><th>固定评估</th><td>Math500/AIME24/AIME25/AMC23；n=8；seed 21-28；temperature=1.0；top-p=0.9；thinking=false；每 checkpoint 5,144 rollout。</td></tr>
+</tbody></table>
+
+<h2>评估结果</h2>
+<p>内置 VERL grader 是本次预注册主结果；historical grader 使用 train 旧实验实际采用的 <code>grade_answer_verl</code>（SHA <code>04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f</code>）离线重评分。生成器逐 checkpoint 校验 hash manifest 中 grader SHA/路径、四个 primary output 路径、n=8、seed 和 raw-output 元数据；仓库未复制大体积 raw rollout，因此本地报告生成器没有重新计算 raw 文件 SHA。</p>
+<table>
+<thead><tr><th>Checkpoint</th><th>内置 Avg@8</th><th>内置 Pass@8</th><th>历史 grader Avg@8</th><th>历史 grader Pass@8</th></tr></thead>
+<tbody><tr><th>Step 50</th><td>0.1485</td><td>0.2942</td><td>0.2085</td><td>0.4242</td></tr><tr><th>Step 100</th><td>0.1228</td><td>0.2843</td><td>0.1856</td><td>0.4424</td></tr><tr><th>Step 200</th><td>0.1675</td><td>0.3138</td><td>0.2404</td><td>0.4739</td></tr></tbody>
+</table>
+<div class="note warn">内置 grader 无法正确覆盖当前 AMC23 answer 形式，三个 checkpoint 的 AMC23 均为 0；因此跨历史比较必须使用 historical grader 列。主结果仍保留，不能事后覆盖。</div>
+
+<h2>Step 200 任务明细</h2>
+<table>
+<thead><tr><th>Task</th><th>Avg@8</th><th>Pass@8</th><th>平均 token</th><th>格式错误</th></tr></thead>
+<tbody><tr><th>MATH500</th><td>0.5475</td><td>0.8480</td><td>1792</td><td>749</td></tr><tr><th>AIME24</th><td>0.0875</td><td>0.2667</td><td>4986</td><td>61</td></tr><tr><th>AIME25</th><td>0.0542</td><td>0.1667</td><td>5566</td><td>71</td></tr><tr><th>AMC23</th><td>0.2726</td><td>0.6145</td><td>3826</td><td>142</td></tr></tbody>
+</table>
+
+<h2>与 train 旧结果的边界</h2>
+<table>
+<thead><tr><th>Run</th><th>Macro Avg@8</th><th>Macro Pass@8</th></tr></thead>
+<tbody><tr><th>train token OPD, legacy eval</th><td>0.3147</td><td>0.4865</td></tr><tr><th>train Block3, legacy eval</th><td>0.3188</td><td>0.5148</td></tr><tr><th>ml2 Block3, fixed seeds + historical grader</th><td>0.2404</td><td>0.4739</td></tr></tbody>
+</table>
+<ul>
+<li>train 旧实验中 Block3 相对 token 的单 seed 增量为 Avg@8 +0.0041、Pass@8 +0.0283，属于弱阳性证据。</li>
+<li>本次 ml2 只跑 Block3，没有同机 token baseline，所以不能复现该因果差值。</li>
+<li>train 旧 evaluator 未显式固定 rollout seed；ml2 固定 seed 21-28。historical grader 对齐只消除了评分器差异，没有消除采样差异。</li>
+<li>硬件由 <code>4x NVIDIA A800-SXM4-80GB</code> 变为 <code>4x NVIDIA A100-SXM4-80GB</code>；reference micro-batch 从 4 变为 1，vLLM utilization 从 0.7 变为 0.6。</li>
+</ul>
+
+<h2>训练诊断与风险</h2>
+<p>41 个快照全部通过有限性审计。student entropy 最大 6.227（Step 120），最小共享 student Top-16 mass 0.298（Step 120），最大 weighted sign-flip 0.191，最大 block ratio 越界率 4.99%。</p>
+<div class="note warn">最大训练 batch 截断率为 100.00%（Step 200），因此不能下“无条件稳定”的结论。Step 115-185 出现多次高熵 batch，Step 200 也再次处于高熵/全截断 batch；但 teacher entropy 同步上升、Top-16 overlap 保持较高，且 Step 200 固定 eval 最优、Math500 平均长度从 Step 50 的 3,098 降到 Step 200 的 1,792 token。现有证据只支持“没有持续性数值或固定 eval collapse”。</div>
+
+<figure><h3>Checkpoint evaluation curves</h3><img src="block3_ml2_replication_assets/eval_macro_curves.png" alt="Checkpoint evaluation curves"></figure><figure><h3>Step 200 task comparison</h3><img src="block3_ml2_replication_assets/eval_task_step200.png" alt="Step 200 task comparison"></figure><figure><h3>Length and format behavior</h3><img src="block3_ml2_replication_assets/eval_length_format.png" alt="Length and format behavior"></figure><figure><h3>Alignment diagnostics</h3><img src="block3_ml2_replication_assets/scalar_alignment.png" alt="Alignment diagnostics"></figure><figure><h3>Credit-assignment diagnostics</h3><img src="block3_ml2_replication_assets/scalar_credit.png" alt="Credit-assignment diagnostics"></figure><figure><h3>Optimization and policy drift</h3><img src="block3_ml2_replication_assets/scalar_optimization.png" alt="Optimization and policy drift"></figure><figure><h3>Entropy by response segment</h3><img src="block3_ml2_replication_assets/entropy_segments.png" alt="Entropy by response segment"></figure><figure><h3>Step x output-position heatmaps (12 metrics)</h3><img src="block3_ml2_replication_assets/position_heatmaps.png" alt="Step x output-position heatmaps (12 metrics)"></figure>
+
+<h2>后续验证</h2>
+<ol>
+<li>在 ml2 用同一代码、同一资源设置补跑 token OPD baseline。</li>
+<li>token 与 Block3 做至少 3 个 paired training seeds；每个 checkpoint 使用相同固定 eval seeds。</li>
+<li>同时报告 historical grader 与预注册主 grader，或在实验前锁定一个覆盖 AMC23 的统一 grader。</li>
+<li>以 prompt-batch hash 配对比较 entropy、overlap mass、sign-flip 和 leakage，区分数据难度与训练漂移。</li>
+</ol>
+
+<h2>可追溯性</h2>
+<p>Source commit: <code>9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977</code>。训练退出码 0；三个 checkpoint、41 个 NPZ 和三个 5,144-rollout eval 已通过自动审计（0 issues，0 warnings）。仓库仅保存 curated JSON、图表和 HTML；raw rollout、日志与 checkpoint 保留在实验存储。</p>
+</main></body></html>

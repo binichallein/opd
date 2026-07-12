@@ -1,0 +1,806 @@
+{
+  "comparability": {
+    "hardware": {
+      "differs": true,
+      "historical_train": "4x NVIDIA A800-SXM4-80GB",
+      "ml2": "4x NVIDIA A100-SXM4-80GB"
+    },
+    "historical_grader_regrade_available": true,
+    "historical_train_eval_had_no_explicit_rollout_seed": true,
+    "memory_engineering": {
+      "differs": true,
+      "historical_train": {
+        "reference_logprob_micro_batch_per_gpu": 4,
+        "source": "scripts/run_revisiting_sampled_block_opd_math.sh defaults",
+        "vllm_gpu_memory_utilization": 0.7
+      },
+      "ml2": {
+        "reference_logprob_micro_batch_per_gpu": 1,
+        "vllm_gpu_memory_utilization": 0.6
+      }
+    },
+    "ml2_fixed_eval_rollout_seeds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "primary_grader_differs_from_historical": true,
+    "raw_outputs_rehashed_by_local_report_builder": false,
+    "regrade_input_hash_manifest_paths_validated": true,
+    "replication_seed_count": 1,
+    "same_eval_prompts_decoding_n_and_max_tokens": true,
+    "same_host_ml2_token_baseline_available": false,
+    "same_models_data_objective_and_training_seed": true
+  },
+  "conclusion": {
+    "block3_vs_token_on_ml2": "not_tested",
+    "cross_host_absolute_repeatability": "inconclusive_due_to_eval_seed_and_runtime_differences",
+    "historical_evidence": "one_seed_weak_positive",
+    "research_claim": "This run completed without non-finite values or a sustained fixed-eval collapse, but high-entropy and truncation risk remains. It does not independently replicate the causal Block3-over-token gain. A same-host token baseline and multi-seed paired runs remain required.",
+    "status": "not_independently_validated",
+    "training_stability": "completed_without_sustained_numerical_or_fixed_eval_collapse_but_high_entropy_and_truncation_risk_remains",
+    "within_ml2_checkpoint_progression": "step200_outperforms_step50_and_step100"
+  },
+  "contract": {
+    "actor_micro_batch_per_gpu": 1,
+    "block_advantage": "mean",
+    "block_size": 3,
+    "learning_rate": 2e-06,
+    "max_response_tokens": 16384,
+    "reference_logprob_micro_batch_per_gpu": 1,
+    "rollout_logprob_micro_batch_per_gpu": 4,
+    "rollouts_per_prompt": 8,
+    "seed": 21,
+    "steps": 200,
+    "student": "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base",
+    "teacher": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO",
+    "train_batch_size": 4,
+    "training_data": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/train.parquet",
+    "training_data_sha256": "cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf",
+    "training_rows": 1791700,
+    "vllm_gpu_memory_utilization": 0.6
+  },
+  "deltas": {
+    "cross_host_external_grader": {
+      "ml2_step200_minus_train_block3_macro_avg_at_8": -0.07835567269076307,
+      "ml2_step200_minus_train_block3_macro_pass_at_8": -0.04083333333333333
+    },
+    "historical_train_block3_minus_token": {
+      "macro_avg_at_8": 0.004114959839357446,
+      "macro_pass_at_8": 0.028321285140562258
+    },
+    "ml2_external_step_progression": {
+      "step200_minus_step50_macro_avg_at_8": 0.031926204819277104,
+      "step200_minus_step50_macro_pass_at_8": 0.049787148594377495
+    }
+  },
+  "diagnostics": {
+    "all_recorded_nonfinite_counts_zero": true,
+    "block_ratio_outside_clip_max": {
+      "step": 140,
+      "value": 0.04986565560102463
+    },
+    "grad_norm_max": {
+      "step": 1,
+      "value": 359.8042907714844
+    },
+    "high_entropy_steps_ge_2": [
+      120,
+      125,
+      130,
+      140,
+      145,
+      155,
+      160,
+      165,
+      170,
+      175,
+      180,
+      185,
+      200
+    ],
+    "normalized_leakage_max": {
+      "step": 20,
+      "value": 1.1724023818969727
+    },
+    "record_count": 41,
+    "steps": [
+      1,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      55,
+      60,
+      65,
+      70,
+      75,
+      80,
+      85,
+      90,
+      95,
+      100,
+      105,
+      110,
+      115,
+      120,
+      125,
+      130,
+      135,
+      140,
+      145,
+      150,
+      155,
+      160,
+      165,
+      170,
+      175,
+      180,
+      185,
+      190,
+      195,
+      200
+    ],
+    "student_entropy_max": {
+      "step": 120,
+      "value": 6.227296829223633
+    },
+    "student_overlap_mass_min": {
+      "step": 120,
+      "value": 0.2980938255786896
+    },
+    "teacher_entropy_max": {
+      "step": 120,
+      "value": 5.866206169128418
+    },
+    "teacher_overlap_mass_min": {
+      "step": 120,
+      "value": 0.32455846667289734
+    },
+    "top16_overlap_min": {
+      "step": 10,
+      "value": 0.33676689863204956
+    },
+    "truncation_ratio_max": {
+      "step": 200,
+      "value": 1.0
+    },
+    "weighted_sign_flip_max": {
+      "step": 200,
+      "value": 0.19140441715717316
+    }
+  },
+  "evaluation": {
+    "eval_configs": {
+      "100": {
+        "enable_thinking": false,
+        "eval_jsonl_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl",
+        "eval_seed": 21,
+        "gpus": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "grader": "verl",
+        "max_tokens": 16384,
+        "model_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/checkpoints/global_step_100/actor/huggingface",
+        "n": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": [
+          "math500",
+          "aime24",
+          "aime25",
+          "amc23"
+        ],
+        "temperature": 1.0,
+        "top_p": 0.9
+      },
+      "200": {
+        "enable_thinking": false,
+        "eval_jsonl_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl",
+        "eval_seed": 21,
+        "gpus": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "grader": "verl",
+        "max_tokens": 16384,
+        "model_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/checkpoints/global_step_200/actor/huggingface",
+        "n": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": [
+          "math500",
+          "aime24",
+          "aime25",
+          "amc23"
+        ],
+        "temperature": 1.0,
+        "top_p": 0.9
+      },
+      "50": {
+        "enable_thinking": false,
+        "eval_jsonl_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl",
+        "eval_seed": 21,
+        "gpus": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "grader": "verl",
+        "max_tokens": 16384,
+        "model_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/checkpoints/global_step_50/actor/huggingface",
+        "n": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": [
+          "math500",
+          "aime24",
+          "aime25",
+          "amc23"
+        ],
+        "temperature": 1.0,
+        "top_p": 0.9
+      }
+    },
+    "fixed_seed_builtin_verl": {
+      "100": {
+        "enable_thinking": false,
+        "eval_seed": 21,
+        "grader": "verl",
+        "macro_avg_at_n": 0.12283333333333332,
+        "macro_pass_at_n": 0.2843333333333333,
+        "n_expected": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": {
+          "aime24": {
+            "avg_at_n": 0.05,
+            "avg_response_length_tokens": 3536.1666666666665,
+            "format_error_rollouts": 78,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/outputs/aime24_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.2,
+            "solve_all": 0,
+            "solve_none": 24,
+            "total_rollouts": 240
+          },
+          "aime25": {
+            "avg_at_n": 0.03333333333333333,
+            "avg_response_length_tokens": 4446.6625,
+            "format_error_rollouts": 94,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/outputs/aime25_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.13333333333333333,
+            "solve_all": 0,
+            "solve_none": 26,
+            "total_rollouts": 240
+          },
+          "amc23": {
+            "avg_at_n": 0.0,
+            "avg_response_length_tokens": 3640.8689759036147,
+            "format_error_rollouts": 215,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/outputs/amc23_graded.jsonl",
+            "num_examples": 83,
+            "pass_at_n": 0.0,
+            "solve_all": 0,
+            "solve_none": 83,
+            "total_rollouts": 664
+          },
+          "math500": {
+            "avg_at_n": 0.408,
+            "avg_response_length_tokens": 2502.25525,
+            "format_error_rollouts": 1266,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/outputs/math500_graded.jsonl",
+            "num_examples": 500,
+            "pass_at_n": 0.804,
+            "solve_all": 5,
+            "solve_none": 98,
+            "total_rollouts": 4000
+          }
+        }
+      },
+      "200": {
+        "enable_thinking": false,
+        "eval_seed": 21,
+        "grader": "verl",
+        "macro_avg_at_n": 0.16747916666666668,
+        "macro_pass_at_n": 0.3138333333333333,
+        "n_expected": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": {
+          "aime24": {
+            "avg_at_n": 0.0875,
+            "avg_response_length_tokens": 4985.608333333334,
+            "format_error_rollouts": 61,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/outputs/aime24_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.26666666666666666,
+            "solve_all": 0,
+            "solve_none": 22,
+            "total_rollouts": 240
+          },
+          "aime25": {
+            "avg_at_n": 0.05416666666666667,
+            "avg_response_length_tokens": 5565.758333333333,
+            "format_error_rollouts": 71,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/outputs/aime25_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.16666666666666666,
+            "solve_all": 0,
+            "solve_none": 25,
+            "total_rollouts": 240
+          },
+          "amc23": {
+            "avg_at_n": 0.0,
+            "avg_response_length_tokens": 3825.8418674698796,
+            "format_error_rollouts": 142,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/outputs/amc23_graded.jsonl",
+            "num_examples": 83,
+            "pass_at_n": 0.0,
+            "solve_all": 0,
+            "solve_none": 83,
+            "total_rollouts": 664
+          },
+          "math500": {
+            "avg_at_n": 0.52825,
+            "avg_response_length_tokens": 1792.052,
+            "format_error_rollouts": 749,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/outputs/math500_graded.jsonl",
+            "num_examples": 500,
+            "pass_at_n": 0.822,
+            "solve_all": 26,
+            "solve_none": 89,
+            "total_rollouts": 4000
+          }
+        }
+      },
+      "50": {
+        "enable_thinking": false,
+        "eval_seed": 21,
+        "grader": "verl",
+        "macro_avg_at_n": 0.14854166666666666,
+        "macro_pass_at_n": 0.2941666666666667,
+        "n_expected": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": {
+          "aime24": {
+            "avg_at_n": 0.05416666666666667,
+            "avg_response_length_tokens": 6954.0875,
+            "format_error_rollouts": 88,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/outputs/aime24_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.2,
+            "solve_all": 0,
+            "solve_none": 24,
+            "total_rollouts": 240
+          },
+          "aime25": {
+            "avg_at_n": 0.0375,
+            "avg_response_length_tokens": 6148.016666666666,
+            "format_error_rollouts": 90,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/outputs/aime25_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.16666666666666666,
+            "solve_all": 0,
+            "solve_none": 25,
+            "total_rollouts": 240
+          },
+          "amc23": {
+            "avg_at_n": 0.0,
+            "avg_response_length_tokens": 5649.813253012048,
+            "format_error_rollouts": 235,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/outputs/amc23_graded.jsonl",
+            "num_examples": 83,
+            "pass_at_n": 0.0,
+            "solve_all": 0,
+            "solve_none": 83,
+            "total_rollouts": 664
+          },
+          "math500": {
+            "avg_at_n": 0.5025,
+            "avg_response_length_tokens": 3097.80425,
+            "format_error_rollouts": 748,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/outputs/math500_graded.jsonl",
+            "num_examples": 500,
+            "pass_at_n": 0.81,
+            "solve_all": 21,
+            "solve_none": 95,
+            "total_rollouts": 4000
+          }
+        }
+      }
+    },
+    "fixed_seed_historical_external_grader": {
+      "100": {
+        "enable_thinking": false,
+        "eval_seed": 21,
+        "grader": "external",
+        "macro_avg_at_n": 0.18563227911646588,
+        "macro_pass_at_n": 0.4424477911646586,
+        "n_expected": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": {
+          "aime24": {
+            "avg_at_n": 0.05,
+            "avg_response_length_tokens": 3536.1666666666665,
+            "format_error_rollouts": 78,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/historical_external_grader/aime24_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.2,
+            "solve_all": 0,
+            "solve_none": 24,
+            "total_rollouts": 240
+          },
+          "aime25": {
+            "avg_at_n": 0.03333333333333333,
+            "avg_response_length_tokens": 4446.6625,
+            "format_error_rollouts": 94,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/historical_external_grader/aime25_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.13333333333333333,
+            "solve_all": 0,
+            "solve_none": 26,
+            "total_rollouts": 240
+          },
+          "amc23": {
+            "avg_at_n": 0.23644578313253012,
+            "avg_response_length_tokens": 3640.8689759036147,
+            "format_error_rollouts": 215,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/historical_external_grader/amc23_graded.jsonl",
+            "num_examples": 83,
+            "pass_at_n": 0.6144578313253012,
+            "solve_all": 0,
+            "solve_none": 32,
+            "total_rollouts": 664
+          },
+          "math500": {
+            "avg_at_n": 0.42275,
+            "avg_response_length_tokens": 2502.25525,
+            "format_error_rollouts": 1266,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_100_n8/historical_external_grader/math500_graded.jsonl",
+            "num_examples": 500,
+            "pass_at_n": 0.822,
+            "solve_all": 5,
+            "solve_none": 89,
+            "total_rollouts": 4000
+          }
+        }
+      },
+      "200": {
+        "enable_thinking": false,
+        "eval_seed": 21,
+        "grader": "external",
+        "macro_avg_at_n": 0.24043925702811245,
+        "macro_pass_at_n": 0.4739477911646586,
+        "n_expected": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": {
+          "aime24": {
+            "avg_at_n": 0.0875,
+            "avg_response_length_tokens": 4985.608333333334,
+            "format_error_rollouts": 61,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/historical_external_grader/aime24_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.26666666666666666,
+            "solve_all": 0,
+            "solve_none": 22,
+            "total_rollouts": 240
+          },
+          "aime25": {
+            "avg_at_n": 0.05416666666666667,
+            "avg_response_length_tokens": 5565.758333333333,
+            "format_error_rollouts": 71,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/historical_external_grader/aime25_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.16666666666666666,
+            "solve_all": 0,
+            "solve_none": 25,
+            "total_rollouts": 240
+          },
+          "amc23": {
+            "avg_at_n": 0.27259036144578314,
+            "avg_response_length_tokens": 3825.8418674698796,
+            "format_error_rollouts": 142,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/historical_external_grader/amc23_graded.jsonl",
+            "num_examples": 83,
+            "pass_at_n": 0.6144578313253012,
+            "solve_all": 1,
+            "solve_none": 32,
+            "total_rollouts": 664
+          },
+          "math500": {
+            "avg_at_n": 0.5475,
+            "avg_response_length_tokens": 1792.052,
+            "format_error_rollouts": 749,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_200_n8/historical_external_grader/math500_graded.jsonl",
+            "num_examples": 500,
+            "pass_at_n": 0.848,
+            "solve_all": 26,
+            "solve_none": 76,
+            "total_rollouts": 4000
+          }
+        }
+      },
+      "50": {
+        "enable_thinking": false,
+        "eval_seed": 21,
+        "grader": "external",
+        "macro_avg_at_n": 0.20851305220883534,
+        "macro_pass_at_n": 0.42416064257028113,
+        "n_expected": 8,
+        "rollout_seeds": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "tasks": {
+          "aime24": {
+            "avg_at_n": 0.05416666666666667,
+            "avg_response_length_tokens": 6954.0875,
+            "format_error_rollouts": 88,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/historical_external_grader/aime24_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.2,
+            "solve_all": 0,
+            "solve_none": 24,
+            "total_rollouts": 240
+          },
+          "aime25": {
+            "avg_at_n": 0.0375,
+            "avg_response_length_tokens": 6148.016666666666,
+            "format_error_rollouts": 90,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/historical_external_grader/aime25_graded.jsonl",
+            "num_examples": 30,
+            "pass_at_n": 0.16666666666666666,
+            "solve_all": 0,
+            "solve_none": 25,
+            "total_rollouts": 240
+          },
+          "amc23": {
+            "avg_at_n": 0.2213855421686747,
+            "avg_response_length_tokens": 5649.813253012048,
+            "format_error_rollouts": 235,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/historical_external_grader/amc23_graded.jsonl",
+            "num_examples": 83,
+            "pass_at_n": 0.4939759036144578,
+            "solve_all": 1,
+            "solve_none": 42,
+            "total_rollouts": 664
+          },
+          "math500": {
+            "avg_at_n": 0.521,
+            "avg_response_length_tokens": 3097.80425,
+            "format_error_rollouts": 748,
+            "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean/eval_step_50_n8/historical_external_grader/math500_graded.jsonl",
+            "num_examples": 500,
+            "pass_at_n": 0.836,
+            "solve_all": 21,
+            "solve_none": 82,
+            "total_rollouts": 4000
+          }
+        }
+      }
+    },
+    "historical_train_legacy": {
+      "block3_mean_step200": {
+        "macro_avg_at_8": 0.3187949297188755,
+        "macro_pass_at_8": 0.514781124497992,
+        "tasks": {
+          "aime24": {
+            "avg_at_8": 0.09583333333333334,
+            "avg_length_tokens": 6450.054166666667,
+            "format_errors": 42,
+            "pass_at_8": 0.3
+          },
+          "aime25": {
+            "avg_at_8": 0.0875,
+            "avg_length_tokens": 5459.845833333334,
+            "format_errors": 21,
+            "pass_at_8": 0.26666666666666666
+          },
+          "amc23": {
+            "avg_at_8": 0.3990963855421687,
+            "avg_length_tokens": 4434.746987951808,
+            "format_errors": 54,
+            "pass_at_8": 0.6144578313253012
+          },
+          "math500": {
+            "avg_at_8": 0.69275,
+            "avg_length_tokens": 2385.65,
+            "format_errors": 117,
+            "pass_at_8": 0.878
+          }
+        }
+      },
+      "explicit_rollout_seeds": false,
+      "grader_sha256": "04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f",
+      "token_opd_step200": {
+        "macro_avg_at_8": 0.3146799698795181,
+        "macro_pass_at_8": 0.4864598393574297,
+        "tasks": {
+          "aime24": {
+            "avg_at_8": 0.13333333333333333,
+            "avg_length_tokens": 6848.654166666666,
+            "format_errors": 44,
+            "pass_at_8": 0.26666666666666666
+          },
+          "aime25": {
+            "avg_at_8": 0.06666666666666667,
+            "avg_length_tokens": 6213.891666666666,
+            "format_errors": 34,
+            "pass_at_8": 0.16666666666666666
+          },
+          "amc23": {
+            "avg_at_8": 0.3674698795180723,
+            "avg_length_tokens": 4863.6626506024095,
+            "format_errors": 62,
+            "pass_at_8": 0.6265060240963856
+          },
+          "math500": {
+            "avg_at_8": 0.69125,
+            "avg_length_tokens": 2528.75725,
+            "format_errors": 175,
+            "pass_at_8": 0.886
+          }
+        }
+      }
+    }
+  },
+  "experiment": "block3_mean_ml2_replication",
+  "run": {
+    "acceptance_issue_count": 0,
+    "acceptance_passed": true,
+    "acceptance_warning_count": 0,
+    "checkpoint_steps": [
+      50,
+      100,
+      200
+    ],
+    "diagnostic_steps": [
+      1,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      55,
+      60,
+      65,
+      70,
+      75,
+      80,
+      85,
+      90,
+      95,
+      100,
+      105,
+      110,
+      115,
+      120,
+      125,
+      130,
+      135,
+      140,
+      145,
+      150,
+      155,
+      160,
+      165,
+      170,
+      175,
+      180,
+      185,
+      190,
+      195,
+      200
+    ],
+    "eval_steps": [
+      50,
+      100,
+      200
+    ],
+    "hardware": "4x NVIDIA A100-SXM4-80GB",
+    "host": "ml2",
+    "run_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean",
+    "total_eval_rollouts": 15432,
+    "training_exit_code": 0
+  },
+  "schema_version": 1,
+  "source_commit": "9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977",
+  "status": "complete"
+}
