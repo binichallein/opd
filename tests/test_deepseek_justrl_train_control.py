@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+import subprocess
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,3 +74,26 @@ def test_formal_launcher_records_and_checks_pinned_model_revisions():
     assert "HF_REVISION" in launcher
     assert 'BASELINE_ALIGNMENT="${BASELINE_ALIGNMENT:-' in launcher
     assert '\\"baseline_alignment\\": \\"${BASELINE_ALIGNMENT}\\"' in launcher
+
+
+def test_launcher_revision_preflight_reaches_ssh_without_shell_parse_error(tmp_path):
+    fake_ssh = tmp_path / "ssh"
+    fake_ssh.write_text("#!/bin/sh\nexit 42\n", encoding="utf-8")
+    fake_ssh.chmod(0o755)
+    env = {
+        **os.environ,
+        "PATH": f"{tmp_path}:{os.environ['PATH']}",
+        "STUDENT_MODEL_REVISION": "student-revision",
+        "TEACHER_MODEL_REVISION": "teacher-revision",
+    }
+
+    result = subprocess.run(
+        ["bash", str(LAUNCHER)],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 42
+    assert "syntax error" not in result.stderr

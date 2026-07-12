@@ -71,10 +71,10 @@ test -f '${REMOTE_ROOT}/scripts/run_revisiting_sampled_block_opd_math.sh'
 test -d '${STUDENT_MODEL}'
 test -d '${MATH_TEACHER}'
 if [[ -n '${STUDENT_MODEL_REVISION}' ]]; then
-  test "\$(cat '${STUDENT_MODEL}/HF_REVISION')" = '${STUDENT_MODEL_REVISION}'
+  test \"\$(cat '${STUDENT_MODEL}/HF_REVISION')\" = '${STUDENT_MODEL_REVISION}'
 fi
 if [[ -n '${TEACHER_MODEL_REVISION}' ]]; then
-  test "\$(cat '${MATH_TEACHER}/HF_REVISION')" = '${TEACHER_MODEL_REVISION}'
+  test \"\$(cat '${MATH_TEACHER}/HF_REVISION')\" = '${TEACHER_MODEL_REVISION}'
 fi
 test -x '${VENV}/bin/python'
 test -f '${TRAIN_DATA}'
