@@ -5,12 +5,14 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:-}"
 SSH_BIN="${SSH_BIN:-ssh}"
 SCP_BIN="${SCP_BIN:-scp}"
+SCP_ARGS=()
 POLL_SECONDS="${POLL_SECONDS:-300}"
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-172800}"
 LOCAL_PLOT_PYTHON="${LOCAL_PLOT_PYTHON:-/home/tyf/miniconda3/envs/evalscope/bin/python}"
 
 case "${TARGET}" in
   train-pair)
+    SCP_ARGS=(-O)
     REMOTE="${REMOTE_OVERRIDE:-train}"
     REMOTE_ASSET_ROOT="${REMOTE_ASSET_ROOT_OVERRIDE:-/mnt/data/cpfs/Yaleon/opd}"
     REMOTE_PYTHON="/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/venv/bin/python"
@@ -425,7 +427,8 @@ REMOTE_DIAGNOSTIC_STATE
     scripts/analyze_block10_collapse_diagnostics.py \
     opd_ext/__init__.py opd_ext/analysis.py opd_ext/diagnostics.py | \
     tar -x -C "${local_stage}/runtime"
-  "${SCP_BIN}" -r "${REMOTE}:${run_dir}/diagnostics" "${local_stage}/run/diagnostics"
+  "${SCP_BIN}" "${SCP_ARGS[@]}" -r \
+    "${REMOTE}:${run_dir}/diagnostics" "${local_stage}/run/diagnostics"
   "${LOCAL_PLOT_PYTHON}" \
     "${local_stage}/runtime/scripts/analyze_single_opd_diagnostics.py" \
     --run-dir "${local_stage}/run" \
@@ -433,7 +436,8 @@ REMOTE_DIAGNOSTIC_STATE
     --label "${label}"
   "${SSH_BIN}" "${REMOTE}" "test ! -e '${stage}'"
   "${SSH_BIN}" "${REMOTE}" "mkdir -p '$(dirname "${stage}")'"
-  "${SCP_BIN}" -r "${local_stage}/output" "${REMOTE}:${stage}"
+  "${SCP_BIN}" "${SCP_ARGS[@]}" -r \
+    "${local_stage}/output" "${REMOTE}:${stage}"
   "${SSH_BIN}" "${REMOTE}" bash -s -- "${output}" "${stage}" <<'REMOTE_DIAGNOSTICS'
 set -euo pipefail
 output="$1"

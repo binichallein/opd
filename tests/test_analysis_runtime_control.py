@@ -63,7 +63,7 @@ def test_analysis_control_runs_complete_non_destructive_finalization_contract():
     assert "analyze_single_opd_diagnostics.py" in source
     assert "LOCAL_PLOT_PYTHON" in source
     assert "SCP_BIN" in source
-    assert '"${SCP_BIN}" -r' in source
+    assert '"${SCP_BIN}" "${SCP_ARGS[@]}" -r' in source
     assert "partial diagnostic output exists; refusing overwrite" in source
     assert "build_paired_validation_report.py" in source
     assert "REPORT_TITLE_B64" in source
@@ -82,10 +82,21 @@ def test_analysis_control_creates_remote_asset_parent_before_scp_upload():
         '"${SSH_BIN}" "${REMOTE}" '
         '"mkdir -p \'$(dirname "${stage}")\'"'
     )
-    upload = '"${SCP_BIN}" -r "${local_stage}/output" "${REMOTE}:${stage}"'
+    upload = (
+        '"${SCP_BIN}" "${SCP_ARGS[@]}" -r \\\n'
+        '    "${local_stage}/output" "${REMOTE}:${stage}"'
+    )
 
     assert create_parent in source
     assert source.index(create_parent) < source.index(upload)
+
+
+def test_analysis_control_uses_legacy_scp_for_train_without_sftp_subsystem():
+    source = CONTROL.read_text(encoding="utf-8")
+
+    assert "SCP_ARGS=()" in source
+    assert "SCP_ARGS=(-O)" in source
+    assert '"${SCP_BIN}" "${SCP_ARGS[@]}" -r' in source
 
 
 def test_analysis_control_rejects_unknown_target_without_ssh(tmp_path):
