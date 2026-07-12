@@ -1,6 +1,8 @@
+import errno
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -247,3 +249,38 @@ def test_regrade_can_write_separate_audited_view_without_touching_legacy_view(tm
         / "historical_external_grader_audited"
         / "summary.json"
     ).is_file()
+
+
+def test_regrade_publishes_via_relative_symlink_when_directory_rename_is_exdev(
+    tmp_path, monkeypatch
+):
+    module = load_module()
+    run_dir, grader = make_eval_fixture(tmp_path)
+    grader_sha = hashlib.sha256(grader.read_bytes()).hexdigest()
+    original_rename = module.Path.rename
+
+    def reject_directory_rename(path, target):
+        if path.name.startswith(".historical_external_grader_"):
+            raise OSError(errno.EXDEV, "directory rename unsupported")
+        return original_rename(path, target)
+
+    monkeypatch.setattr(module.Path, "rename", reject_directory_rename)
+
+    module.regrade_run(
+        run_dir,
+        grader,
+        steps=(50,),
+        expected_grader_sha256=grader_sha,
+        view_name="historical_external_grader_audited",
+    )
+
+    view = (
+        run_dir
+        / "eval_step_50_n8"
+        / "historical_external_grader_audited"
+    )
+    assert view.is_symlink()
+    assert not os.path.isabs(os.readlink(view))
+    assert view.is_dir()
+    assert (view / "summary.json").is_file()
+    assert len((view / "math500_graded.jsonl").read_text().splitlines()) == 4000

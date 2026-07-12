@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+import errno
 import hashlib
 import importlib.util
 import json
@@ -301,7 +302,7 @@ def write_external_view(
     grader_path: Path,
     grade_answer: Callable[[str, str], Any],
 ) -> dict[str, Any]:
-    if destination.exists():
+    if destination.exists() or destination.is_symlink():
         raise FileExistsError(f"external grader evidence already exists: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(
@@ -366,7 +367,12 @@ def write_external_view(
         (temporary / "input_hashes.sha256").write_text(
             "\n".join(manifest_lines) + "\n", encoding="utf-8"
         )
-        temporary.rename(destination)
+        try:
+            temporary.rename(destination)
+        except OSError as error:
+            if error.errno != errno.EXDEV:
+                raise
+            destination.symlink_to(temporary.name, target_is_directory=True)
         return summary
     except Exception:
         shutil.rmtree(temporary, ignore_errors=True)
