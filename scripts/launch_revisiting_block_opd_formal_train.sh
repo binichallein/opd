@@ -16,6 +16,9 @@ EXP_NAME="${EXP_NAME:-${VARIANT}-qwen3-dapo17k-paper}"
 
 STUDENT_MODEL="${STUDENT_MODEL:-/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/models/Qwen3-1.7B-Base}"
 MATH_TEACHER="${MATH_TEACHER:-/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4b_grpo_20260605/models/Qwen3-4B-Base-GRPO}"
+STUDENT_MODEL_REVISION="${STUDENT_MODEL_REVISION:-}"
+TEACHER_MODEL_REVISION="${TEACHER_MODEL_REVISION:-}"
+BASELINE_ALIGNMENT="${BASELINE_ALIGNMENT:-Blockwise/Rethinking-aligned Qwen3-1.7B-Base student, Qwen3-4B-Base-GRPO teacher, and raw 1,791,700-row DAPO-Math-17K pool; Revisiting OPD is codebase only}"
 DATA_DIR="${DATA_DIR:-${REMOTE_ROOT}/data/math_opd_dapo17k_hf_full_eval4}"
 TRAIN_DATA="${TRAIN_DATA:-${DATA_DIR}/train.parquet}"
 VAL_DATA="${VAL_DATA:-${DATA_DIR}/test.parquet}"
@@ -67,6 +70,12 @@ fi
 test -f '${REMOTE_ROOT}/scripts/run_revisiting_sampled_block_opd_math.sh'
 test -d '${STUDENT_MODEL}'
 test -d '${MATH_TEACHER}'
+if [[ -n '${STUDENT_MODEL_REVISION}' ]]; then
+  test "\$(cat '${STUDENT_MODEL}/HF_REVISION')" = '${STUDENT_MODEL_REVISION}'
+fi
+if [[ -n '${TEACHER_MODEL_REVISION}' ]]; then
+  test "\$(cat '${MATH_TEACHER}/HF_REVISION')" = '${TEACHER_MODEL_REVISION}'
+fi
 test -x '${VENV}/bin/python'
 test -f '${TRAIN_DATA}'
 test -f '${VAL_DATA}'
@@ -153,6 +162,8 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"experiment_name\": \"${EXP_NAME}\",
   \"student_model\": \"${STUDENT_MODEL}\",
   \"teacher_model\": \"${MATH_TEACHER}\",
+  \"student_model_revision\": \"${STUDENT_MODEL_REVISION}\",
+  \"teacher_model_revision\": \"${TEACHER_MODEL_REVISION}\",
   \"venv\": \"${VENV}\",
   \"train_data\": \"${TRAIN_DATA}\",
   \"val_data\": \"${VAL_DATA}\",
@@ -193,7 +204,7 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"resume_from_path\": \"${RESUME_FROM_PATH}\",
   \"diagnostic_output_dir\": \"${OPD_DIAG_OUTPUT_DIR}\",
   \"checkpoint_policy\": \"preserve all milestone checkpoints; no automatic deletion\",
-  \"baseline_alignment\": \"Blockwise/Rethinking-aligned Qwen3-1.7B-Base student, Qwen3-4B-Base-GRPO teacher, and raw 1,791,700-row DAPO-Math-17K pool; Revisiting OPD is codebase only\"
+  \"baseline_alignment\": \"${BASELINE_ALIGNMENT}\"
 }
 JSON
 cat > '${RUN_DIR}/command.sh' <<'CMD'

@@ -6,19 +6,24 @@ ACTION="${1:-status}"
 STEP="${2:-200}"
 DATE_TAG="${DATE_TAG:-20260711v2}"
 
-REMOTE="ml2"
+REMOTE="${REMOTE:-ml2}"
+HOST_TAG="${HOST_TAG:-ml2}"
 SOURCE_COMMIT="${SOURCE_COMMIT:-$(git -C "${ROOT_DIR}" rev-parse HEAD)}"
-ASSET_ROOT="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd"
-RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"
-REMOTE_ROOT="${RUNTIME_ROOT}"
-VENV="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl"
-HF_HOME_DIR="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/hf_home"
-STUDENT_MODEL="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base"
-MATH_TEACHER="${ASSET_ROOT}/models/Qwen3-4B-Base-GRPO"
-DATA_DIR="${ASSET_ROOT}/data/math_opd_dapo17k_hf_full_eval4"
+ASSET_ROOT="${ASSET_ROOT:-/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd}"
+RUNTIME_ROOT="${RUNTIME_ROOT:-${ASSET_ROOT}/deployments/${SOURCE_COMMIT}}"
+REMOTE_ROOT="${REMOTE_ROOT:-${RUNTIME_ROOT}}"
+VENV="${VENV:-/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl}"
+HF_HOME_DIR="${HF_HOME_DIR:-/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/hf_home}"
+STUDENT_MODEL="${STUDENT_MODEL:-/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base}"
+MATH_TEACHER="${MATH_TEACHER:-${ASSET_ROOT}/models/Qwen3-4B-Base-GRPO}"
+DATA_DIR="${DATA_DIR:-${ASSET_ROOT}/data/math_opd_dapo17k_hf_full_eval4}"
 CACHE_ROOT="${CACHE_ROOT:-/limx_embap/tos/b3r/${DATE_TAG#2026}}"
 EXPECTED_TRAIN_SHA256="cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf"
-MIN_TOS_AVAILABLE_BYTES=100000000000
+MIN_TOS_AVAILABLE_BYTES="${MIN_TOS_AVAILABLE_BYTES:-100000000000}"
+EXPECTED_STUDENT_MODEL_SUFFIX="${EXPECTED_STUDENT_MODEL_SUFFIX:-Qwen3-1.7B-Base}"
+EXPECTED_TEACHER_MODEL_SUFFIX="${EXPECTED_TEACHER_MODEL_SUFFIX:-Qwen3-4B-Base-GRPO}"
+EXPECTED_STUDENT_REVISION="${EXPECTED_STUDENT_REVISION:-}"
+EXPECTED_TEACHER_REVISION="${EXPECTED_TEACHER_REVISION:-}"
 
 VARIANT="${VARIANT:-block3_mean}"
 RUN_TAG="${RUN_TAG:-block3_replication}"
@@ -34,9 +39,9 @@ SUBMODULE_BASE_COMMIT="$(git -C "${ROOT_DIR}/external/revisiting_opd" rev-parse 
 run_root_for() {
   local kind="$1"
   if [[ "${kind}" == "probe" ]]; then
-    echo "${ASSET_ROOT}/runs/${DATE_TAG}_${RUN_TAG}_probe_seed21_ml2"
+    echo "${ASSET_ROOT}/runs/${DATE_TAG}_${RUN_TAG}_probe_seed21_${HOST_TAG}"
   else
-    echo "${ASSET_ROOT}/runs/${DATE_TAG}_${RUN_TAG}_seed21_ml2"
+    echo "${ASSET_ROOT}/runs/${DATE_TAG}_${RUN_TAG}_seed21_${HOST_TAG}"
   fi
 }
 
@@ -67,6 +72,8 @@ launch_train() {
   LOCAL_CACHE_ROOT="${CACHE_ROOT}/${kind}" \
   STUDENT_MODEL="${STUDENT_MODEL}" \
   MATH_TEACHER="${MATH_TEACHER}" \
+  STUDENT_MODEL_REVISION="${EXPECTED_STUDENT_REVISION}" \
+  TEACHER_MODEL_REVISION="${EXPECTED_TEACHER_REVISION}" \
   DATA_DIR="${DATA_DIR}" \
   ENV_SEED=21 \
   TRAIN_BATCH_SIZE=4 \
@@ -136,6 +143,14 @@ machine_preflight() {
   ssh "${REMOTE}" "set -euo pipefail
     test \"\$(cat '${RUNTIME_ROOT}/DEPLOYED_COMMIT')\" = '${SOURCE_COMMIT}'
     test -w '${ASSET_ROOT}'
+    test -d '${STUDENT_MODEL}'
+    test -d '${MATH_TEACHER}'
+    if [[ -n '${EXPECTED_STUDENT_REVISION}' ]]; then
+      test \"\$(cat '${STUDENT_MODEL}/HF_REVISION')\" = '${EXPECTED_STUDENT_REVISION}'
+    fi
+    if [[ -n '${EXPECTED_TEACHER_REVISION}' ]]; then
+      test \"\$(cat '${MATH_TEACHER}/HF_REVISION')\" = '${EXPECTED_TEACHER_REVISION}'
+    fi
     available=\$(df -PB1 '${ASSET_ROOT}' | awk 'NR == 2 {print \$4}')
     test \"\${available}\" -ge '${MIN_TOS_AVAILABLE_BYTES}'
     nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader,nounits | \
@@ -171,8 +186,10 @@ verify_probe1() {
     --expected-source-commit '${SOURCE_COMMIT}' \
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
     --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
-    --expected-student-model-suffix Qwen3-1.7B-Base \
-    --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
+    --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
+    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
+    --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
+    --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
 }
 
 probe2_preflight() {
@@ -204,8 +221,10 @@ verify_probe_resume() {
       --expected-resume-from-path '${step1}' \
       --expected-source-commit '${SOURCE_COMMIT}' \
       --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
-      --expected-student-model-suffix Qwen3-1.7B-Base \
-      --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
+      --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
+      --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
+      --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
+      --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
 }
 
 formal_preflight() {
@@ -266,8 +285,10 @@ audit_checkpoints() {
     --expected-source-commit '${SOURCE_COMMIT}' \
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
     --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
-    --expected-student-model-suffix Qwen3-1.7B-Base \
-    --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
+    --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
+    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
+    --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
+    --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
 }
 
 audit_formal() {
@@ -278,13 +299,16 @@ audit_formal() {
     --expected-source-commit '${SOURCE_COMMIT}' \
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
     --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
-    --expected-student-model-suffix Qwen3-1.7B-Base \
-    --expected-teacher-model-suffix Qwen3-4B-Base-GRPO"
+    --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
+    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
+    --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
+    --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
 }
 
 case "${ACTION}" in
   sync)
-    ML2_ROOT="${ASSET_ROOT}" bash "${ROOT_DIR}/scripts/sync_block3_replication_to_ml2.sh"
+    SYNC_REMOTE="${REMOTE}" TARGET_ROOT="${ASSET_ROOT}" SOURCE_COMMIT="${SOURCE_COMMIT}" \
+      bash "${ROOT_DIR}/scripts/sync_block3_replication_to_ml2.sh"
     ;;
   probe1)
     probe1_preflight

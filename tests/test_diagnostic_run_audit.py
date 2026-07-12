@@ -177,6 +177,30 @@ def test_artifact_manifest_checks_expected_train_sha(tmp_path):
     assert "train.parquet SHA-256" in audit.artifact_hash_issues(manifest, "wrong")[0]
 
 
+def test_model_identity_audit_checks_suffixes_and_revisions():
+    audit = load_audit_module()
+    card = {
+        "student_model": "/models/DeepSeek-R1-Distill-Qwen-1.5B",
+        "teacher_model": "/models/JustRL-DeepSeek-1.5B",
+        "student_model_revision": "student-revision",
+        "teacher_model_revision": "teacher-revision",
+    }
+
+    assert audit.model_identity_issues(
+        card,
+        student_suffix="DeepSeek-R1-Distill-Qwen-1.5B",
+        teacher_suffix="JustRL-DeepSeek-1.5B",
+        student_revision="student-revision",
+        teacher_revision="teacher-revision",
+    ) == []
+
+    issues = audit.model_identity_issues(
+        card,
+        student_revision="wrong-student-revision",
+    )
+    assert any("student_model_revision" in issue for issue in issues)
+
+
 def test_position_snapshot_audit_requires_all_twelve_finite_metrics(tmp_path):
     audit = load_audit_module()
     path = tmp_path / "step_00005.npz"

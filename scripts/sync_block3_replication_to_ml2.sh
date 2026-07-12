@@ -2,9 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ML2_ROOT="${ML2_ROOT:-/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd}"
-SOURCE_COMMIT="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
-DEPLOY_ROOT="${ML2_ROOT}/deployments"
+SYNC_REMOTE="${SYNC_REMOTE:-ml2}"
+TARGET_ROOT="${TARGET_ROOT:-/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd}"
+SOURCE_COMMIT="${SOURCE_COMMIT:-$(git -C "${ROOT_DIR}" rev-parse HEAD)}"
+DEPLOY_ROOT="${TARGET_ROOT}/deployments"
 RELEASE_DIR="${DEPLOY_ROOT}/${SOURCE_COMMIT}"
 SYNC_STAGE="${DEPLOY_ROOT}/.stage_${SOURCE_COMMIT}_$$"
 
@@ -35,24 +36,51 @@ for path in "${FILES[@]}"; do
   test -f "${ROOT_DIR}/${path}"
 done
 
+if ! git -C "${ROOT_DIR}" cat-file -e "${SOURCE_COMMIT}^{commit}"; then
+  echo "SOURCE_COMMIT=${SOURCE_COMMIT} is not a local Git commit" >&2
+  exit 1
+fi
+runtime_dirty="$(git -C "${ROOT_DIR}" status --porcelain -- "${FILES[@]}")"
+if [[ -n "${runtime_dirty}" ]]; then
+  echo "refusing to deploy dirty runtime files:" >&2
+  printf '%s\n' "${runtime_dirty}" >&2
+  exit 1
+fi
+if ! git -C "${ROOT_DIR}" diff --quiet "${SOURCE_COMMIT}" HEAD -- "${FILES[@]}"; then
+  echo "runtime files differ from SOURCE_COMMIT=${SOURCE_COMMIT}" >&2
+  exit 1
+fi
+expected_submodule_commit="$(
+  git -C "${ROOT_DIR}" ls-tree "${SOURCE_COMMIT}" external/revisiting_opd | awk '{print $3}'
+)"
+actual_submodule_commit="$(git -C "${ROOT_DIR}/external/revisiting_opd" rev-parse HEAD)"
+if ! test "${expected_submodule_commit}" = "${actual_submodule_commit}"; then
+  echo "Revisiting OPD commit differs from SOURCE_COMMIT=${SOURCE_COMMIT}" >&2
+  exit 1
+fi
+(
+  cd "${ROOT_DIR}/external/revisiting_opd"
+  sha256sum -c "${ROOT_DIR}/manifests/revisiting_opd_runtime.sha256" >/dev/null
+)
+
 local_hashes="$(mktemp)"
 remote_hashes="$(mktemp)"
 trap 'rm -f "${local_hashes}" "${remote_hashes}"' EXIT
 
 (cd "${ROOT_DIR}" && sha256sum "${FILES[@]}") > "${local_hashes}"
 
-if ssh ml2 "test -d '${RELEASE_DIR}'"; then
-  ssh ml2 "set -euo pipefail
+if ssh "${SYNC_REMOTE}" "test -d '${RELEASE_DIR}'"; then
+  ssh "${SYNC_REMOTE}" "set -euo pipefail
     test \"\$(cat '${RELEASE_DIR}/DEPLOYED_COMMIT')\" = '${SOURCE_COMMIT}'
     cd '${RELEASE_DIR}'
     sha256sum -c .expected.sha256"
-  ssh ml2 "cd '${RELEASE_DIR}' && sha256sum ${FILES[*]}" > "${remote_hashes}"
+  ssh "${SYNC_REMOTE}" "cd '${RELEASE_DIR}' && sha256sum ${FILES[*]}" > "${remote_hashes}"
   diff -u "${local_hashes}" "${remote_hashes}"
   cat "${remote_hashes}"
   exit 0
 fi
 
-ssh ml2 "set -euo pipefail
+ssh "${SYNC_REMOTE}" "set -euo pipefail
   mkdir -p '${DEPLOY_ROOT}'
   if ps -eo cmd | grep -E '[m]ain_ppo_multitask|[r]aylet|[r]ay::|[V]LLMWorker' >/dev/null; then
     echo 'refusing source sync while training, Ray, or vLLM is active' >&2
@@ -60,10 +88,10 @@ ssh ml2 "set -euo pipefail
   fi
   rm -rf -- '${SYNC_STAGE}'
   mkdir -p '${SYNC_STAGE}'"
-tar -C "${ROOT_DIR}" -cf - "${FILES[@]}" | ssh ml2 "tar -C '${SYNC_STAGE}' -xf -"
-ssh ml2 "tee '${SYNC_STAGE}/.expected.sha256' >/dev/null" < "${local_hashes}"
-printf '%s\n' "${FILES[@]}" | ssh ml2 "tee '${SYNC_STAGE}/.files' >/dev/null"
-ssh ml2 "set -euo pipefail
+tar -C "${ROOT_DIR}" -cf - "${FILES[@]}" | ssh "${SYNC_REMOTE}" "tar -C '${SYNC_STAGE}' -xf -"
+ssh "${SYNC_REMOTE}" "tee '${SYNC_STAGE}/.expected.sha256' >/dev/null" < "${local_hashes}"
+printf '%s\n' "${FILES[@]}" | ssh "${SYNC_REMOTE}" "tee '${SYNC_STAGE}/.files' >/dev/null"
+ssh "${SYNC_REMOTE}" "set -euo pipefail
   cd '${SYNC_STAGE}'
   sha256sum -c .expected.sha256
   printf '%s\n' '${SOURCE_COMMIT}' > DEPLOYED_COMMIT
@@ -74,6 +102,6 @@ ssh ml2 "set -euo pipefail
   cd '${RELEASE_DIR}'
   sha256sum -c .expected.sha256
   test \"\$(cat DEPLOYED_COMMIT)\" = '${SOURCE_COMMIT}'"
-ssh ml2 "cd '${RELEASE_DIR}' && sha256sum ${FILES[*]}" > "${remote_hashes}"
+ssh "${SYNC_REMOTE}" "cd '${RELEASE_DIR}' && sha256sum ${FILES[*]}" > "${remote_hashes}"
 diff -u "${local_hashes}" "${remote_hashes}"
 cat "${remote_hashes}"

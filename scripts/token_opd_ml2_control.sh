@@ -4,7 +4,12 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # The paired token baseline must use the exact immutable runtime used by Block3.
+export REMOTE="ml2"
+export HOST_TAG="ml2"
+export ASSET_ROOT="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd"
 export SOURCE_COMMIT="9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977"
+export RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"
+export REMOTE_ROOT="${RUNTIME_ROOT}"
 export DATE_TAG="20260712v1"
 export VARIANT="token_opd"
 export RUN_TAG="token_opd_replication"

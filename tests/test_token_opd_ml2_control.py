@@ -9,6 +9,9 @@ TOKEN_CONTROL = ROOT / "scripts" / "token_opd_ml2_control.sh"
 def test_generic_control_keeps_block3_defaults_but_accepts_variant_overrides():
     control = GENERIC_CONTROL.read_text(encoding="utf-8")
 
+    assert 'REMOTE="${REMOTE:-ml2}"' in control
+    assert 'HOST_TAG="${HOST_TAG:-ml2}"' in control
+    assert 'ASSET_ROOT="${ASSET_ROOT:-/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd}"' in control
     assert 'SOURCE_COMMIT="${SOURCE_COMMIT:-$(git -C "${ROOT_DIR}" rev-parse HEAD)}"' in control
     assert 'VARIANT="${VARIANT:-block3_mean}"' in control
     assert 'RUN_TAG="${RUN_TAG:-block3_replication}"' in control
@@ -16,13 +19,22 @@ def test_generic_control_keeps_block3_defaults_but_accepts_variant_overrides():
     assert 'EXP_PREFIX="${EXP_PREFIX:-block3-mean-replication-ml2}"' in control
     assert 'VARIANT="${VARIANT}"' in control
     assert '--variant "${VARIANT}"' in control
+    assert '--expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}"' in control
+    assert '--expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}"' in control
+    assert '--expected-student-model-revision "${EXPECTED_STUDENT_REVISION}"' in control
+    assert '--expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}"' in control
 
 
 def test_token_control_locks_the_paired_ml2_contract_and_immutable_runtime():
     control = TOKEN_CONTROL.read_text(encoding="utf-8")
 
     expected_fragments = (
+        'REMOTE="ml2"',
+        'HOST_TAG="ml2"',
+        'ASSET_ROOT="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd"',
         'SOURCE_COMMIT="9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977"',
+        'RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"',
+        'REMOTE_ROOT="${RUNTIME_ROOT}"',
         'DATE_TAG="20260712v1"',
         'VARIANT="token_opd"',
         'RUN_TAG="token_opd_replication"',

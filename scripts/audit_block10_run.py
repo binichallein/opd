@@ -104,6 +104,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-train-sha256")
     parser.add_argument("--expected-student-model-suffix")
     parser.add_argument("--expected-teacher-model-suffix")
+    parser.add_argument("--expected-student-model-revision")
+    parser.add_argument("--expected-teacher-model-revision")
     parser.add_argument("--expected-total-training-steps", type=int, default=200)
     parser.add_argument("--expected-diagnostic-steps")
     parser.add_argument("--expected-diag-interval", type=int, default=5)
@@ -227,6 +229,35 @@ def artifact_hash_issues(
             f"{expected_train_sha256}, got {train_entries}"
         ]
     return []
+
+
+def model_identity_issues(
+    card: dict[str, object],
+    student_suffix: str | None = None,
+    teacher_suffix: str | None = None,
+    student_revision: str | None = None,
+    teacher_revision: str | None = None,
+) -> list[str]:
+    """Check both model paths and immutable Hub revisions from the run card."""
+    issues = []
+    for key, expected_suffix in (
+        ("student_model", student_suffix),
+        ("teacher_model", teacher_suffix),
+    ):
+        if expected_suffix and not str(card.get(key, "")).endswith(expected_suffix):
+            issues.append(
+                f"run_card {key}: expected suffix {expected_suffix!r}, "
+                f"got {card.get(key)!r}"
+            )
+    for key, expected_revision in (
+        ("student_model_revision", student_revision),
+        ("teacher_model_revision", teacher_revision),
+    ):
+        if expected_revision and card.get(key) != expected_revision:
+            issues.append(
+                f"run_card {key}: expected {expected_revision!r}, got {card.get(key)!r}"
+            )
+    return issues
 
 
 def diagnostic_snapshot_issues(
@@ -455,14 +486,15 @@ def main() -> None:
             "run_card resume_from_path: expected "
             f"{args.expected_resume_from_path!r}, got {card.get('resume_from_path')!r}"
         )
-    for key, expected_suffix in (
-        ("student_model", args.expected_student_model_suffix),
-        ("teacher_model", args.expected_teacher_model_suffix),
-    ):
-        if expected_suffix and not str(card.get(key, "")).endswith(expected_suffix):
-            issues.append(
-                f"run_card {key}: expected suffix {expected_suffix!r}, got {card.get(key)!r}"
-            )
+    issues.extend(
+        model_identity_issues(
+            card,
+            student_suffix=args.expected_student_model_suffix,
+            teacher_suffix=args.expected_teacher_model_suffix,
+            student_revision=args.expected_student_model_revision,
+            teacher_revision=args.expected_teacher_model_revision,
+        )
+    )
 
     for required in (
         "artifact_hashes.sha256",

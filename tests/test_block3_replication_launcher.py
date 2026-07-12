@@ -118,7 +118,7 @@ def test_sync_publishes_an_immutable_release_with_an_atomic_rename():
     assert "mv -- '${SYNC_STAGE}' '${RELEASE_DIR}'" in sync
     assert "install -D" not in sync
     assert sync.index("sha256sum -c") < sync.index("mv -- '${SYNC_STAGE}' '${RELEASE_DIR}'")
-    assert 'RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"' in control
+    assert 'RUNTIME_ROOT="${RUNTIME_ROOT:-${ASSET_ROOT}/deployments/${SOURCE_COMMIT}}"' in control
 
 
 def test_probe_launch_history_preserves_logs_and_lifecycle_evidence():
