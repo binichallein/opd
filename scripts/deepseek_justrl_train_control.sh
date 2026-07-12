@@ -13,6 +13,11 @@ case "${VARIANT}" in
     ;;
 esac
 export VARIANT="${VARIANT}"
+if [[ "${VARIANT}" == "token_opd" ]]; then
+  CACHE_TAG="to"
+else
+  CACHE_TAG="b3"
+fi
 
 export REMOTE="train"
 export HOST_TAG="train"
@@ -33,7 +38,7 @@ export DATE_TAG="20260712v1"
 export RUN_TAG="deepseek_justrl_pair"
 export PROJECT_NAME="opd_deepseek_justrl_pair"
 export EXP_PREFIX="deepseek-justrl-${VARIANT}-train"
-export CACHE_ROOT="/mnt/data/cpfs/Yaleon/djr/0712v1/${VARIANT}"
+export CACHE_ROOT="/mnt/data/cpfs/d/${CACHE_TAG}"
 export MIN_TOS_AVAILABLE_BYTES="1000000000000"
 export ROLLOUT_GPU_MEMORY_UTILIZATION="0.6"
 export ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU="1"

@@ -33,6 +33,9 @@ def test_train_wrapper_locks_models_revisions_host_and_shared_contract():
         'ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU="1"',
         'ROLLOUT_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="4"',
         'REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="1"',
+        'CACHE_TAG="to"',
+        'CACHE_TAG="b3"',
+        'CACHE_ROOT="/mnt/data/cpfs/d/${CACHE_TAG}"',
         'BASELINE_ALIGNMENT="DeepSeek-R1-Distill-Qwen-1.5B student and its post-RL JustRL-DeepSeek-1.5B teacher; identical tokenizer and architecture; DAPO-Math-17K"',
     )
     for fragment in expected:
