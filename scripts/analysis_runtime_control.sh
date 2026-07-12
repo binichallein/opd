@@ -432,6 +432,7 @@ REMOTE_DIAGNOSTIC_STATE
     --output-dir "${local_stage}/output" \
     --label "${label}"
   "${SSH_BIN}" "${REMOTE}" "test ! -e '${stage}'"
+  "${SSH_BIN}" "${REMOTE}" "mkdir -p '$(dirname "${stage}")'"
   "${SCP_BIN}" -r "${local_stage}/output" "${REMOTE}:${stage}"
   "${SSH_BIN}" "${REMOTE}" bash -s -- "${output}" "${stage}" <<'REMOTE_DIAGNOSTICS'
 set -euo pipefail

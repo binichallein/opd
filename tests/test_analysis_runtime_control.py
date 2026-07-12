@@ -76,6 +76,18 @@ def test_analysis_control_runs_complete_non_destructive_finalization_contract():
     assert "legacy" not in source.lower()
 
 
+def test_analysis_control_creates_remote_asset_parent_before_scp_upload():
+    source = CONTROL.read_text(encoding="utf-8")
+    create_parent = (
+        '"${SSH_BIN}" "${REMOTE}" '
+        '"mkdir -p \'$(dirname "${stage}")\'"'
+    )
+    upload = '"${SCP_BIN}" -r "${local_stage}/output" "${REMOTE}:${stage}"'
+
+    assert create_parent in source
+    assert source.index(create_parent) < source.index(upload)
+
+
 def test_analysis_control_rejects_unknown_target_without_ssh(tmp_path):
     fake_ssh = tmp_path / "ssh"
     fake_ssh.write_text(
