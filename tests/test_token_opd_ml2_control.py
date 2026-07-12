@@ -21,8 +21,11 @@ def test_generic_control_keeps_block3_defaults_but_accepts_variant_overrides():
     assert '--variant "${VARIANT}"' in control
     assert '--expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}"' in control
     assert '--expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}"' in control
-    assert '--expected-student-model-revision "${EXPECTED_STUDENT_REVISION}"' in control
-    assert '--expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}"' in control
+    assert 'MODEL_REVISION_AUDIT_ARGS=""' in control
+    assert '--expected-student-model-revision' in control
+    assert '--expected-teacher-model-revision' in control
+    assert 'if [[ -n "${EXPECTED_STUDENT_REVISION}" || -n "${EXPECTED_TEACHER_REVISION}" ]]' in control
+    assert control.count("${MODEL_REVISION_AUDIT_ARGS}") == 4
 
 
 def test_token_control_locks_the_paired_ml2_contract_and_immutable_runtime():

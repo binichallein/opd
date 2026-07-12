@@ -24,6 +24,10 @@ EXPECTED_STUDENT_MODEL_SUFFIX="${EXPECTED_STUDENT_MODEL_SUFFIX:-Qwen3-1.7B-Base}
 EXPECTED_TEACHER_MODEL_SUFFIX="${EXPECTED_TEACHER_MODEL_SUFFIX:-Qwen3-4B-Base-GRPO}"
 EXPECTED_STUDENT_REVISION="${EXPECTED_STUDENT_REVISION:-}"
 EXPECTED_TEACHER_REVISION="${EXPECTED_TEACHER_REVISION:-}"
+MODEL_REVISION_AUDIT_ARGS=""
+if [[ -n "${EXPECTED_STUDENT_REVISION}" || -n "${EXPECTED_TEACHER_REVISION}" ]]; then
+  MODEL_REVISION_AUDIT_ARGS="--expected-student-model-revision '${EXPECTED_STUDENT_REVISION}' --expected-teacher-model-revision '${EXPECTED_TEACHER_REVISION}'"
+fi
 
 VARIANT="${VARIANT:-block3_mean}"
 RUN_TAG="${RUN_TAG:-block3_replication}"
@@ -187,9 +191,7 @@ verify_probe1() {
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
     --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
     --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
-    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
-    --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
-    --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
+    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" ${MODEL_REVISION_AUDIT_ARGS}"
 }
 
 probe2_preflight() {
@@ -222,9 +224,7 @@ verify_probe_resume() {
       --expected-source-commit '${SOURCE_COMMIT}' \
       --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
       --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
-      --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
-      --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
-      --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
+      --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" ${MODEL_REVISION_AUDIT_ARGS}"
 }
 
 formal_preflight() {
@@ -286,9 +286,7 @@ audit_checkpoints() {
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
     --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
     --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
-    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
-    --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
-    --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
+    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" ${MODEL_REVISION_AUDIT_ARGS}"
 }
 
 audit_formal() {
@@ -300,9 +298,7 @@ audit_formal() {
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
     --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
     --expected-student-model-suffix "${EXPECTED_STUDENT_MODEL_SUFFIX}" \
-    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" \
-    --expected-student-model-revision "${EXPECTED_STUDENT_REVISION}" \
-    --expected-teacher-model-revision "${EXPECTED_TEACHER_REVISION}""
+    --expected-teacher-model-suffix "${EXPECTED_TEACHER_MODEL_SUFFIX}" ${MODEL_REVISION_AUDIT_ARGS}"
 }
 
 case "${ACTION}" in
