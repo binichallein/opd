@@ -216,7 +216,7 @@ table {{ width:100%; min-width:880px; border-collapse:collapse; }}
 th,td {{ padding:10px 12px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }}
 thead th {{ background:var(--panel); font-size:12px; color:var(--muted); }} tbody th {{ text-align:left; }} tbody tr:last-child th,tbody tr:last-child td {{ border-bottom:0; }}
 .delta {{ color:var(--blue); font-weight:700; }}
-.contract {{ width:100%; border-collapse:collapse; }} .contract th {{ width:25%; text-align:left; background:var(--panel); }} .contract td {{ text-align:left; white-space:normal; overflow-wrap:anywhere; }}
+.contract {{ width:100%; min-width:0; table-layout:fixed; border-collapse:collapse; }} .contract th {{ width:25%; text-align:left; background:var(--panel); white-space:normal; overflow-wrap:anywhere; }} .contract td {{ text-align:left; white-space:normal; overflow-wrap:anywhere; }}
 .diagnostic-band {{ margin:0 0 34px; }}
 .figure-grid {{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }}
 figure {{ margin:0; }} img {{ display:block; width:100%; height:auto; border:1px solid var(--line); }} figcaption {{ padding:7px 0; color:var(--muted); font-size:12px; }}

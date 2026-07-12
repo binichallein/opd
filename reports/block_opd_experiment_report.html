@@ -245,6 +245,16 @@
       .span-4, .span-5, .span-7, .span-8, .span-12 { grid-column: span 12; }
       .two-col, .kpi, .math-grid { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 80px 1fr 58px; }
+      .card, .math-card, .formula-row { min-width: 0; }
+      table {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      code { overflow-wrap: anywhere; word-break: break-word; }
+      .eq, .markdown-formula { max-width: 100%; overflow-x: auto; }
     }
   </style>
 </head>
@@ -254,14 +264,92 @@
     <p class="subtitle">目标：验证“teacher 同时给学生连续 2/3/5/10 个 token 的采样路径打分，再用 block 级 reverse-KL 风格信号更新学生”是否比标准 token-level OPD 更有效或更稳定。</p>
     <div class="meta">
       <span class="pill">实验机：train + ml2</span>
-      <span class="pill">当前论文级 Student：Qwen3-1.7B-Base</span>
-      <span class="pill">当前论文级 Teacher：Qwen3-4B-Base-GRPO</span>
+      <span class="pill">配对验证：Qwen3 + DeepSeek/JustRL</span>
       <span class="pill">训练数据：DAPO-Math-17K raw 1,791,700 rows</span>
-      <span class="pill">状态：四组 step-200 + full eval 均完成；block10_mean 发生训练崩塌</span>
+      <span class="pill">状态：两对师生 step-200 full eval、外部重评分与配对 CI 已完成</span>
     </div>
   </header>
 
   <main>
+    <section class="grid">
+      <div class="card span-12">
+        <h2>最终跨师生验证结论（2026-07-13）</h2>
+        <div class="callout warn">
+          <p><strong>结论：Block3 mean 是模型对相关的有效改动，不是已经跨师生稳定成立的通用 OPD 改进。</strong></p>
+          <p>Qwen3-1.7B / Qwen3-4B-GRPO 上得到强单 seed 支持；换成官方 DeepSeek-R1-Distill-Qwen-1.5B / JustRL-DeepSeek-1.5B 后，Step 200 的 Avg@8 置信区间跨 0，Pass@8 点估计为负，按预注册标准判定为未复现。</p>
+        </div>
+
+        <table class="config-table">
+          <thead>
+            <tr>
+              <th>严格配对师生</th>
+              <th>Step 200 Avg@8 delta</th>
+              <th>Avg 95% CI</th>
+              <th>Step 200 Pass@8 delta</th>
+              <th>Pass 95% CI</th>
+              <th>判定</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Qwen3-1.7B-Base ← Qwen3-4B-Base-GRPO</td>
+              <td><code>+0.0514</code></td>
+              <td><code>[+0.0353, +0.0680]</code></td>
+              <td><code>+0.0584</code></td>
+              <td><code>[+0.0141, +0.1039]</code></td>
+              <td><strong>强单 seed 支持</strong></td>
+            </tr>
+            <tr>
+              <td>DeepSeek-R1-Distill-Qwen-1.5B ← JustRL-DeepSeek-1.5B</td>
+              <td><code>+0.0158</code></td>
+              <td><code>[-0.0031, +0.0356]</code></td>
+              <td><code>-0.0015</code></td>
+              <td><code>[-0.0345, +0.0323]</code></td>
+              <td><strong>未复现</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="two-col" style="margin-top:14px;">
+          <div>
+            <h3>实验合同</h3>
+            <ul>
+              <li>DAPO-Math-17K raw 1,791,700-row pool；训练 SHA-256 <code>cf359f...959cf</code>。</li>
+              <li>seed 21；200 steps；每步 4 prompt × 8 rollout；LR <code>2e-6</code>；最大响应 16,384。</li>
+              <li>每个训练步的 prompt batch hash 在 token 与 Block3 间全部匹配，共 41 个诊断节点。</li>
+              <li>Math500/AIME24/AIME25/AMC23；每题 n=8，seed 21-28；三个 checkpoint 共 15,432 rollout/方法。</li>
+              <li>固定历史 grader SHA <code>04f7a0...f9490d7f</code>；10,000 次 task-stratified paired prompt bootstrap。</li>
+            </ul>
+          </div>
+          <div>
+            <h3>机制与成本</h3>
+            <ul>
+              <li>DeepSeek/JustRL 的 Block3 在 Step 200 仍有 sign flip <code>25.5%</code>、weighted sign flip <code>11.3%</code>、normalized leakage <code>1.035</code>；token baseline 均为 0。</li>
+              <li>两条训练都没有 NaN/Inf 或 ratio overflow，终点 entropy、grad norm 与 overlap 接近，因此失败不是数值崩塌。</li>
+              <li>完整 200 步耗时：token <code>18,951s</code>，Block3 <code>18,767s</code>，仅快 <code>0.97%</code>。</li>
+              <li>当前实现仍对整条学生 rollout 做 teacher forward，再聚合连续 token 的 advantage 和 policy ratio；它不是更少 teacher 打分次数的计算优化。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-top:18px;">
+          <figure>
+            <img src="paired_validation/ml2/assets/block3_mean/position_heatmaps.png" alt="Qwen3 Block3 position heatmaps" style="display:block;width:100%;height:auto;border:1px solid var(--line);">
+            <figcaption class="footer-note">Qwen3 师生对：Block3 位置热力图。该对 Step 200 两项外部 CI 均高于 0。</figcaption>
+          </figure>
+          <figure>
+            <img src="paired_validation/deepseek_justrl/assets/block3_mean/position_heatmaps.png" alt="DeepSeek JustRL Block3 position heatmaps" style="display:block;width:100%;height:auto;border:1px solid var(--line);">
+            <figcaption class="footer-note">DeepSeek / JustRL 师生对：Block3 位置热力图。该对未跨师生复现。</figcaption>
+          </figure>
+        </div>
+
+        <div class="callout">
+          <p>详细审计报告：<a href="paired_validation/ml2/report.html">Qwen3 同机严格配对</a>；<a href="paired_validation/deepseek_justrl/report.html">DeepSeek / JustRL 跨师生复现</a>。两份目录都包含比较 JSON、训练诊断图和最终 hash manifest，不包含 raw rollout、日志或 checkpoint。</p>
+        </div>
+        <p class="footer-note">统计范围：每对师生只有一个严格配对 training seed。题目分层 bootstrap 只量化固定 checkpoint 下的 prompt 不确定性，不能替代多 training-seed 方差。</p>
+      </div>
+    </section>
+
     <section class="grid">
       <div class="card span-7">
         <h2>Idea 定义</h2>

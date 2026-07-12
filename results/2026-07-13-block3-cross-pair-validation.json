@@ -1,0 +1,101 @@
+{
+  "date": "2026-07-13",
+  "hypothesis": "Three contiguous sampled tokens can share a mean teacher-vs-old-student advantage and a joint block policy ratio, improving OPD over token-level supervision.",
+  "decision": "not_cross_pair_reproduced",
+  "decision_rule": "At Step 200, both external-grader macro Avg@8 and Pass@8 deltas must be positive for directional reproduction; both paired bootstrap 95% confidence intervals must be above zero for strong single-seed support.",
+  "training_contract": {
+    "data": "DAPO-Math-17K raw row pool",
+    "train_rows": 1791700,
+    "train_sha256": "cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf",
+    "eval_sha256": "c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680",
+    "seed": 21,
+    "steps": 200,
+    "prompts_per_step": 4,
+    "rollouts_per_prompt": 8,
+    "learning_rate": 0.000002,
+    "max_response_tokens": 16384,
+    "checkpoints": [50, 100, 200]
+  },
+  "evaluation_contract": {
+    "tasks": {
+      "math500": 500,
+      "aime24": 30,
+      "aime25": 30,
+      "amc23": 83
+    },
+    "rollouts_per_prompt": 8,
+    "rollout_seeds": [21, 22, 23, 24, 25, 26, 27, 28],
+    "temperature": 1.0,
+    "top_p": 0.9,
+    "grader_sha256": "04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f",
+    "bootstrap_method": "task-stratified paired prompt bootstrap",
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20260712
+  },
+  "pairs": {
+    "qwen3": {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-4B-Base-GRPO",
+      "matched_prompt_batches": 41,
+      "step_200": {
+        "token_macro_avg_at_8": 0.18901004016064257,
+        "block3_macro_avg_at_8": 0.24043925702811245,
+        "avg_delta": 0.051429216867469874,
+        "avg_delta_ci95": [0.03528725527108434, 0.06800062123493975],
+        "token_macro_pass_at_8": 0.4155421686746988,
+        "block3_macro_pass_at_8": 0.4739477911646586,
+        "pass_delta": 0.05840562248995984,
+        "pass_delta_ci95": [0.014128765060240968, 0.10388152610441766]
+      },
+      "decision": "strong_single_seed_support"
+    },
+    "deepseek_justrl": {
+      "student": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+      "student_revision": "ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562",
+      "teacher": "hbx/JustRL-DeepSeek-1.5B",
+      "teacher_revision": "0637e4096c789c67f9eecbe8355e0bdeddede1c2",
+      "matched_prompt_batches": 41,
+      "step_200": {
+        "token_macro_avg_at_8": 0.5669834337349398,
+        "block3_macro_avg_at_8": 0.5828212851405623,
+        "avg_delta": 0.01583785140562255,
+        "avg_delta_ci95": [-0.0030705384036144577, 0.03556895707831325],
+        "token_macro_pass_at_8": 0.7540702811244979,
+        "block3_macro_pass_at_8": 0.752570281124498,
+        "pass_delta": -0.0014999999999999458,
+        "pass_delta_ci95": [-0.03452409638554217, 0.03233333333333333]
+      },
+      "step_200_diagnostics": {
+        "token_student_entropy": 0.458156019449234,
+        "block3_student_entropy": 0.45438167452812195,
+        "token_grad_norm": 0.28021562099456787,
+        "block3_grad_norm": 0.34506288170814514,
+        "token_top16_overlap_ratio": 0.912304162979126,
+        "block3_top16_overlap_ratio": 0.905886173248291,
+        "block3_sign_flip_rate": 0.2549777925014496,
+        "block3_weighted_sign_flip_rate": 0.11307841539382935,
+        "block3_normalized_leakage": 1.0348390340805054,
+        "nonfinite_count": 0
+      },
+      "training_seconds": {
+        "token": 18950.954,
+        "block3": 18767.403,
+        "block3_relative_change": -0.009685
+      },
+      "decision": "not_supported"
+    }
+  },
+  "interpretation": "Block3 changes credit assignment and can help one model pair, but its gains are not robust across the tested teacher-student pairs. The current implementation does not materially reduce teacher-forward or total training cost.",
+  "limitations": [
+    "One paired training seed per teacher-student pair.",
+    "Prompt bootstrap estimates evaluation-prompt uncertainty, not training-run variance.",
+    "Qwen3 local model revisions are not recorded as Hugging Face revisions; immutable run manifests and hashes remain in experiment storage."
+  ],
+  "reports": {
+    "overview": "reports/block_opd_experiment_report.html",
+    "qwen3": "reports/paired_validation/ml2/report.html",
+    "qwen3_audited": "reports/paired_validation/ml2/report.audited.html",
+    "deepseek_justrl": "reports/paired_validation/deepseek_justrl/report.html",
+    "deepseek_justrl_audited": "reports/paired_validation/deepseek_justrl/report.audited.html"
+  }
+}

@@ -106,6 +106,7 @@ def test_report_renders_verdict_contract_metrics_and_relative_heatmaps(tmp_path)
     assert "../assets/token/position_heatmaps.png" in text
     assert "../assets/block3/position_heatmaps.png" in text
     assert str(tmp_path) not in text
+    assert ".contract { width:100%; min-width:0; table-layout:fixed;" in text
 
 
 def test_report_rejects_builtin_and_external_training_contract_mismatch(tmp_path):

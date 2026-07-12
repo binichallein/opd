@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>token_opd OPD 诊断</title>
+<style>
+:root { color-scheme: light; --ink:#172033; --muted:#5d6878; --line:#d8dee8; --panel:#f5f7fa; --accent:#155eef; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:#fff; font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif; line-height:1.55; letter-spacing:0; }
+main { width:min(1320px,calc(100% - 32px)); margin:32px auto 64px; }
+header { border-left:4px solid var(--accent); padding:4px 0 4px 18px; margin-bottom:24px; }
+h1 { margin:0 0 6px; font-size:clamp(25px,3vw,38px); }
+h2 { margin:0 0 10px; font-size:20px; }
+p { margin:0; color:var(--muted); }
+.facts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin:20px 0 28px; }
+.fact { min-width:0; background:#fff; padding:14px 16px; }
+.fact span { display:block; color:var(--muted); font-size:12px; }
+.fact strong { display:block; overflow-wrap:anywhere; font-size:17px; }
+table { width:100%; border-collapse:collapse; margin:10px 0 32px; }
+th,td { border:1px solid var(--line); padding:10px 12px; text-align:left; vertical-align:top; }
+th { width:31%; background:var(--panel); font-size:14px; }
+td { color:#354052; }
+.figure { margin:0 0 34px; }
+img { display:block; width:100%; height:auto; border:1px solid var(--line); background:#fff; }
+@media (max-width:760px) { main { width:min(100% - 20px,1320px); margin-top:18px; } .facts { grid-template-columns:repeat(2,minmax(0,1fr)); } th,td { display:block; width:100%; } td { border-top:0; } }
+</style>
+</head>
+<body><main>
+<header><h1>token_opd OPD 诊断</h1><p>本报告只呈现该次 Block3 运行的观测量，不进行 Block10 式跨机器因果分类。</p></header>
+<section class="facts">
+<div class="fact"><span>Scalar records</span><strong>41</strong></div>
+<div class="fact"><span>Position snapshots</span><strong>41</strong></div>
+<div class="fact"><span>First diagnostic step</span><strong>1</strong></div>
+<div class="fact"><span>Last diagnostic step</span><strong>200</strong></div>
+</section>
+<section><h2>监控指标</h2><table><tbody><tr><th>Student entropy</th><td>学生策略在有效 response token 上的平均熵及位置分布。</td></tr><tr><th>Teacher entropy</th><td>教师在相同学生前缀上的平均熵及位置分布。</td></tr><tr><th>Signed entropy gap</th><td>Teacher entropy - Student entropy，保留方向。</td></tr><tr><th>Absolute entropy gap</th><td>师生熵差绝对值，衡量不匹配幅度。</td></tr><tr><th>Top-16 overlap ratio</th><td>师生 Top-16 token 集合的交集比例。</td></tr><tr><th>Student/teacher overlap mass</th><td>师生各自在共享 Top-16 token 上承载的概率质量。</td></tr><tr><th>Overlap-token advantage</th><td>在共享 Top-16 支撑集内分别归一化师生概率后，计算学生加权 log-ratio，再除以共享 token 数。</td></tr><tr><th>SignFlipRate / WeightedSignFlipRate</th><td>聚合前后 advantage 符号翻转比例及按绝对幅度加权的翻转比例。</td></tr><tr><th>LeakageMagnitude / NormalizedLeakage</th><td>所有有效 token 上 block advantage 与原 token advantage 的平均绝对差，以及该差值总量相对原 advantage 绝对值总量的比例。</td></tr><tr><th>Raw-token and block advantage summaries</th><td>分别记录 mean、std、p95 和 max，检查 Block3 聚合是否放大信号。</td></tr><tr><th>Post-update block log-ratio</th><td>更新后新策略相对 rollout old policy 的 block log-ratio。</td></tr><tr><th>Outside-clip fraction</th><td>更新后 block policy ratio 落在 PPO clip 区间外的有效 block 比例。</td></tr><tr><th>PG loss and pre-clip grad norm</th><td>策略梯度损失、clip fraction 与裁剪前梯度范数。</td></tr><tr><th>Response length and truncation ratio</th><td>平均/最大输出长度及触及 16K 上限的比例。</td></tr><tr><th>Rollout policy drift</th><td>由 post-update block log-ratio、policy ratio 及 outside-clip fraction 联合刻画。</td></tr></tbody></table></section>
+<section class="figure"><h2>师生分布与对齐</h2><img src="scalar_alignment.png" alt="师生分布与对齐"></section><section class="figure"><h2>Block credit assignment</h2><img src="scalar_credit.png" alt="Block credit assignment"></section><section class="figure"><h2>优化状态与 policy drift</h2><img src="scalar_optimization.png" alt="优化状态与 policy drift"></section><section class="figure"><h2>位置级热力图</h2><img src="position_heatmaps.png" alt="位置级热力图"></section><section class="figure"><h2>前、中、后段熵曲线</h2><img src="entropy_segments.png" alt="前、中、后段熵曲线"></section>
+</main></body></html>

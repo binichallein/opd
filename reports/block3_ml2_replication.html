@@ -47,6 +47,8 @@ ul { padding-left:22px; }
 <p class="lead">DAPO-Math-17K、Qwen3-1.7B-Base 学生、Qwen3-4B-Base-GRPO 教师；200-step Block3 mean，完整诊断与 Step 50/100/200 n=8 评估。</p>
 </header>
 
+<div class="note warn"><strong>历史快照：</strong>此页生成于同机 sampled-token baseline 补跑之前，以下“没有同机 token baseline”的表述只描述当时状态。最新严格配对结果与置信区间见 <a href="paired_validation/ml2/report.html">Qwen3 同机配对报告</a>，跨师生总判断见 <a href="block_opd_experiment_report.html">总报告</a>。</div>
+
 <section class="verdict">
 <strong>结论：未观察到持续性数值或固定评测崩塌，但尾部高熵/截断风险仍存在；Block3 相对 token OPD 的收益尚未被第二台机器独立验证。</strong>
 <p>ml2 没有同机 token baseline；Step 200 虽优于本次 Step 50/100，但历史 grader 重评分的 macro Avg@8/Pass@8 为 0.2404/0.4739，低于 train 旧 Block3 的 0.3188/0.5148。两次 eval 的 rollout seed 实现不同，因此也不能把差值完全归因于硬件或训练。</p>

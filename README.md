@@ -71,6 +71,36 @@ macro 增益，`block5_mean` 回退，`block10_mean` 在约 step 50-60 后发生
 
 ## 当前主要结果
 
+2026-07-13 已完成两对师生的严格配对验证。两组都使用 DAPO-Math-17K
+raw 1,791,700-row pool、seed 21、200 steps、每步 4 prompt × 8 rollout，
+并在 Math500/AIME24/AIME25/AMC23 上对 Step 50/100/200 做 n=8 固定
+评测。主结果使用同一历史 grader 和 10,000 次 task-stratified paired
+prompt bootstrap：
+
+- Qwen3-1.7B-Base ← Qwen3-4B-Base-GRPO：Step 200 的 Block3
+  Avg@8 `+0.0514`，95% CI `[+0.0353,+0.0680]`；Pass@8
+  `+0.0584`，95% CI `[+0.0141,+0.1039]`，属于强单 seed 支持。
+- DeepSeek-R1-Distill-Qwen-1.5B ← JustRL-DeepSeek-1.5B：Step 200
+  Avg@8 `+0.0158`，95% CI `[-0.0031,+0.0356]`；Pass@8
+  `-0.0015`，95% CI `[-0.0345,+0.0323]`，按预注册规则判定未复现。
+- DeepSeek/JustRL 的完整 200-step 训练耗时仅相差约 0.97%，当前实现
+  仍对完整 rollout 做 teacher forward；它改变的是跨 token credit
+  assignment，不是减少 teacher 打分次数的计算优化。
+- Block3 在 DeepSeek/JustRL 终点仍有 25.5% sign flip 和约 1.035 的
+  normalized leakage。两条 run 都没有数值崩溃，因此未复现不能归因于
+  OOM、NaN/Inf 或 entropy collapse。
+
+当前总判断是：Block3 mean 具有模型对相关的有效性，但尚不是跨师生稳健的
+通用 OPD 改进。完整总览和逐对审计报告见：
+
+- `reports/block_opd_experiment_report.html`
+- `reports/paired_validation/ml2/report.html`
+- `reports/paired_validation/deepseek_justrl/report.html`
+
+每个 `paired_validation` 目录中的 `report.audited.html` 是远端最终化时的
+逐字节原始报告，其 SHA-256 与 `finalization_hashes.sha256` 一致；
+`report.html` 使用相同 JSON 和诊断图重新生成，仅增加移动端响应式修复。
+
 最新完成的实验验证了 block-level reverse-KL OPD 中的 advantage 聚合方式：
 
 - `naive block-3`：把 3 个连续 token 的 advantage 直接相加

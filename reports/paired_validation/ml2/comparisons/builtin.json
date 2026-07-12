@@ -1,0 +1,308 @@
+{
+  "bootstrap": {
+    "method": "task-stratified paired prompt bootstrap",
+    "replicates": 10000,
+    "seed": 20260712
+  },
+  "decision": {
+    "scope": "one paired training seed; bootstrap does not estimate training-run variance",
+    "status": "strong_single_seed_support",
+    "step": 200
+  },
+  "grader_view": "outputs",
+  "left": {
+    "label": "token_opd",
+    "run_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260712v1_token_opd_replication_seed21_ml2/token_opd"
+  },
+  "right": {
+    "label": "block3_mean",
+    "run_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean"
+  },
+  "steps": {
+    "100": {
+      "bootstrap": {
+        "avg_at_n": {
+          "bootstrap_mean": -0.002554225,
+          "lower_95": -0.012895833333333332,
+          "upper_95": 0.007729687499999993
+        },
+        "pass_at_n": {
+          "bootstrap_mean": 0.00045408333333333325,
+          "lower_95": -0.038341666666666656,
+          "upper_95": 0.04016666666666667
+        }
+      },
+      "macro": {
+        "avg_at_n": {
+          "delta": -0.0025000000000000022,
+          "left": 0.12533333333333332,
+          "right": 0.12283333333333332
+        },
+        "pass_at_n": {
+          "delta": 0.0005000000000000004,
+          "left": 0.2838333333333333,
+          "right": 0.2843333333333333
+        }
+      },
+      "pair_count": 643,
+      "per_task": {
+        "aime24": {
+          "avg_at_n": {
+            "delta": -0.0125,
+            "left": 0.0625,
+            "right": 0.05
+          },
+          "pass_at_n": {
+            "delta": -0.06666666666666667,
+            "left": 0.26666666666666666,
+            "right": 0.2
+          }
+        },
+        "aime25": {
+          "avg_at_n": {
+            "delta": 0.0125,
+            "left": 0.020833333333333332,
+            "right": 0.03333333333333333
+          },
+          "pass_at_n": {
+            "delta": 0.06666666666666667,
+            "left": 0.06666666666666667,
+            "right": 0.13333333333333333
+          }
+        },
+        "amc23": {
+          "avg_at_n": {
+            "delta": 0.0,
+            "left": 0.0,
+            "right": 0.0
+          },
+          "pass_at_n": {
+            "delta": 0.0,
+            "left": 0.0,
+            "right": 0.0
+          }
+        },
+        "math500": {
+          "avg_at_n": {
+            "delta": -0.01,
+            "left": 0.418,
+            "right": 0.408
+          },
+          "pass_at_n": {
+            "delta": 0.002,
+            "left": 0.802,
+            "right": 0.804
+          }
+        }
+      },
+      "prompt_outcomes": {
+        "avg_at_n": {
+          "loss": 167,
+          "tie": 322,
+          "win": 154
+        },
+        "pass_at_n": {
+          "loss": 22,
+          "tie": 598,
+          "win": 23
+        }
+      },
+      "rollout_key_count": 5144,
+      "step": 100
+    },
+    "200": {
+      "bootstrap": {
+        "avg_at_n": {
+          "bootstrap_mean": 0.036455093749999994,
+          "lower_95": 0.0236875,
+          "upper_95": 0.05058437499999998
+        },
+        "pass_at_n": {
+          "bootstrap_mean": 0.03869731666666667,
+          "lower_95": 0.0015,
+          "upper_95": 0.07899999999999999
+        }
+      },
+      "macro": {
+        "avg_at_n": {
+          "delta": 0.0365625,
+          "left": 0.13091666666666668,
+          "right": 0.16747916666666668
+        },
+        "pass_at_n": {
+          "delta": 0.038833333333333275,
+          "left": 0.275,
+          "right": 0.3138333333333333
+        }
+      },
+      "pair_count": 643,
+      "per_task": {
+        "aime24": {
+          "avg_at_n": {
+            "delta": 0.03333333333333333,
+            "left": 0.05416666666666667,
+            "right": 0.0875
+          },
+          "pass_at_n": {
+            "delta": 0.06666666666666667,
+            "left": 0.2,
+            "right": 0.26666666666666666
+          }
+        },
+        "aime25": {
+          "avg_at_n": {
+            "delta": 0.029166666666666667,
+            "left": 0.025,
+            "right": 0.05416666666666667
+          },
+          "pass_at_n": {
+            "delta": 0.06666666666666667,
+            "left": 0.1,
+            "right": 0.16666666666666666
+          }
+        },
+        "amc23": {
+          "avg_at_n": {
+            "delta": 0.0,
+            "left": 0.0,
+            "right": 0.0
+          },
+          "pass_at_n": {
+            "delta": 0.0,
+            "left": 0.0,
+            "right": 0.0
+          }
+        },
+        "math500": {
+          "avg_at_n": {
+            "delta": 0.08375,
+            "left": 0.4445,
+            "right": 0.52825
+          },
+          "pass_at_n": {
+            "delta": 0.022,
+            "left": 0.8,
+            "right": 0.822
+          }
+        }
+      },
+      "prompt_outcomes": {
+        "avg_at_n": {
+          "loss": 103,
+          "tie": 284,
+          "win": 256
+        },
+        "pass_at_n": {
+          "loss": 15,
+          "tie": 598,
+          "win": 30
+        }
+      },
+      "rollout_key_count": 5144,
+      "step": 200
+    },
+    "50": {
+      "bootstrap": {
+        "avg_at_n": {
+          "bootstrap_mean": 0.04026326458333333,
+          "lower_95": 0.030561979166666666,
+          "upper_95": 0.0506875
+        },
+        "pass_at_n": {
+          "bootstrap_mean": 0.02401773333333333,
+          "lower_95": -0.016,
+          "upper_95": 0.06583333333333333
+        }
+      },
+      "macro": {
+        "avg_at_n": {
+          "delta": 0.040291666666666656,
+          "left": 0.10825,
+          "right": 0.14854166666666666
+        },
+        "pass_at_n": {
+          "delta": 0.02416666666666667,
+          "left": 0.27,
+          "right": 0.2941666666666667
+        }
+      },
+      "pair_count": 643,
+      "per_task": {
+        "aime24": {
+          "avg_at_n": {
+            "delta": 0.016666666666666666,
+            "left": 0.0375,
+            "right": 0.05416666666666667
+          },
+          "pass_at_n": {
+            "delta": 0.03333333333333333,
+            "left": 0.16666666666666666,
+            "right": 0.2
+          }
+        },
+        "aime25": {
+          "avg_at_n": {
+            "delta": 0.0125,
+            "left": 0.025,
+            "right": 0.0375
+          },
+          "pass_at_n": {
+            "delta": 0.03333333333333333,
+            "left": 0.13333333333333333,
+            "right": 0.16666666666666666
+          }
+        },
+        "amc23": {
+          "avg_at_n": {
+            "delta": 0.0,
+            "left": 0.0,
+            "right": 0.0
+          },
+          "pass_at_n": {
+            "delta": 0.0,
+            "left": 0.0,
+            "right": 0.0
+          }
+        },
+        "math500": {
+          "avg_at_n": {
+            "delta": 0.132,
+            "left": 0.3705,
+            "right": 0.5025
+          },
+          "pass_at_n": {
+            "delta": 0.03,
+            "left": 0.78,
+            "right": 0.81
+          }
+        }
+      },
+      "prompt_outcomes": {
+        "avg_at_n": {
+          "loss": 83,
+          "tie": 268,
+          "win": 292
+        },
+        "pass_at_n": {
+          "loss": 22,
+          "tie": 582,
+          "win": 39
+        }
+      },
+      "rollout_key_count": 5144,
+      "step": 50
+    }
+  },
+  "training_contract": {
+    "left_variant": "token_opd",
+    "prompt_batch_hashes_matched": 41,
+    "right_variant": "block3_mean",
+    "source_commit": "9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977",
+    "student_model": "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base",
+    "student_model_revision": null,
+    "teacher_model": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO",
+    "teacher_model_revision": null,
+    "test_sha256": "c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680",
+    "train_sha256": "cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf"
+  }
+}

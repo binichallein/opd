@@ -1,0 +1,308 @@
+{
+  "bootstrap": {
+    "method": "task-stratified paired prompt bootstrap",
+    "replicates": 10000,
+    "seed": 20260712
+  },
+  "decision": {
+    "scope": "one paired training seed; bootstrap does not estimate training-run variance",
+    "status": "strong_single_seed_support",
+    "step": 200
+  },
+  "grader_view": "historical_external_grader_audited",
+  "left": {
+    "label": "token_opd",
+    "run_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260712v1_token_opd_replication_seed21_ml2/token_opd"
+  },
+  "right": {
+    "label": "block3_mean",
+    "run_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260711v2_block3_replication_seed21_ml2/block3_mean"
+  },
+  "steps": {
+    "100": {
+      "bootstrap": {
+        "avg_at_n": {
+          "bootstrap_mean": 0.010322826882530122,
+          "lower_95": -0.0029611634036144576,
+          "upper_95": 0.02395663905622489
+        },
+        "pass_at_n": {
+          "bootstrap_mean": 0.009091017670682731,
+          "lower_95": -0.03675306224899598,
+          "upper_95": 0.05582329317269076
+        }
+      },
+      "macro": {
+        "avg_at_n": {
+          "delta": 0.010362198795180744,
+          "left": 0.17527008032128513,
+          "right": 0.18563227911646588
+        },
+        "pass_at_n": {
+          "delta": 0.009036144578313254,
+          "left": 0.43341164658634534,
+          "right": 0.4424477911646586
+        }
+      },
+      "pair_count": 643,
+      "per_task": {
+        "aime24": {
+          "avg_at_n": {
+            "delta": -0.0125,
+            "left": 0.0625,
+            "right": 0.05
+          },
+          "pass_at_n": {
+            "delta": -0.06666666666666667,
+            "left": 0.26666666666666666,
+            "right": 0.2
+          }
+        },
+        "aime25": {
+          "avg_at_n": {
+            "delta": 0.0125,
+            "left": 0.020833333333333332,
+            "right": 0.03333333333333333
+          },
+          "pass_at_n": {
+            "delta": 0.06666666666666667,
+            "left": 0.06666666666666667,
+            "right": 0.13333333333333333
+          }
+        },
+        "amc23": {
+          "avg_at_n": {
+            "delta": 0.04969879518072289,
+            "left": 0.18674698795180722,
+            "right": 0.23644578313253012
+          },
+          "pass_at_n": {
+            "delta": 0.03614457831325301,
+            "left": 0.5783132530120482,
+            "right": 0.6144578313253012
+          }
+        },
+        "math500": {
+          "avg_at_n": {
+            "delta": -0.00825,
+            "left": 0.431,
+            "right": 0.42275
+          },
+          "pass_at_n": {
+            "delta": 0.0,
+            "left": 0.822,
+            "right": 0.822
+          }
+        }
+      },
+      "prompt_outcomes": {
+        "avg_at_n": {
+          "loss": 181,
+          "tie": 275,
+          "win": 187
+        },
+        "pass_at_n": {
+          "loss": 28,
+          "tie": 584,
+          "win": 31
+        }
+      },
+      "rollout_key_count": 5144,
+      "step": 100
+    },
+    "200": {
+      "bootstrap": {
+        "avg_at_n": {
+          "bootstrap_mean": 0.0512335234186747,
+          "lower_95": 0.03528725527108434,
+          "upper_95": 0.06800062123493975
+        },
+        "pass_at_n": {
+          "bootstrap_mean": 0.05808983835341366,
+          "lower_95": 0.014128765060240968,
+          "upper_95": 0.10388152610441766
+        }
+      },
+      "macro": {
+        "avg_at_n": {
+          "delta": 0.051429216867469874,
+          "left": 0.18901004016064257,
+          "right": 0.24043925702811245
+        },
+        "pass_at_n": {
+          "delta": 0.05840562248995984,
+          "left": 0.4155421686746988,
+          "right": 0.4739477911646586
+        }
+      },
+      "pair_count": 643,
+      "per_task": {
+        "aime24": {
+          "avg_at_n": {
+            "delta": 0.03333333333333333,
+            "left": 0.05416666666666667,
+            "right": 0.0875
+          },
+          "pass_at_n": {
+            "delta": 0.06666666666666667,
+            "left": 0.2,
+            "right": 0.26666666666666666
+          }
+        },
+        "aime25": {
+          "avg_at_n": {
+            "delta": 0.029166666666666667,
+            "left": 0.025,
+            "right": 0.05416666666666667
+          },
+          "pass_at_n": {
+            "delta": 0.06666666666666667,
+            "left": 0.1,
+            "right": 0.16666666666666666
+          }
+        },
+        "amc23": {
+          "avg_at_n": {
+            "delta": 0.05421686746987952,
+            "left": 0.2183734939759036,
+            "right": 0.27259036144578314
+          },
+          "pass_at_n": {
+            "delta": 0.07228915662650602,
+            "left": 0.5421686746987951,
+            "right": 0.6144578313253012
+          }
+        },
+        "math500": {
+          "avg_at_n": {
+            "delta": 0.089,
+            "left": 0.4585,
+            "right": 0.5475
+          },
+          "pass_at_n": {
+            "delta": 0.028,
+            "left": 0.82,
+            "right": 0.848
+          }
+        }
+      },
+      "prompt_outcomes": {
+        "avg_at_n": {
+          "loss": 116,
+          "tie": 235,
+          "win": 292
+        },
+        "pass_at_n": {
+          "loss": 17,
+          "tie": 585,
+          "win": 41
+        }
+      },
+      "rollout_key_count": 5144,
+      "step": 200
+    },
+    "50": {
+      "bootstrap": {
+        "avg_at_n": {
+          "bootstrap_mean": 0.06346321232429719,
+          "lower_95": 0.050272948042168676,
+          "upper_95": 0.07771521084337348
+        },
+        "pass_at_n": {
+          "bootstrap_mean": 0.03397961706827309,
+          "lower_95": -0.010333935742971886,
+          "upper_95": 0.08010988955823292
+        }
+      },
+      "macro": {
+        "avg_at_n": {
+          "delta": 0.06343850401606427,
+          "left": 0.14507454819277107,
+          "right": 0.20851305220883534
+        },
+        "pass_at_n": {
+          "delta": 0.034202811244979925,
+          "left": 0.3899578313253012,
+          "right": 0.42416064257028113
+        }
+      },
+      "pair_count": 643,
+      "per_task": {
+        "aime24": {
+          "avg_at_n": {
+            "delta": 0.016666666666666666,
+            "left": 0.0375,
+            "right": 0.05416666666666667
+          },
+          "pass_at_n": {
+            "delta": 0.03333333333333333,
+            "left": 0.16666666666666666,
+            "right": 0.2
+          }
+        },
+        "aime25": {
+          "avg_at_n": {
+            "delta": 0.0125,
+            "left": 0.025,
+            "right": 0.0375
+          },
+          "pass_at_n": {
+            "delta": 0.03333333333333333,
+            "left": 0.13333333333333333,
+            "right": 0.16666666666666666
+          }
+        },
+        "amc23": {
+          "avg_at_n": {
+            "delta": 0.08433734939759036,
+            "left": 0.13704819277108435,
+            "right": 0.2213855421686747
+          },
+          "pass_at_n": {
+            "delta": 0.03614457831325301,
+            "left": 0.4578313253012048,
+            "right": 0.4939759036144578
+          }
+        },
+        "math500": {
+          "avg_at_n": {
+            "delta": 0.14025,
+            "left": 0.38075,
+            "right": 0.521
+          },
+          "pass_at_n": {
+            "delta": 0.034,
+            "left": 0.802,
+            "right": 0.836
+          }
+        }
+      },
+      "prompt_outcomes": {
+        "avg_at_n": {
+          "loss": 92,
+          "tie": 219,
+          "win": 332
+        },
+        "pass_at_n": {
+          "loss": 26,
+          "tie": 569,
+          "win": 48
+        }
+      },
+      "rollout_key_count": 5144,
+      "step": 50
+    }
+  },
+  "training_contract": {
+    "left_variant": "token_opd",
+    "prompt_batch_hashes_matched": 41,
+    "right_variant": "block3_mean",
+    "source_commit": "9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977",
+    "student_model": "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base",
+    "student_model_revision": null,
+    "teacher_model": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO",
+    "teacher_model_revision": null,
+    "test_sha256": "c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680",
+    "train_sha256": "cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf"
+  }
+}
