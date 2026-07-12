@@ -8,7 +8,7 @@ def test_block3_control_fixes_the_approved_training_contract():
     control = (ROOT / "scripts" / "block3_replication_control.sh").read_text()
 
     expected_fragments = (
-        'VARIANT="block3_mean"',
+        'VARIANT="${VARIANT:-block3_mean}"',
         'ENV_SEED=21',
         'TRAIN_BATCH_SIZE=4',
         'PPO_MINI_BATCH_SIZE=32',
@@ -34,12 +34,12 @@ def test_block3_control_fixes_the_approved_training_contract():
 def test_block3_control_uses_tos_cache_and_complete_eval_contract():
     control = (ROOT / "scripts" / "block3_replication_control.sh").read_text()
 
-    assert 'CACHE_ROOT="/limx_embap/tos/b3r/${DATE_TAG#2026}"' in control
+    assert 'CACHE_ROOT="${CACHE_ROOT:-/limx_embap/tos/b3r/${DATE_TAG#2026}}"' in control
     assert "/tmp/opd" not in control
     assert 'N=8 TEMPERATURE=1.0 TOP_P=0.9 MAX_TOKENS=16384' in control
     assert 'EVAL_SEED=21 GRADER=verl ENABLE_THINKING=false' in control
     assert 'TASKS="math500 aime24 aime25 amc23"' in control
-    assert '--variant block3_mean --checkpoint-steps 50,100,200 --eval-steps 50,100,200' in control
+    assert '--variant "${VARIANT}" --checkpoint-steps 50,100,200 --eval-steps 50,100,200' in control
 
 
 def test_block3_control_exposes_probe_resume_and_formal_actions():

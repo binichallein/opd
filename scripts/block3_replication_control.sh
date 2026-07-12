@@ -7,7 +7,7 @@ STEP="${2:-200}"
 DATE_TAG="${DATE_TAG:-20260711v2}"
 
 REMOTE="ml2"
-SOURCE_COMMIT="$(git -C "${ROOT_DIR}" rev-parse HEAD)"
+SOURCE_COMMIT="${SOURCE_COMMIT:-$(git -C "${ROOT_DIR}" rev-parse HEAD)}"
 ASSET_ROOT="/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd"
 RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"
 REMOTE_ROOT="${RUNTIME_ROOT}"
@@ -16,11 +16,14 @@ HF_HOME_DIR="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b
 STUDENT_MODEL="/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base"
 MATH_TEACHER="${ASSET_ROOT}/models/Qwen3-4B-Base-GRPO"
 DATA_DIR="${ASSET_ROOT}/data/math_opd_dapo17k_hf_full_eval4"
-CACHE_ROOT="/limx_embap/tos/b3r/${DATE_TAG#2026}"
+CACHE_ROOT="${CACHE_ROOT:-/limx_embap/tos/b3r/${DATE_TAG#2026}}"
 EXPECTED_TRAIN_SHA256="cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf"
 MIN_TOS_AVAILABLE_BYTES=100000000000
 
-VARIANT="block3_mean"
+VARIANT="${VARIANT:-block3_mean}"
+RUN_TAG="${RUN_TAG:-block3_replication}"
+PROJECT_NAME="${PROJECT_NAME:-opd_block3_replication}"
+EXP_PREFIX="${EXP_PREFIX:-block3-mean-replication-ml2}"
 ROLLOUT_GPU_MEMORY_UTILIZATION="${ROLLOUT_GPU_MEMORY_UTILIZATION:-0.6}"
 REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU="${REF_LOG_PROB_MICRO_BATCH_SIZE_PER_GPU:-1}"
 ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU="${ACTOR_PPO_MICRO_BATCH_SIZE_PER_GPU:-1}"
@@ -31,9 +34,9 @@ SUBMODULE_BASE_COMMIT="$(git -C "${ROOT_DIR}/external/revisiting_opd" rev-parse 
 run_root_for() {
   local kind="$1"
   if [[ "${kind}" == "probe" ]]; then
-    echo "${ASSET_ROOT}/runs/${DATE_TAG}_block3_replication_probe_seed21_ml2"
+    echo "${ASSET_ROOT}/runs/${DATE_TAG}_${RUN_TAG}_probe_seed21_ml2"
   else
-    echo "${ASSET_ROOT}/runs/${DATE_TAG}_block3_replication_seed21_ml2"
+    echo "${ASSET_ROOT}/runs/${DATE_TAG}_${RUN_TAG}_seed21_ml2"
   fi
 }
 
@@ -56,9 +59,9 @@ launch_train() {
   REMOTE="${REMOTE}" \
   REMOTE_ROOT="${REMOTE_ROOT}" \
   RUN_ROOT="${run_root}" \
-  VARIANT="block3_mean" \
-  PROJECT_NAME="opd_block3_replication" \
-  EXP_NAME="block3-mean-replication-ml2-${kind}" \
+  VARIANT="${VARIANT}" \
+  PROJECT_NAME="${PROJECT_NAME}" \
+  EXP_NAME="${EXP_PREFIX}-${kind}" \
   VENV="${VENV}" \
   HF_HOME_DIR="${HF_HOME_DIR}" \
   LOCAL_CACHE_ROOT="${CACHE_ROOT}/${kind}" \
@@ -157,7 +160,7 @@ verify_probe1() {
   assert_checkpoint_complete probe 1
   ssh "${REMOTE}" "'${VENV}/bin/python' '${RUNTIME_ROOT}/scripts/audit_block10_run.py' \
     --run-dir '${run_dir}' \
-    --variant block3_mean \
+    --variant "${VARIANT}" \
     --checkpoint-steps 1 \
     --skip-eval \
     --expected-total-training-steps 2 \
@@ -191,7 +194,7 @@ verify_probe_resume() {
     grep -F 'Resuming from ${step1}' '${run_dir}/logs/nohup.log' >/dev/null
     '${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
       --run-dir '${run_dir}' \
-      --variant block3_mean \
+      --variant "${VARIANT}" \
       --checkpoint-steps 1,2 \
       --skip-eval \
       --expected-total-training-steps 2 \
@@ -257,7 +260,7 @@ audit_checkpoints() {
   run_dir="$(run_root_for formal)/${VARIANT}"
   ssh "${REMOTE}" "'${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
     --run-dir '${run_dir}' \
-    --variant block3_mean \
+    --variant "${VARIANT}" \
     --checkpoint-steps 50,100,200 \
     --skip-eval \
     --expected-source-commit '${SOURCE_COMMIT}' \
@@ -271,7 +274,7 @@ audit_formal() {
   local run_dir
   run_dir="$(run_root_for formal)/${VARIANT}"
   ssh "${REMOTE}" "'${VENV}/bin/python' '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
-    --run-dir '${run_dir}' --variant block3_mean --checkpoint-steps 50,100,200 --eval-steps 50,100,200 \
+    --run-dir '${run_dir}' --variant "${VARIANT}" --checkpoint-steps 50,100,200 --eval-steps 50,100,200 \
     --expected-source-commit '${SOURCE_COMMIT}' \
     --expected-train-sha256 '${EXPECTED_TRAIN_SHA256}' \
     --expected-eval-data-dir '${DATA_DIR}/eval_jsonl' \
