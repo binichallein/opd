@@ -1,0 +1,123 @@
+name: sliding_window_opd_boundary_validation
+date: '2026-09-11'
+status: planned_not_implemented
+executable_hydra_config: false
+plan: docs/plans/2026-09-11-sliding-window-opd-validation.md
+host: ml2
+baseline_code:
+  submodule: external/revisiting_opd
+  commit: f32f284f25bae5b16d2d44ee336b52851dccc736
+  runtime_commit: null  # Freeze after implementation and acceptance.
+models:
+  student: Qwen3-1.7B-Base
+  student_path: /limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base
+  teacher: Qwen3-4B-Base-GRPO
+  teacher_path: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO
+  historical_hub_revisions: not_recorded
+  weight_hash_audit_before_launch: required
+data:
+  directory: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4
+  train_rows: 1791700
+  train_sha256: cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf
+  eval_sha256: c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680
+  filter_overlong_prompts: false
+variants:
+  token_opd: {block_size: 1, partition: fixed, offset: 0}
+  fixed3: {block_size: 3, partition: fixed, offset: 0, advantage: mean}
+  random3: {block_size: 3, partition: uniform_offset_per_optimizer_step, advantage: mean}
+  sliding3: {block_size: 3, partition: mean_full_loss_over_all_offsets, advantage: mean}
+window_contract:
+  offsets: [0, 1, 2]
+  offset_convention: 'offset r > 0 retains an initial partial window of length r; reset at each contiguous response region'
+  partial_edge_windows: retain
+  phase_loss: 'sum(valid_window_length * dual_clip_loss(window_mean_advantage, joint_ratio)) / valid_token_count'
+  sliding_loss: '(phase_loss_0 + phase_loss_1 + phase_loss_2) / 3'
+  preserve_outer_microbatch_reduction: true
+  optimizer_steps_per_training_step: 1
+  random_offset_rng: numpy_PCG64
+  random_offset_seed: '910000 + training_seed'
+  random_offset_shared_across_ranks_and_microbatches: true
+  random_offset_rng_checkpointed: true
+probe:
+  anchors: [base_student, historical_ml2_token_step100]
+  unique_prompts: 64
+  prompt_selection_seed: 9211
+  exclude_formal_training_prompt_schedules: true
+  exclude_eval_normalized_prompt_hashes: true
+  rollout_seeds: [9201, 9202, 9203, 9204, 9205, 9206, 9207, 9208]
+  batch_prompts: 4
+  total_rollouts: 1024
+  fp64_rtol: 1.0e-10
+  fp64_atol: 1.0e-12
+  fp32_rtol: 1.0e-5
+  fp32_atol: 1.0e-6
+  model_gradient_relative_error_max: 0.01
+training:
+  seeds: [21, 22, 23]
+  steps: 200
+  prompts_per_step: 4
+  rollouts_per_prompt: 8
+  ppo_mini_batch_size: 32
+  ppo_epochs: 1
+  learning_rate: 2.0e-6
+  opd_gamma: 0.0
+  outcome_reward_weight: 0.0
+  entropy_coefficient: 0.0
+  clip_ratio_low: 0.2
+  clip_ratio_high: 0.2
+  dual_clip_c: 3.0
+  grad_clip: 1.0
+  max_prompt_tokens: 2048
+  max_response_tokens: 16384
+  prompt_truncation: middle
+  temperature: 1.0
+  top_p: 0.9
+  gpu_count: 4
+  actor_microbatch: 1
+  reference_microbatch: 1
+  rollout_logprob_microbatch: 4
+  vllm_utilization: 0.6
+  max_num_batched_tokens: 18432
+  gradient_checkpointing: true
+  parameter_offload: true
+  optimizer_offload: true
+  checkpoints: [50, 100, 200]
+  automatic_checkpoint_deletion: false
+  diagnostics_interval: 5
+  position_bin_tokens: 128
+  phase_gradient_diagnostics_interval: 25
+  prompt_batch_hash_every_step: true
+  execution_order:
+    21: [token_opd, fixed3, random3, sliding3]
+    22: [sliding3, token_opd, fixed3, random3]
+    23: [random3, sliding3, token_opd, fixed3]
+evaluation:
+  tasks: {math500: 500, aime24: 30, aime25: 30, amc23: 83}
+  checkpoints: [50, 100, 200]
+  base_student_eval: true
+  rollout_seeds: [21, 22, 23, 24, 25, 26, 27, 28]
+  temperature: 1.0
+  top_p: 0.9
+  max_response_tokens: 16384
+  enable_thinking: false
+  primary_grader_sha256: 04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f
+  preserve_builtin_grader: true
+statistics:
+  primary_comparison: sliding3_minus_fixed3
+  primary_checkpoint: 200
+  co_primary_metrics: [equal_task_macro_avg_at_8, equal_task_macro_pass_at_8]
+  training_repeat_unit: paired_training_seed
+  seed_ci: paired_difference_t95_df2
+  strong_support: 'For both metrics: all three paired seed deltas > 0 and seed-level CI lower bound > 0.'
+  per_seed_prompt_bootstrap_replicates: 10000
+  per_seed_prompt_bootstrap_seed: 20260911
+  secondary_comparisons: [random3_minus_fixed3, sliding3_minus_random3, sliding3_minus_token_opd]
+  secondary_inference: exploratory
+budget:
+  formal_runs: 12
+  formal_training_steps: 2400
+  formal_training_rollouts: 76800
+  checkpoint_eval_rollouts: 185184
+  base_eval_rollouts: 5144
+  total_eval_rollouts: 190328
+  gate_and_retry_costs: report_separately

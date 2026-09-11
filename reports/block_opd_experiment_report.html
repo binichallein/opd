@@ -255,6 +255,10 @@
       }
       code { overflow-wrap: anywhere; word-break: break-word; }
       .eq, .markdown-formula { max-width: 100%; overflow-x: auto; }
+      .window-plan-table { display: table; table-layout: fixed; white-space: normal; }
+      .window-plan-table th, .window-plan-table td { text-align: left; overflow-wrap: anywhere; }
+      .window-plan-table th:first-child, .window-plan-table td:first-child { width: 27%; }
+      .window-plan-table th:nth-child(2), .window-plan-table td:nth-child(2) { width: 43%; }
     }
   </style>
 </head>
@@ -271,6 +275,28 @@
   </header>
 
   <main>
+    <section class="grid">
+      <div class="card span-12">
+        <h2>下一轮：滑动窗口的边界稳健性验证（2026-09-11，尚未执行）</h2>
+        <p>假设：固定 block3 会因分块起点切断部分短期依赖；对三个偏移的完整 PPO loss 取平均，可能减轻边界依赖并改善性能。数学恒等式、梯度差异和最终准确率分别验证，不能把恒等式直接当成有效性证据。</p>
+        <table class="config-table window-plan-table">
+          <thead><tr><th>方法</th><th>定义</th><th>比较目的</th></tr></thead>
+          <tbody>
+            <tr><td>sampled-token OPD</td><td>k=1</td><td>原始基线</td></tr>
+            <tr><td>fixed3</td><td>原 block3_mean，偏移固定为 0</td><td>主比较对象</td></tr>
+            <tr><td>random3</td><td>每个 optimizer step 随机选择偏移 0/1/2</td><td>观察边界随机化本身的作用</td></tr>
+            <tr><td>sliding3</td><td>三个偏移的完整 loss 平均，只做一次 optimizer step</td><td>验证完整偏移平均的作用</td></tr>
+          </tbody>
+        </table>
+        <p><strong>阶段 A：</strong>Base 与历史 token Step100 两个冻结锚点，各用 64 个训练池 prompt、每题 8 条 rollout；四种方法共享同批 token，测梯度恒等式、偏移差异、cosine 和分块位置效应。</p>
+        <p><strong>阶段 B：</strong>仅在 ml2，Qwen3-1.7B-Base 学生 / Qwen3-4B-Base-GRPO 教师，DAPO raw 1,791,700 行池；四方法分别跑 training seed 21/22/23，共 12 run。每组 200 steps、每步 4 prompt x 8 rollout、LR 2e-6、最大响应 16,384；micro-batch 1/1/4、vLLM 0.6。</p>
+        <p><strong>完整评测：</strong>每组 Step50/100/200 的 MATH500/AIME24/AIME25/AMC23，每题 n=8，eval seed 21-28。主比较为 Step200 的 sliding3 - fixed3，报告三个 training seed 的逐项差值、均值、标准差与 seed 级区间；题目 bootstrap 单列。</p>
+        <div class="callout">
+          <p>状态：仅完成设计；未实现滑动窗口代码，未启动新训练。ml2 数据与历史 grader 的哈希已重新匹配；旧实验只作参照，正式对照会重跑。完整方案见 <a href="../docs/plans/2026-09-11-sliding-window-opd-validation.md">预注册实验方案</a>，参数摘要见 <a href="../configs/experiments/revisiting_opd/sliding_window_validation.yaml">配置摘要（非可执行 Hydra 配置）</a>。</p>
+        </div>
+      </div>
+    </section>
+
     <section class="grid">
       <div class="card span-12">
         <h2>最终跨师生验证结论（2026-07-13）</h2>
