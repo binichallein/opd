@@ -56,6 +56,8 @@ stop_after_step="${STOP_AFTER_STEP:--1}"
 filter_overlong_prompts="${FILTER_OVERLONG_PROMPTS:-true}"
 resume_mode="${RESUME_MODE:-disable}"
 resume_from_path="${RESUME_FROM_PATH:-}"
+window_mode=fixed
+window_seed="${OPD_WINDOW_SEED:-$((910000 + ${ENV_SEED:-21}))}"
 
 case "${VARIANT}" in
   token_opd)
@@ -72,6 +74,12 @@ case "${VARIANT}" in
     block_size=3
     block_mode=mean
     block_mix_lambda=0.5
+    ;;
+  random3|sliding3)
+    block_size=3
+    block_mode=mean
+    block_mix_lambda=0.5
+    window_mode="${VARIANT%3}"
     ;;
   block5_mean)
     block_size=5
@@ -130,6 +138,9 @@ python3 -m verl.trainer.main_ppo_multitask \
     actor_rollout_ref.actor.opd_block_size="${block_size}" \
     actor_rollout_ref.actor.opd_block_advantage_mode="${block_mode}" \
     actor_rollout_ref.actor.opd_block_mix_lambda="${block_mix_lambda}" \
+    actor_rollout_ref.actor.opd_window_mode="${window_mode}" \
+    actor_rollout_ref.actor.opd_window_seed="${window_seed}" \
+    actor_rollout_ref.actor.ppo_epochs=1 \
     actor_rollout_ref.model.enable_gradient_checkpointing=True \
     actor_rollout_ref.actor.fsdp_config.param_offload=True \
     actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \

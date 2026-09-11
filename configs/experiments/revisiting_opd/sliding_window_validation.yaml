@@ -1,9 +1,21 @@
 name: sliding_window_opd_boundary_validation
 date: '2026-09-11'
-status: planned_not_implemented
+status: scope_amended_pending_implementation_acceptance_and_gates
 executable_hydra_config: false
-plan: docs/plans/2026-09-11-sliding-window-opd-validation.md
+protocol_version: 20260911v2_seed21_random3_sliding3
+plan: docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md
+original_design_plan: docs/plans/2026-09-11-sliding-window-opd-validation.md
 host: ml2
+forbidden_hosts: [train]
+scope:
+  formal_launch_authorized_after_implementation_acceptance_and_gates: true
+  new_results: false
+  automatic_seed_expansion: false
+  deferred_training_seeds: [22, 23]
+  stop_after: both_seed21_runs_and_all_checkpoint_evaluations
+  expansion_requires_explicit_user_authorization: true
+  run_directory_template: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2_sliding_window_seed21_ml2/{variant}
+  resume_gate_directory_template: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2_sliding_window_probe_seed21_ml2/{variant}
 baseline_code:
   submodule: external/revisiting_opd
   commit: f32f284f25bae5b16d2d44ee336b52851dccc736
@@ -22,10 +34,12 @@ data:
   eval_sha256: c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680
   filter_overlong_prompts: false
 variants:
-  token_opd: {block_size: 1, partition: fixed, offset: 0}
-  fixed3: {block_size: 3, partition: fixed, offset: 0, advantage: mean}
   random3: {block_size: 3, partition: uniform_offset_per_optimizer_step, advantage: mean}
   sliding3: {block_size: 3, partition: mean_full_loss_over_all_offsets, advantage: mean}
+historical_context:
+  variants: [token_opd, fixed3]
+  usage: contextual_only_not_fresh_paired_controls
+  included_in_current_paired_statistics: false
 window_contract:
   offsets: [0, 1, 2]
   offset_convention: 'offset r > 0 retains an initial partial window of length r; reset at each contiguous response region'
@@ -39,6 +53,10 @@ window_contract:
   random_offset_shared_across_ranks_and_microbatches: true
   random_offset_rng_checkpointed: true
 probe:
+  enabled: false
+  status: deferred_to_save_compute
+  required_before_current_formal_runs: false
+  settings_below: preserved_original_design_not_active_budget
   anchors: [base_student, historical_ml2_token_step100]
   unique_prompts: 64
   prompt_selection_seed: 9211
@@ -46,14 +64,34 @@ probe:
   exclude_eval_normalized_prompt_hashes: true
   rollout_seeds: [9201, 9202, 9203, 9204, 9205, 9206, 9207, 9208]
   batch_prompts: 4
-  total_rollouts: 1024
+  original_design_total_rollouts: 1024
+  active_total_rollouts: 0
+  model_gradient_relative_error_max: 0.01  # Deferred full-model check, not an active gate.
+correctness_gates:
+  unit_loss_and_gradient_identity: required
+  token_and_fixed_offset_zero_regressions: required
+  mask_edge_window_and_dual_clipping_cases: required
   fp64_rtol: 1.0e-10
   fp64_atol: 1.0e-12
   fp32_rtol: 1.0e-5
   fp32_atol: 1.0e-6
-  model_gradient_relative_error_max: 0.01
+  real_model_resume:
+    required_variants: [random3, sliding3]
+    models: same_student_and_teacher_as_formal_runs
+    save_step: 1
+    resume_to_step: 2
+    model_optimizer_scheduler_and_global_step: required
+    data_identity_and_sampler_prompt_position: required
+    all_rank_torch_rng_state: required
+    random_offset_rng_and_next_draw: required
+    vllm_sampling_stream_restore: not_guaranteed_upstream_does_not_checkpoint_engine_stream
+    bitwise_uninterrupted_generated_rollouts_guaranteed: false
+    gate_limits_and_costs: record_separately
+    formal_runs_restart_from_base: true
+  diagnostics_do_not_mutate_training_state_or_rng: required
 training:
-  seeds: [21, 22, 23]
+  seeds: [21]
+  data_rollout_environment_seed: training_seed
   steps: 200
   prompts_per_step: 4
   rollouts_per_prompt: 8
@@ -82,42 +120,103 @@ training:
   parameter_offload: true
   optimizer_offload: true
   checkpoints: [50, 100, 200]
+  checkpoint_state: model_optimizer_scheduler_sampler_all_rank_torch_rng_offset_state_and_provenance
+  checkpoint_excludes: upstream_vllm_internal_sampling_stream
+  retain_all_checkpoints: true
   automatic_checkpoint_deletion: false
+  diagnostics_first_step: 1
   diagnostics_interval: 5
   position_bin_tokens: 128
-  phase_gradient_diagnostics_interval: 25
+  phase_gradient_diagnostics_interval: null
+  full_parameter_extra_backprops: false
   prompt_batch_hash_every_step: true
+  prompt_schedule: shared_across_current_variants_per_training_seed
+  training_and_full_eval_scheduling: sequential_exclusive_four_gpus
   execution_order:
-    21: [token_opd, fixed3, random3, sliding3]
-    22: [sliding3, token_opd, fixed3, random3]
-    23: [random3, sliding3, token_opd, fixed3]
+    21: [random3, sliding3]
+monitoring:
+  every_step: [pg_loss, ordinary_training_preclip_grad_norm, response_length, truncation_rate, ratio_clipping, non_finite_count, wall_time, prompt_batch_sha256]
+  entropy_and_overlap: [student_entropy, teacher_entropy, signed_gap, absolute_gap, top16_overlap, student_overlap_mass, teacher_overlap_mass, overlap_token_advantage]
+  credit_assignment: historical_sign_flip_weighted_sign_flip_normalized_leakage_with_explicit_window_definition_changes
+  heatmaps: [step_by_token_position, position_mod_3]
+  heatmap_bin_counts: required
+  heatmap_low_coverage: missing_not_zero
+  heatmap_shared_color_scale: true
+  curves: both_seed21_runs_not_multi_seed_means
+  window_geometry: [window_length, token_coverage, token_fraction_covered_by_clipped_windows]
+  loss_input_phase_diagnostic:
+    enabled: true
+    first_step: 1
+    interval: 5
+    device: cpu
+    sample: same_cached_full_training_batch
+    inputs: same_cached_detached_old_current_teacher_logprobs_and_masks
+    evaluation_point: old_equals_current_preupdate
+    derivative_target: detached_current_logprobs_as_independent_leaves
+    namespace: loss_input
+    outputs: scalar_summaries_only
+    metrics: [phase_loss, phase_derivative_norm, derivative_cosine, derivative_dispersion]
+    undefined_near_zero_cosine_value: 0.0
+    cosine_validity_and_valid_counts: required
+    aggregate_cosine_over_valid_entries_only: true
+    json_allow_nan_or_infinity: false
+    full_parameter_gradients: false
+    extra_model_or_teacher_forwards: false
+    extra_rollouts: false
+    mutate_training_state_or_rng: false
+    interpretation: not_model_gradient_variance_or_D_phase_or_postupdate_clipping
+    costs: report_separately
 evaluation:
   tasks: {math500: 500, aime24: 30, aime25: 30, amc23: 83}
   checkpoints: [50, 100, 200]
-  base_student_eval: true
+  base_student_eval: false
+  historical_base_eval_reuse:
+    policy: only_if_manifest_and_resolved_evaluation_config_identical
+    verify: [base_weights_and_tokenizer, data_manifest_and_prompt_ids, decoding_and_thinking_settings, sample_counts_and_seeds, grader]
+    unknown_or_mismatched_identity: do_not_reuse
+    automatic_new_base_eval: false
+    new_base_eval_requires_explicit_user_authorization: true
+    new_base_eval_cost: report_separately
   rollout_seeds: [21, 22, 23, 24, 25, 26, 27, 28]
   temperature: 1.0
   top_p: 0.9
   max_response_tokens: 16384
   enable_thinking: false
+  primary_grader: historical_utils_sha04f7.py
   primary_grader_sha256: 04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f
   preserve_builtin_grader: true
+  paired_keys: [task, example_id, rollout_id, eval_seed]
+  pairing_scope: current_random3_and_sliding3_seed21_only
+  require_complete_all_checkpoints_and_tasks: true
 statistics:
-  primary_comparison: sliding3_minus_fixed3
+  inference: exploratory_within_round_seed_specific
+  primary_comparison: sliding3_minus_random3
   primary_checkpoint: 200
   co_primary_metrics: [equal_task_macro_avg_at_8, equal_task_macro_pass_at_8]
   training_repeat_unit: paired_training_seed
-  seed_ci: paired_difference_t95_df2
-  strong_support: 'For both metrics: all three paired seed deltas > 0 and seed-level CI lower bound > 0.'
+  paired_training_seed_count: 1
+  seed_ci: null
+  seed_sd: null
+  strong_support: not_applicable_with_one_training_seed
+  efficacy_claim: none
   per_seed_prompt_bootstrap_replicates: 10000
   per_seed_prompt_bootstrap_seed: 20260911
-  secondary_comparisons: [random3_minus_fixed3, sliding3_minus_random3, sliding3_minus_token_opd]
+  per_seed_prompt_bootstrap_method: task_stratified_paired_prompts_keep_all_eight_responses_together
+  per_seed_prompt_bootstrap_ci: 0.95
+  prompt_bootstrap_scope: prompt_uncertainty_conditional_on_seed21_checkpoints_not_training_variance
+  secondary_checkpoints: [50, 100]
+  secondary_views: per_task
+  secondary_comparisons: []
   secondary_inference: exploratory
 budget:
-  formal_runs: 12
-  formal_training_steps: 2400
-  formal_training_rollouts: 76800
-  checkpoint_eval_rollouts: 185184
-  base_eval_rollouts: 5144
-  total_eval_rollouts: 190328
+  formal_runs: 2
+  formal_training_steps: 400
+  formal_training_rollouts: 12800
+  checkpoint_eval_rollouts: 30864
+  frozen_stage_a_rollouts: 0
+  base_eval_rollouts: 0
+  additional_base_eval_rollouts_if_separately_authorized: 5144
+  total_eval_rollouts: 30864
+  total_eval_rollouts_if_new_base_separately_authorized: 36008
   gate_and_retry_costs: report_separately
+  teacher_scoring_backward_update_and_diagnostic_time: report_separately

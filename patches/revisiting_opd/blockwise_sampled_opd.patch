@@ -1,19 +1,21 @@
 diff --git a/verl/trainer/config/ppo_trainer.yaml b/verl/trainer/config/ppo_trainer.yaml
-index dcff326..ffb216f 100644
+index dcff326..5b1d392 100644
 --- a/verl/trainer/config/ppo_trainer.yaml
 +++ b/verl/trainer/config/ppo_trainer.yaml
-@@ -56,6 +56,9 @@ actor_rollout_ref:
+@@ -56,6 +56,11 @@ actor_rollout_ref:
      clip_ratio_c: 3.0 # lower bound of the value for Dual-clip PPO from https://arxiv.org/pdf/1912.09729
      loss_agg_mode: "token-mean" # / "seq-mean-token-sum" / "seq-mean-token-mean"
      entropy_coeff: 0.001
 +    opd_block_size: 1
 +    opd_block_advantage_mode: sum  # sum / mean / mixed
 +    opd_block_mix_lambda: 0.5      # only used when opd_block_advantage_mode=mixed
++    opd_window_mode: fixed        # fixed / random / sliding
++    opd_window_seed: 910021       # independent partition RNG, not rollout RNG
      use_invalid_action_penalty: True
      invalid_action_penalty_coef: 0.1
      use_kl_loss: False # True for GRPO
 diff --git a/verl/trainer/ppo/core_algos.py b/verl/trainer/ppo/core_algos.py
-index f754f25..861eda5 100644
+index f754f25..fbec0cb 100644
 --- a/verl/trainer/ppo/core_algos.py
 +++ b/verl/trainer/ppo/core_algos.py
 @@ -428,6 +428,98 @@ def agg_loss(loss_mat: torch.Tensor, loss_mask: torch.Tensor, loss_agg_mode: str
@@ -115,18 +117,39 @@ index f754f25..861eda5 100644
  def compute_policy_loss(
      old_log_prob,
      log_prob,
-@@ -438,6 +530,9 @@ def compute_policy_loss(
+@@ -438,6 +530,11 @@ def compute_policy_loss(
      cliprange_high=None,
      clip_ratio_c=3.0,
      loss_agg_mode: str = "token-mean",
 +    opd_block_size: int = 1,
 +    opd_block_advantage_mode: str = "sum",
 +    opd_block_mix_lambda: float = 0.5,
++    opd_window_mode: str = "fixed",
++    opd_window_offset: int = 0,
  ):
      """
      Compute the clipped policy objective and related metrics for PPO.
-@@ -469,6 +564,16 @@ def compute_policy_loss(
+@@ -467,8 +564,35 @@ def compute_policy_loss(
+         loss_agg_mode (str, optional):
+             Aggregation mode for `agg_loss`. Defaults to "token-mean".
      """
++    if opd_window_mode != "fixed":
++        from opd_ext.window_supervision import compute_window_policy_loss
++
++        if opd_block_advantage_mode != "mean":
++            raise ValueError("Window OPD requires mean advantages")
++        return compute_window_policy_loss(
++            old_log_prob, log_prob, advantages, response_mask,
++            block_size=opd_block_size,
++            window_mode=opd_window_mode,
++            offset=opd_window_offset,
++            cliprange=cliprange,
++            cliprange_low=cliprange_low,
++            cliprange_high=cliprange_high,
++            clip_ratio_c=clip_ratio_c,
++            loss_agg_mode=loss_agg_mode,
++        )
++
      assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
  
 +    old_log_prob, log_prob, advantages, response_mask = aggregate_blockwise_policy_inputs(
@@ -142,7 +165,7 @@ index f754f25..861eda5 100644
      negative_approx_kl = log_prob - old_log_prob
      ratio = torch.exp(negative_approx_kl)
      ppo_kl = verl_F.masked_mean(-negative_approx_kl, response_mask)
-@@ -502,6 +607,9 @@ def compute_policy_loss_gspo(
+@@ -502,6 +626,9 @@ def compute_policy_loss_gspo(
      cliprange_high=None,
      clip_ratio_c=3.0,
      loss_agg_mode: str = "seq-mean-token-mean",
@@ -152,7 +175,7 @@ index f754f25..861eda5 100644
  ):
      """
      Compute the clipped policy objective and related metrics for GSPO.
-@@ -522,6 +630,11 @@ def compute_policy_loss_gspo(
+@@ -522,6 +649,11 @@ def compute_policy_loss_gspo(
      """
  
      assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
@@ -164,19 +187,27 @@ index f754f25..861eda5 100644
      if cliprange_low is None:
          cliprange_low = cliprange
      if cliprange_high is None:
+@@ -1048,4 +1180,3 @@ def compute_memory_efficient_kl(
+ 
+     
+     return L1, L2, not_in_topk_ratio
+-
 diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
-index cbf1a4f..b34b5da 100644
+index cbf1a4f..be2c86b 100644
 --- a/verl/trainer/ppo/ray_trainer_multitask.py
 +++ b/verl/trainer/ppo/ray_trainer_multitask.py
-@@ -23,6 +23,7 @@ This trainer supports model-agonistic model initialization with huggingface
+@@ -21,8 +21,10 @@ FSDP PPO Trainer with Ray-based single controller.
+ This trainer supports model-agonistic model initialization with huggingface
+ """
  
++import hashlib
  import json
  import os
 +from pathlib import Path
  import uuid
  from collections import defaultdict
  from contextlib import contextmanager
-@@ -65,6 +66,23 @@ from verl.utils.tracking import ValidationGenerationsLogger
+@@ -65,7 +67,30 @@ from verl.utils.tracking import ValidationGenerationsLogger
  from verl.workers.rollout.async_server import AsyncLLMServerManager
  from gigpo import core_gigpo
  
@@ -198,9 +229,88 @@ index cbf1a4f..b34b5da 100644
 +)
 +
  from agent_system.multi_turn_rollout import TrajectoryCollector, adjust_batch
++from opd_ext.window_supervision import (
++    OffsetSchedule,
++    window_credit_diagnostics,
++    window_ratio_diagnostics,
++    window_phase_diagnostics,
++)
  
  WorkerType = Type[Worker]
-@@ -1225,6 +1243,120 @@ class RayPPOTrainer:
+ 
+@@ -1129,6 +1154,46 @@ class RayPPOTrainer:
+                 worker_group=self.actor_rollout_wg,
+             )
+ 
++    def _save_window_state(self, checkpoint_folder):
++        if self.window_mode == "fixed":
++            return
++        if self.window_mode == "random":
++            state = self.window_schedule.state_dict()
++        else:
++            state = {
++                "block_size": int(self.config.actor_rollout_ref.actor.opd_block_size),
++                "seed": int(self.config.actor_rollout_ref.actor.opd_window_seed),
++                "last_step": self.global_steps,
++                "current_offset": 0,
++                "rng_state": None,
++            }
++        state = {"mode": self.window_mode, **state}
++        if state["last_step"] != self.global_steps:
++            raise RuntimeError("Window schedule is not aligned with the saved optimizer step")
++        path = Path(checkpoint_folder) / "window_state.json"
++        temporary = path.with_suffix(".tmp")
++        temporary.write_text(json.dumps(state, indent=2) + "\n")
++        os.replace(temporary, path)
++
++    def _load_window_state(self, checkpoint_folder):
++        if self.window_mode == "fixed":
++            return
++        path = Path(checkpoint_folder) / "window_state.json"
++        state = json.loads(path.read_text())
++        for key, expected in {
++            "mode": self.window_mode,
++            "block_size": int(self.config.actor_rollout_ref.actor.opd_block_size),
++            "seed": int(self.config.actor_rollout_ref.actor.opd_window_seed),
++            "last_step": self.global_steps,
++        }.items():
++            if state.get(key) != expected:
++                raise ValueError(f"Window resume mismatch for {key}: {state.get(key)!r} != {expected!r}")
++        if self.window_mode == "random":
++            self.window_schedule.load_state_dict({k: v for k, v in state.items() if k != "mode"})
++        elif state.get("current_offset") != 0 or state.get("rng_state") is not None:
++            raise ValueError("Sliding resume unexpectedly contains a sampled partition")
++        print(f"Restored window state: mode={self.window_mode}, step={self.global_steps}")
++
+     def _save_checkpoint(self):
+         # path: given_path + `/global_step_{global_steps}` + `/actor`
+         local_global_step_folder = os.path.join(self.config.trainer.default_local_dir, f"global_step_{self.global_steps}")
+@@ -1155,6 +1220,7 @@ class RayPPOTrainer:
+         dataloader_local_path = os.path.join(local_global_step_folder, "data.pt")
+         dataloader_state_dict = self.train_dataloader.state_dict()
+         torch.save(dataloader_state_dict, dataloader_local_path)
++        self._save_window_state(local_global_step_folder)
+ 
+         # latest checkpointed iteration tracker (for atomic usage)
+         local_latest_checkpointed_iteration = os.path.join(self.config.trainer.default_local_dir, "latest_checkpointed_iteration.txt")
+@@ -1194,6 +1260,7 @@ class RayPPOTrainer:
+ 
+         print(f"Setting global step to {self.global_steps}")
+         print(f"Resuming from {global_step_folder}")
++        self._load_window_state(global_step_folder)
+ 
+         actor_path = os.path.join(global_step_folder, "actor")
+         critic_path = os.path.join(global_step_folder, "critic")
+@@ -1210,6 +1277,8 @@ class RayPPOTrainer:
+             dataloader_state_dict = torch.load(dataloader_local_path, weights_only=False)
+             self.train_dataloader.load_state_dict(dataloader_state_dict)
+         else:
++            if self.window_mode != "fixed":
++                raise FileNotFoundError(f"Window OPD resume requires {dataloader_local_path}")
+             print(f"Warning: No dataloader state found at {dataloader_local_path}, will start from scratch")
+ 
+     def _balance_batch(self, batch: DataProto, metrics, logging_prefix="global_seqlen"):
+@@ -1225,6 +1294,138 @@ class RayPPOTrainer:
          global_balance_stats = log_seqlen_unbalance(seqlen_list=global_seqlen_lst, partitions=global_partition_lst, prefix=logging_prefix)
          metrics.update(global_balance_stats)
  
@@ -237,11 +347,17 @@ index cbf1a4f..b34b5da 100644
 +        )
 +        teacher_entropy = teacher_diagnostics.batch["teacher_entropy"]
 +        entropy = compute_entropy_diagnostics(student_entropy, teacher_entropy, response_mask)
-+        credit = compute_block_credit_diagnostics(
++        window_kwargs = (
++            {"window_mode": self.window_mode, "offset": batch.meta_info["opd_window_offset"]}
++            if self.window_mode != "fixed" else {}
++        )
++        credit_fn = window_credit_diagnostics if window_kwargs else compute_block_credit_diagnostics
++        credit = credit_fn(
 +            advantages=advantages,
 +            response_mask=response_mask,
 +            block_size=block_size,
 +            sign_epsilon=sign_epsilon,
++            **window_kwargs,
 +        )
 +        raw_advantage_summary = compute_masked_summary(advantages, response_mask)
 +        block_advantage_summary = compute_masked_summary(
@@ -304,6 +420,18 @@ index cbf1a4f..b34b5da 100644
 +            ),
 +            "leakage": compute_position_statistics(credit["leakage_per_token"], response_mask),
 +        }
++        if window_kwargs:
++            for key in ("effective_token_coefficient", "coverage_per_token"):
++                position_stats[key] = compute_position_statistics(credit[key], response_mask)
++            coefficient = credit["effective_token_coefficient"]
++            phase_stats = window_phase_diagnostics(
++                batch.batch["old_log_probs"], batch.batch["old_log_probs"],
++                advantages, response_mask, block_size=block_size,
++            )
++            scalars.update({f"diagnostics/loss_input_{k}": float(v.item()) for k, v in phase_stats.items()})
++            for remainder in range(block_size):
++                phase_mask = response_mask & ((torch.arange(response_length, device=response_mask.device) % block_size) == remainder)
++                scalars[f"diagnostics/coefficient_abs_mod{remainder}"] = masked_metric_mean(coefficient.abs(), phase_mask)
 +        for metric_name, metric_mask in (
 +            ("overlap_ratio", selected_mask),
 +            ("student_overlap_mass", selected_mask),
@@ -321,7 +449,7 @@ index cbf1a4f..b34b5da 100644
      def fit(self):
          """
          The training loop of PPO.
-@@ -1242,6 +1374,17 @@ class RayPPOTrainer:
+@@ -1242,8 +1443,31 @@ class RayPPOTrainer:
              default_backend=self.config.trainer.logger,
              config=OmegaConf.to_container(self.config, resolve=True),
          )
@@ -338,8 +466,22 @@ index cbf1a4f..b34b5da 100644
 +            raise ValueError("trainer.stop_after_step must also be a checkpoint milestone")
  
          self.global_steps = 0
++        self.window_mode = self.config.actor_rollout_ref.actor.get("opd_window_mode", "fixed")
++        if self.window_mode not in {"fixed", "random", "sliding"}:
++            raise ValueError(f"Unknown OPD window mode: {self.window_mode}")
++        self.window_schedule = None
++        if self.window_mode != "fixed":
++            if self.config.algorithm.adv_estimator != "opd" or self.config.actor_rollout_ref.actor.ppo_epochs != 1:
++                raise ValueError("Window experiment requires OPD and one PPO epoch")
++            if self.window_mode == "random":
++                self.window_schedule = OffsetSchedule(
++                    block_size=int(self.config.actor_rollout_ref.actor.opd_block_size),
++                    seed=int(self.config.actor_rollout_ref.actor.opd_window_seed),
++                )
  
-@@ -1269,6 +1412,13 @@ class RayPPOTrainer:
+         # load checkpoint before doing anything
+         self._load_checkpoint()
+@@ -1269,7 +1493,17 @@ class RayPPOTrainer:
              for batch_dict in self.train_dataloader:
                  metrics = {}
                  timing_raw = {}
@@ -351,9 +493,24 @@ index cbf1a4f..b34b5da 100644
 +                diagnostic_forward = None
 +                diagnostic_snapshot = None
                  batch: DataProto = DataProto.from_single_dict(batch_dict)
++                prompt_schedule_sha256 = hashlib.sha256(
++                    json.dumps(batch.batch["input_ids"].tolist(), separators=(",", ":")).encode()
++                ).hexdigest() if self.window_mode != "fixed" else None
  
                  # pop those keys for generation
-@@ -1481,6 +1631,27 @@ class RayPPOTrainer:
+                 batch_keys_to_pop = ["input_ids", "attention_mask", "position_ids"]
+@@ -1342,6 +1576,10 @@ class RayPPOTrainer:
+                     batch = adjust_batch(self.config, batch)
+ 
+                     batch.batch["response_mask"] = compute_response_mask(batch)
++                    if self.window_mode != "fixed":
++                        batch.meta_info["opd_window_offset"] = (
++                            self.window_schedule.next(self.global_steps) if self.window_schedule is not None else 0
++                        )
+                     # balance the number of valid tokens on each dp rank.
+                     # Note that this breaks the order of data inside the batch.
+                     # Please take care when you implement group based adv computation such as GRPO and rloo
+@@ -1481,6 +1719,27 @@ class RayPPOTrainer:
                                      else:
                                          ref_log_prob = self.actor_rollout_wg.compute_ref_log_prob(batch)
                              batch = batch.union(ref_log_prob)
@@ -381,7 +538,7 @@ index cbf1a4f..b34b5da 100644
                          
                          # Compute student's log probs for teacher's top-k indices if using OPD topk
                          if use_opd_topk and "teacher_topk_indices" in batch.batch:
-@@ -1606,6 +1777,19 @@ class RayPPOTrainer:
+@@ -1606,6 +1865,19 @@ class RayPPOTrainer:
                                  clip_log_ratio=self.config.actor_rollout_ref.actor.get("clip_log_ratio", False), # this config is not that naturally related to OPD, but we keep it here for compatibility
                              )
  
@@ -401,14 +558,19 @@ index cbf1a4f..b34b5da 100644
                          if self.config.trainer.get("rollout_data_dir", None):
                              self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
  
-@@ -1625,6 +1809,108 @@ class RayPPOTrainer:
+@@ -1625,6 +1897,123 @@ class RayPPOTrainer:
                          actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                          metrics.update(actor_output_metrics)
  
 +                        if run_opd_diagnostics:
 +                            with _timer("opd_diagnostics_post_update", timing_raw):
 +                                post_update_output = self.actor_rollout_wg.compute_log_prob(batch)
-+                                block_ratio = compute_block_ratio_diagnostics(
++                                window_kwargs = (
++                                    {"window_mode": self.window_mode, "offset": batch.meta_info["opd_window_offset"]}
++                                    if self.window_mode != "fixed" else {}
++                                )
++                                ratio_fn = window_ratio_diagnostics if window_kwargs else compute_block_ratio_diagnostics
++                                block_ratio = ratio_fn(
 +                                    old_log_prob=batch.batch["old_log_probs"],
 +                                    current_log_prob=post_update_output.batch["old_log_probs"],
 +                                    response_mask=batch.batch["response_mask"],
@@ -429,6 +591,7 @@ index cbf1a4f..b34b5da 100644
 +                                        )
 +                                        or self.config.actor_rollout_ref.actor.clip_ratio
 +                                    ),
++                                    **window_kwargs,
 +                                )
 +                                post_update_ratio_metrics = {
 +                                    "diagnostics/post_update_block_log_ratio_abs_mean": float(
@@ -470,25 +633,34 @@ index cbf1a4f..b34b5da 100644
 +                                        "opd_block_size", 1
 +                                    )
 +                                )
-+                                expanded_log_ratio, response_valid = (
-+                                    expand_block_values_to_tokens(
-+                                        block_ratio["block_log_ratio"].abs(),
++                                if window_kwargs:
++                                    response_valid = batch.batch["response_mask"].bool()
++                                    expanded_log_ratio = block_ratio["token_log_ratio_abs"]
++                                    expanded_finite = block_ratio["token_finite_mask"]
++                                    expanded_outside_clip = block_ratio["token_outside_clip"].float()
++                                    token_clip_fraction = float(expanded_outside_clip[response_valid].mean().item())
++                                    diagnostic_snapshot[0]["diagnostics/token_any_window_outside_clip_fraction"] = token_clip_fraction
++                                    metrics["diagnostics/token_any_window_outside_clip_fraction"] = token_clip_fraction
++                                else:
++                                    expanded_log_ratio, response_valid = (
++                                        expand_block_values_to_tokens(
++                                            block_ratio["block_log_ratio"].abs(),
++                                            batch.batch["response_mask"],
++                                            block_size,
++                                        )
++                                    )
++                                    expanded_finite, _ = expand_block_values_to_tokens(
++                                        block_ratio["finite_mask"].to(torch.float32),
 +                                        batch.batch["response_mask"],
 +                                        block_size,
 +                                    )
-+                                )
-+                                expanded_finite, _ = expand_block_values_to_tokens(
-+                                    block_ratio["finite_mask"].to(torch.float32),
-+                                    batch.batch["response_mask"],
-+                                    block_size,
-+                                )
-+                                expanded_outside_clip, _ = (
-+                                    expand_block_values_to_tokens(
-+                                        block_ratio["outside_clip_mask"].to(torch.float32),
-+                                        batch.batch["response_mask"],
-+                                        block_size,
++                                    expanded_outside_clip, _ = (
++                                        expand_block_values_to_tokens(
++                                            block_ratio["outside_clip_mask"].to(torch.float32),
++                                            batch.batch["response_mask"],
++                                            block_size,
++                                        )
 +                                    )
-+                                )
 +                                finite_response = response_valid & expanded_finite.bool()
 +                                diagnostic_snapshot[1].update(
 +                                    {
@@ -510,7 +682,7 @@ index cbf1a4f..b34b5da 100644
                      # Log rollout generations if enabled
                      rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
                      if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
-@@ -1638,10 +1924,6 @@ class RayPPOTrainer:
+@@ -1638,10 +2027,6 @@ class RayPPOTrainer:
                                  last_val_metrics = val_metrics
                          metrics.update(val_metrics)
  
@@ -521,7 +693,7 @@ index cbf1a4f..b34b5da 100644
                  # training metrics
                  metrics.update(
                      {
-@@ -1656,10 +1938,71 @@ class RayPPOTrainer:
+@@ -1656,10 +2041,93 @@ class RayPPOTrainer:
                  n_gpus = self.resource_pool_manager.get_n_gpus()
                  metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
  
@@ -562,6 +734,11 @@ index cbf1a4f..b34b5da 100644
 +                                diagnostic_config.get("sign_epsilon", 1e-4)
 +                            ),
 +                            "block_ratio_definition": "post_update_policy_vs_behavior_policy",
++                            "window_mode": self.window_mode,
++                            "window_offset": batch.meta_info.get("opd_window_offset", 0),
++                            "credit_definition": "phase_averaged_shared_mean_advantage" if self.window_mode != "fixed" else "fixed_block_shared_mean_advantage",
++                            "effective_coefficient_definition": "phase_averaged_window_advantage_sum_before_clipping",
++                            "gradient_diagnostic_space": "sampled_log_probs_not_model_parameters",
 +                            "prompt_batch_sha256": prompt_batch_sha256(
 +                                batch.batch["input_ids"],
 +                                batch.batch["attention_mask"],
@@ -569,6 +746,23 @@ index cbf1a4f..b34b5da 100644
 +                            ),
 +                        },
 +                    )
++
++                if self.window_mode != "fixed":
++                    window_dir = Path(self.config.trainer.opd_diagnostic_dir)
++                    window_dir.mkdir(parents=True, exist_ok=True)
++                    record = {
++                        "step": self.global_steps,
++                        "window_mode": self.window_mode,
++                        "window_offset": int(batch.meta_info["opd_window_offset"]),
++                        "prompt_schedule_sha256": prompt_schedule_sha256,
++                        "prompt_batch_sha256": prompt_batch_sha256(
++                            batch.batch["input_ids"], batch.batch["attention_mask"],
++                            response_length=batch.batch["responses"].size(1),
++                        ),
++                        "metrics": {k: float(v) for k, v in metrics.items() if isinstance(v, (int, float, np.number))},
++                    }
++                    with (window_dir / "window_steps.jsonl").open("a") as handle:
++                        handle.write(json.dumps(record, allow_nan=False) + "\n")
 +
 +                periodic_save = (
 +                    self.config.trainer.save_freq > 0
@@ -594,7 +788,7 @@ index cbf1a4f..b34b5da 100644
                  if is_last_step:
                      pprint(f"Final validation metrics: {last_val_metrics}")
 diff --git a/verl/workers/actor/dp_actor.py b/verl/workers/actor/dp_actor.py
-index 5d6bab1..4283c1d 100644
+index 5d6bab1..d2b33bd 100644
 --- a/verl/workers/actor/dp_actor.py
 +++ b/verl/workers/actor/dp_actor.py
 @@ -28,10 +28,11 @@ from torch import nn
@@ -610,7 +804,16 @@ index 5d6bab1..4283c1d 100644
  )
  from verl.utils.debug import GPUMemoryLogger
  from verl.utils.device import get_device_name, get_torch_device, is_cuda_available, is_npu_available
-@@ -336,6 +337,7 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -329,6 +330,8 @@ class DataParallelPPOActor(BasePPOActor):
+ 
+         # if grad_norm is not finite, skip the update
+         if not torch.isfinite(grad_norm):
++            if self.config.get("opd_window_mode", "fixed") != "fixed":
++                raise FloatingPointError(f"Window OPD nonfinite pre-clip gradient norm: {grad_norm}")
+             print(f"WARN: rank {torch.distributed.get_rank()} grad_norm is not finite: {grad_norm}")
+             self.actor_optimizer.zero_grad()
+         else:
+@@ -336,6 +339,7 @@ class DataParallelPPOActor(BasePPOActor):
          return grad_norm
  
      @GPUMemoryLogger(role="dp actor", logger=logger)
@@ -618,7 +821,7 @@ index 5d6bab1..4283c1d 100644
      def compute_log_prob(self, data: DataProto, calculate_entropy=False) -> torch.Tensor:
          """Compute the log probability of the responses given input_ids, attention_mask and position_ids
  
-@@ -771,6 +773,7 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -771,6 +775,7 @@ class DataParallelPPOActor(BasePPOActor):
          return log_probs, output_kl_inputs
  
      @GPUMemoryLogger(role="dp actor", logger=logger)
@@ -626,7 +829,7 @@ index 5d6bab1..4283c1d 100644
      def compute_log_prob_with_topk(self, data: DataProto, topk_k: int = 50) -> dict:
          """Compute log probabilities along with top-k token indices and their log probs.
          
-@@ -793,6 +796,10 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -793,6 +798,10 @@ class DataParallelPPOActor(BasePPOActor):
          micro_batch_size = data.meta_info["micro_batch_size"]
          temperature = data.meta_info["temperature"]
          use_dynamic_bsz = data.meta_info["use_dynamic_bsz"]
@@ -637,7 +840,7 @@ index 5d6bab1..4283c1d 100644
          
          select_keys = ["responses", "input_ids", "attention_mask", "position_ids"]
          batch = data.select(batch_keys=select_keys).batch
-@@ -811,22 +818,35 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -811,22 +820,35 @@ class DataParallelPPOActor(BasePPOActor):
          log_probs_lst = []
          topk_indices_lst = []
          topk_log_probs_lst = []
@@ -675,7 +878,7 @@ index 5d6bab1..4283c1d 100644
          
          if use_dynamic_bsz:
              indices = list(itertools.chain.from_iterable(indices))
-@@ -834,14 +854,25 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -834,14 +856,25 @@ class DataParallelPPOActor(BasePPOActor):
              log_probs = log_probs[revert_indices]
              topk_indices = topk_indices[revert_indices]
              topk_log_probs = topk_log_probs[revert_indices]
@@ -702,7 +905,7 @@ index 5d6bab1..4283c1d 100644
          """Forward pass that returns log probs for selected tokens AND top-k info.
          
          Follows the same rmpad pattern as _forward_micro_batch for memory efficiency.
-@@ -849,6 +880,13 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -849,6 +882,13 @@ class DataParallelPPOActor(BasePPOActor):
          from verl.utils.torch_functional import topk_logprobs_from_logits, logprobs_from_logits
          
          response_length = micro_batch["responses"].size(-1)
@@ -716,7 +919,7 @@ index 5d6bab1..4283c1d 100644
          multi_modal_inputs = {}
          if "multi_modal_inputs" in micro_batch:
              for key in micro_batch["multi_modal_inputs"][0].keys():
-@@ -917,10 +955,49 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -917,10 +957,49 @@ class DataParallelPPOActor(BasePPOActor):
                      inplace_backward=False,  # Can't use inplace since we need logits for top-k
                  )
  
@@ -770,7 +973,7 @@ index 5d6bab1..4283c1d 100644
  
                  # Gather if using ulysses sp
                  if self.use_ulysses_sp:
-@@ -928,6 +1005,13 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -928,6 +1007,13 @@ class DataParallelPPOActor(BasePPOActor):
                      # Gather top-k results
                      topk_indices_rmpad = gather_outpus_and_unpad(topk_indices_rmpad, gather_dim=0, unpad_dim=0, padding_size=pad_size)
                      topk_log_probs_rmpad = gather_outpus_and_unpad(topk_log_probs_rmpad, gather_dim=0, unpad_dim=0, padding_size=pad_size)
@@ -784,7 +987,7 @@ index 5d6bab1..4283c1d 100644
  
                  # Pad back to (bsz, seqlen)
                  full_log_probs = pad_input(
-@@ -937,25 +1021,41 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -937,25 +1023,41 @@ class DataParallelPPOActor(BasePPOActor):
                      seqlen=seqlen,
                  )
  
@@ -841,7 +1044,7 @@ index 5d6bab1..4283c1d 100644
  
              else:  # not using rmpad
                  output = self.actor_module(
-@@ -972,9 +1072,22 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -972,9 +1074,22 @@ class DataParallelPPOActor(BasePPOActor):
  
                  # Compute log probs and top-k
                  log_probs = logprobs_from_logits(response_logits, micro_batch["responses"])
@@ -866,15 +1069,35 @@ index 5d6bab1..4283c1d 100644
  
      @GPUMemoryLogger(role="dp actor", logger=logger)
      def compute_log_prob_for_topk_indices(self, data: DataProto, topk_indices: torch.Tensor) -> torch.Tensor:
-@@ -1166,7 +1279,6 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1166,7 +1281,17 @@ class DataParallelPPOActor(BasePPOActor):
  
          temperature = data.meta_info["temperature"]  # temperature must be in the data.meta_info to avoid silent error
          multi_turn = data.meta_info.get("multi_turn", False)
 -
++        window_mode = self.config.get("opd_window_mode", "fixed")
++        window_kwargs = {}
++        if window_mode != "fixed":
++            if window_mode not in {"random", "sliding"}:
++                raise ValueError(f"Unknown OPD window mode: {window_mode}")
++            if self.config.policy_loss.get("loss_mode", "vanilla") != "vanilla" or self.config.use_kl_loss:
++                raise ValueError("Window OPD requires sampled vanilla PPO without auxiliary KL")
++            window_kwargs = {
++                "opd_window_mode": window_mode,
++                "opd_window_offset": int(data.meta_info["opd_window_offset"]),
++            }
          select_keys = ["responses", "input_ids", "attention_mask", "position_ids", "old_log_probs", "advantages"]
          if multi_turn:
              select_keys.append("loss_mask")
-@@ -1276,6 +1388,14 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1195,6 +1320,8 @@ class DataParallelPPOActor(BasePPOActor):
+             dataloader = batch.split(self.config.ppo_mini_batch_size)
+ 
+         metrics = {}
++        if window_kwargs and (self.config.ppo_epochs != 1 or len(dataloader) != 1):
++            raise ValueError("Window offset contract requires one optimizer step per rollout batch")
+         for epoch in range(self.config.ppo_epochs):
+             for batch_idx, data in enumerate(dataloader):
+                 # split batch into micro_batches
+@@ -1276,6 +1403,14 @@ class DataParallelPPOActor(BasePPOActor):
                          policy_loss_fn = compute_policy_loss_gspo
                      else:
                          raise ValueError(f"Unsupported loss_mode: {loss_mode}")
@@ -889,13 +1112,14 @@ index 5d6bab1..4283c1d 100644
  
                      pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower = policy_loss_fn(
                          old_log_prob=old_log_prob,
-@@ -1288,6 +1408,9 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1288,6 +1423,10 @@ class DataParallelPPOActor(BasePPOActor):
                          cliprange_high=clip_ratio_high,
                          clip_ratio_c=clip_ratio_c,
                          loss_agg_mode=loss_agg_mode,
 +                        opd_block_size=opd_block_size,
 +                        opd_block_advantage_mode=opd_block_advantage_mode,
 +                        opd_block_mix_lambda=opd_block_mix_lambda,
++                        **window_kwargs,
                      )
  
                      if entropy_coeff != 0:

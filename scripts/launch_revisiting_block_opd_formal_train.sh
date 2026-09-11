@@ -10,6 +10,11 @@ HF_HOME_DIR="${HF_HOME_DIR:-/mnt/data/cpfs/Yaleon/opd_train_qwen3_1p7b_base_to_4
 LOCAL_CACHE_ROOT="${LOCAL_CACHE_ROOT:-/tmp/opd_block3_dapo17k}"
 SOURCE_COMMIT="${SOURCE_COMMIT:-unknown}"
 SUBMODULE_BASE_COMMIT="${SUBMODULE_BASE_COMMIT:-f32f284f25bae5b16d2d44ee336b52851dccc736}"
+PREPARE_ONLY="${PREPARE_ONLY:-false}"
+case "${PREPARE_ONLY}" in
+  true|false) ;;
+  *) echo "PREPARE_ONLY must be true or false" >&2; exit 2 ;;
+esac
 
 PROJECT_NAME="${PROJECT_NAME:-opd_block3_dapo17k}"
 EXP_NAME="${EXP_NAME:-${VARIANT}-qwen3-dapo17k-paper}"
@@ -26,6 +31,20 @@ VAL_DATA="${VAL_DATA:-${DATA_DIR}/test.parquet}"
 N_GPUS_PER_NODE="${N_GPUS_PER_NODE:-4}"
 RAY_NUM_CPUS="${RAY_NUM_CPUS:-64}"
 ENV_SEED="${ENV_SEED:-21}"
+OPD_WINDOW_SEED="${OPD_WINDOW_SEED:-$((910000 + ENV_SEED))}"
+OPD_WINDOW_MODE=fixed
+OPD_BLOCK_SIZE=3
+OPD_BLOCK_ADVANTAGE_MODE=mean
+case "${VARIANT}" in
+  random3|sliding3) OPD_WINDOW_MODE="${VARIANT%3}" ;;
+  token_opd) OPD_BLOCK_SIZE=1; OPD_BLOCK_ADVANTAGE_MODE=sum ;;
+  block3_sum) OPD_BLOCK_ADVANTAGE_MODE=sum ;;
+  block3_mean) ;;
+  block5_mean) OPD_BLOCK_SIZE=5 ;;
+  block10_mean) OPD_BLOCK_SIZE=10 ;;
+  block3_mixed_lam05) OPD_BLOCK_ADVANTAGE_MODE=mixed ;;
+  *) echo "Unknown VARIANT=${VARIANT}" >&2; exit 2 ;;
+esac
 TRAIN_BATCH_SIZE="${TRAIN_BATCH_SIZE:-4}"
 PPO_MINI_BATCH_SIZE="${PPO_MINI_BATCH_SIZE:-32}"
 ROLLOUT_GROUP_SIZE="${ROLLOUT_GROUP_SIZE:-8}"
@@ -122,12 +141,16 @@ sha256sum \
   '${REMOTE_ROOT}/scripts/eval_qwen3_math_vllm.py' \
   '${REMOTE_ROOT}/scripts/audit_block10_run.py' \
   '${REMOTE_ROOT}/scripts/block3_replication_control.sh' \
+  '${REMOTE_ROOT}/scripts/sliding_window_ml2_control.sh' \
+  '${REMOTE_ROOT}/scripts/audit_window_run.py' \
+  '${REMOTE_ROOT}/scripts/audit_window_control.py' \
   '${REMOTE_ROOT}/scripts/analyze_block10_collapse_diagnostics.py' \
   '${REMOTE_ROOT}/scripts/analyze_single_opd_diagnostics.py' \
   '${REMOTE_ROOT}/patches/revisiting_opd/blockwise_sampled_opd.patch' \
   '${REMOTE_ROOT}/external/revisiting_opd.UPSTREAM_COMMIT' \
   '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256' \
   '${REMOTE_ROOT}/opd_ext/diagnostics.py' \
+  '${REMOTE_ROOT}/opd_ext/window_supervision.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/ppo/core_algos.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/ppo/ray_trainer_multitask.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/actor/dp_actor.py' \
@@ -135,6 +158,7 @@ sha256sum \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/utils/reward_score/math.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/config/ppo_trainer.yaml' \
   > '${RUN_DIR}/script_hashes.sha256'
+window_supervision_sha256=\$(sha256sum '${REMOTE_ROOT}/opd_ext/window_supervision.py' | awk '{print \$1}')
 {
   sha256sum '${TRAIN_DATA}' '${VAL_DATA}' \
     '${DATA_DIR}/eval_jsonl/math500.jsonl' \
@@ -156,6 +180,12 @@ sha256sum \
 cat > '${RUN_DIR}/run_card.json' <<JSON
 {
   \"variant\": \"${VARIANT}\",
+  \"opd_block_size\": ${OPD_BLOCK_SIZE},
+  \"opd_block_advantage_mode\": \"${OPD_BLOCK_ADVANTAGE_MODE}\",
+  \"opd_window_mode\": \"${OPD_WINDOW_MODE}\",
+  \"opd_window_seed\": ${OPD_WINDOW_SEED},
+  \"ppo_epochs\": 1,
+  \"window_supervision_sha256\": \"\${window_supervision_sha256}\",
   \"source_commit\": \"${SOURCE_COMMIT}\",
   \"revisiting_opd_base_commit\": \"${SUBMODULE_BASE_COMMIT}\",
   \"project_name\": \"${PROJECT_NAME}\",
@@ -248,6 +278,7 @@ LOG_DIR='${LOG_DIR}' \
 N_GPUS_PER_NODE='${N_GPUS_PER_NODE}' \
 RAY_NUM_CPUS='${RAY_NUM_CPUS}' \
 ENV_SEED='${ENV_SEED}' \
+OPD_WINDOW_SEED='${OPD_WINDOW_SEED}' \
 TRAIN_BATCH_SIZE='${TRAIN_BATCH_SIZE}' \
 PPO_MINI_BATCH_SIZE='${PPO_MINI_BATCH_SIZE}' \
 ROLLOUT_GROUP_SIZE='${ROLLOUT_GROUP_SIZE}' \
@@ -280,7 +311,13 @@ RESUME_FROM_PATH='${RESUME_FROM_PATH}' \
 OPD_DIAG_OUTPUT_DIR='${OPD_DIAG_OUTPUT_DIR}' \
 bash scripts/run_revisiting_sampled_block_opd_math.sh
 CMD
+'${VENV}/bin/python' -m json.tool '${RUN_DIR}/run_card.json' >/dev/null
+bash -n '${RUN_DIR}/command.sh'
 chmod +x '${RUN_DIR}/command.sh'
+if [[ '${PREPARE_ONLY}' == true ]]; then
+  echo 'prepared command=${RUN_DIR}/command.sh run_dir=${RUN_DIR}'
+  exit 0
+fi
 nohup bash '${RUN_DIR}/command.sh' > '${LOG_DIR}/nohup.log' 2>&1 &
 echo \$! > '${RUN_DIR}/train.pid'
 echo \"pid=\$(cat '${RUN_DIR}/train.pid') run_dir=${RUN_DIR} log=${LOG_DIR}/nohup.log\"

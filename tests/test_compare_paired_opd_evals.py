@@ -28,6 +28,26 @@ def write_json(path: Path, value):
     path.write_text(json.dumps(value), encoding="utf-8")
 
 
+def test_random_sliding_contract_is_explicit_and_checks_all_steps(tmp_path):
+    module = load_module()
+    left, right = tmp_path / "random3", tmp_path / "sliding3"
+    for run, is_right, mode in ((left, False, "random"), (right, True, "sliding")):
+        write_run(run, right=is_right)
+        card = json.loads((run / "run_card.json").read_text())
+        card.update(variant=run.name, opd_window_mode=mode, opd_window_seed=910021)
+        write_json(run / "run_card.json", card)
+        rows = [{"step": step, "prompt_schedule_sha256": f"{step:064x}"} for step in range(1, 201)]
+        (run / "diagnostics/window_steps.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    with pytest.raises(ValueError, match="token_opd"):
+        module.validate_paired_training_contract(left, right)
+    contract = module.validate_paired_training_contract(left, right, pair_kind="random-sliding")
+    assert contract["ordered_prompt_steps_matched"] == 200
+    rows[-1]["prompt_schedule_sha256"] = "f" * 64
+    (right / "diagnostics/window_steps.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    with pytest.raises(ValueError, match="ordered prompt"):
+        module.validate_paired_training_contract(left, right, pair_kind="random-sliding")
+
+
 def write_run(
     run_dir: Path,
     *,

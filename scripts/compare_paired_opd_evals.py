@@ -111,6 +111,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--bootstrap-replicates", type=int, default=10_000)
     parser.add_argument("--bootstrap-seed", type=int, default=20_260_712)
     parser.add_argument("--output-json", type=Path, required=True)
+    parser.add_argument("--pair-kind", choices=("token-block3", "random-sliding"), default="token-block3")
     return parser.parse_args()
 
 
@@ -222,16 +223,33 @@ def _validate_artifact_manifest(run_dir: Path, run_card: dict[str, Any]) -> set[
 
 
 def validate_paired_training_contract(
-    left_run: Path, right_run: Path
+    left_run: Path, right_run: Path, pair_kind: str = "token-block3"
 ) -> dict[str, Any]:
     left_card = load_json(left_run / "run_card.json")
     right_card = load_json(right_run / "run_card.json")
-    if left_card.get("variant") != "token_opd":
-        raise ValueError(f"left variant must be token_opd, got {left_card.get('variant')!r}")
-    if right_card.get("variant") != "block3_mean":
-        raise ValueError(
-            f"right variant must be block3_mean, got {right_card.get('variant')!r}"
-        )
+    pairs = {"token-block3": ("token_opd", "block3_mean"), "random-sliding": ("random3", "sliding3")}
+    if pair_kind not in pairs:
+        raise ValueError(f"Unsupported pair kind: {pair_kind}")
+    for name, card, expected in zip(("left", "right"), (left_card, right_card), pairs[pair_kind]):
+        if card.get("variant") != expected:
+            raise ValueError(f"{name} variant must be {expected}, got {card.get('variant')!r}")
+    ordered_prompt_steps = 0
+    if pair_kind == "random-sliding":
+        for card, mode in ((left_card, "random"), (right_card, "sliding")):
+            if card.get("opd_window_mode") != mode or card.get("opd_window_seed") != 910021:
+                raise ValueError("window mode or independent offset seed mismatch")
+        schedules = []
+        for run in (left_run, right_run):
+            rows = [json.loads(line) for line in (run / "diagnostics/window_steps.jsonl").read_text().splitlines() if line.strip()]
+            if [r.get("step") for r in rows] != list(range(1, 201)):
+                raise ValueError("window ordered prompt records must cover steps 1..200 exactly")
+            hashes = [r.get("prompt_schedule_sha256") for r in rows]
+            if not all(_valid_sha256(h) for h in hashes):
+                raise ValueError("invalid ordered prompt schedule hash")
+            schedules.append(hashes)
+        if schedules[0] != schedules[1]:
+            raise ValueError("paired ordered prompt schedules differ")
+        ordered_prompt_steps = len(schedules[0])
     for key in TRAINING_CONTRACT_KEYS:
         if left_card.get(key) != right_card.get(key):
             raise ValueError(f"paired training contract differs at {key}")
@@ -272,6 +290,7 @@ def validate_paired_training_contract(
         "train_sha256": left_data["sha256"]["train_parquet"],
         "test_sha256": left_data["sha256"]["test_parquet"],
         "prompt_batch_hashes_matched": len(left_prompts),
+        "ordered_prompt_steps_matched": ordered_prompt_steps,
     }
 
 
@@ -712,6 +731,7 @@ def compare_runs(
     bootstrap_seed: int = 20_260_712,
     left_label: str = "token_opd",
     right_label: str = "block3_mean",
+    pair_kind: str = "token-block3",
 ) -> dict[str, Any]:
     if view not in {
         "outputs",
@@ -721,7 +741,7 @@ def compare_runs(
         raise ValueError(f"unsupported view: {view}")
     left_run = left_run.resolve(strict=True)
     right_run = right_run.resolve(strict=True)
-    training_contract = validate_paired_training_contract(left_run, right_run)
+    training_contract = validate_paired_training_contract(left_run, right_run, pair_kind=pair_kind)
     validate_run_acceptance(left_run, steps)
     validate_run_acceptance(right_run, steps)
     comparisons = {
@@ -746,6 +766,8 @@ def compare_runs(
         status = "strong_single_seed_support"
     else:
         status = "directional_support"
+    if pair_kind == "random-sliding":
+        status = "exploratory_positive_difference" if avg_delta > 0 and pass_delta > 0 else "exploratory_no_consistent_gain"
     return {
         "left": {"label": left_label, "run_dir": str(left_run)},
         "right": {"label": right_label, "run_dir": str(right_run)},
@@ -761,6 +783,7 @@ def compare_runs(
             "step": max(steps),
             "status": status,
             "scope": "one paired training seed; bootstrap does not estimate training-run variance",
+            "pair_kind": pair_kind,
         },
     }
 
@@ -776,6 +799,7 @@ def main() -> None:
         bootstrap_seed=args.bootstrap_seed,
         left_label=args.left_label,
         right_label=args.right_label,
+        pair_kind=args.pair_kind,
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_json.write_text(

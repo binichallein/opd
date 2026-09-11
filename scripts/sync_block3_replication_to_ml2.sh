@@ -13,6 +13,7 @@ FILES=(
   opd_ext/__init__.py
   opd_ext/analysis.py
   opd_ext/diagnostics.py
+  opd_ext/window_supervision.py
   patches/revisiting_opd/blockwise_sampled_opd.patch
   scripts/setup_revisiting_opd.sh
   scripts/run_revisiting_sampled_block_opd_math.sh
@@ -21,6 +22,15 @@ FILES=(
   scripts/eval_qwen3_math_vllm.py
   scripts/audit_block10_run.py
   scripts/block3_replication_control.sh
+  scripts/sliding_window_ml2_control.sh
+  scripts/audit_window_run.py
+  scripts/audit_window_control.py
+  scripts/run_window_queue.py
+  scripts/plot_window_diagnostics.py
+  configs/window_plot_requirements.txt
+  scripts/regrade_opd_eval_external.py
+  scripts/compare_paired_opd_evals.py
+  scripts/check_final_acceptance.py
   scripts/sync_block3_replication_to_ml2.sh
   scripts/analyze_block10_collapse_diagnostics.py
   scripts/analyze_single_opd_diagnostics.py
