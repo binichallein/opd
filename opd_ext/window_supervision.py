@@ -8,6 +8,11 @@ Sliding mode averages complete phase losses, not advantages before clipping.
 from __future__ import annotations
 
 import math
+import json
+import os
+from pathlib import Path
+import shutil
+import tempfile
 from collections.abc import Mapping
 from copy import deepcopy
 from numbers import Integral, Real
@@ -377,6 +382,42 @@ def window_phase_diagnostics(
                     valid, product / denominator.clamp(min=torch.finfo(dtype).tiny), 0
                 )
         return result
+
+
+def reconcile_diagnostic_resume(output_dir, step):
+    """Archive uncheckpointed diagnostics before replaying their optimizer steps."""
+    directory = Path(output_dir)
+    step = _integer(step, "step", 1)
+    rewrites = []
+    for name in ("window_steps.jsonl", "scalars.jsonl"):
+        path = directory / name
+        if not path.exists():
+            if name == "window_steps.jsonl":
+                raise FileNotFoundError(f"Missing window resume ledger: {path}")
+            continue
+        lines = path.read_text().splitlines(keepends=True)
+        records = [json.loads(line) for line in lines]
+        if name == "window_steps.jsonl":
+            prefix = [r["step"] for r in records if r["step"] <= step]
+            if prefix != list(range(1, step + 1)):
+                raise ValueError("Window resume ledger has an incomplete or duplicated saved prefix")
+        retained = [line for line, record in zip(lines, records) if record["step"] <= step]
+        if len(retained) != len(lines):
+            rewrites.append((path, "".join(retained)))
+    future = [path for path in directory.glob("step_*.npz") if int(path.stem.split("_")[-1]) > step]
+    if not rewrites and not future:
+        return None
+    history = directory / "resume_history"
+    history.mkdir(exist_ok=True)
+    archive = Path(tempfile.mkdtemp(prefix=f"after_step_{step}_", dir=history))
+    for path, content in rewrites:
+        shutil.copy2(path, archive / path.name)
+        temporary = path.with_suffix(".resume.tmp")
+        temporary.write_text(content)
+        os.replace(temporary, path)
+    for path in future:
+        shutil.move(path, archive / path.name)
+    return archive
 
 
 class OffsetSchedule:

@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import signal
 from pathlib import Path
 
 import pytest
@@ -53,3 +54,25 @@ def test_scope_validation_rejects_wrong_mode_or_seed(tmp_path):
     card["seed"] = 22
     with pytest.raises(ValueError):
         mod.validate_card(card, "random3", "abc")
+
+
+def test_queue_interrupt_stops_only_its_child_process_group(tmp_path, monkeypatch):
+    mod = module()
+    calls = []
+
+    class Process:
+        pid = 999999
+        attempt = 0
+
+        def wait(self, timeout=None):
+            self.attempt += 1
+            if self.attempt == 1:
+                raise KeyboardInterrupt
+            return -signal.SIGTERM
+
+    monkeypatch.setattr(mod.subprocess, "Popen", lambda *args, **kwargs: Process())
+    monkeypatch.setattr(mod.os, "killpg", lambda pid, sig: calls.append((pid, sig)))
+    with pytest.raises(KeyboardInterrupt):
+        mod.run_job(["unused"], tmp_path / "job", tmp_path, tmp_path / "state.json", {})
+    assert calls == [(999999, signal.SIGTERM)]
+    assert (tmp_path / "job/exit_code.txt").exists()

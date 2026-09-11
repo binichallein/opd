@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import shlex
+import signal
 import subprocess
 import sys
 import time
@@ -96,7 +97,21 @@ def run_job(argv, job, runtime, state_path, env, *, pid_name="job.pid", log_name
         (job / pid_name).write_text(str(process.pid) + "\n")
         write_json(state_path, {"status": "running", "job": str(job), "pid": process.pid, "updated_at": now()})
         print(f"{now()} started {job} pid={process.pid}", flush=True)
-        code = process.wait()
+        try:
+            code = process.wait()
+        except BaseException:
+            # Only signal the process group created by this queue, never a global Ray/GPU kill.
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+                code = process.wait(timeout=60)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                code = process.wait()
+            except ProcessLookupError:
+                code = process.wait()
+            (job / "exit_code.txt").write_text(str(code or 130) + "\n")
+            (job / "finished_at.txt").write_text(now() + "\n")
+            raise
     (job / "exit_code.txt").write_text(str(code) + "\n")
     (job / "finished_at.txt").write_text(now() + "\n")
     if code:
@@ -119,6 +134,11 @@ def main():
     parser.add_argument("--grader-source", type=Path, required=True)
     parser.add_argument("--plot-python", type=Path, required=True)
     args = parser.parse_args()
+    def interrupted(signum, frame):
+        raise SystemExit(128 + signum)
+
+    signal.signal(signal.SIGTERM, interrupted)
+    signal.signal(signal.SIGINT, interrupted)
     runtime = Path(__file__).resolve().parents[1]
     root = args.run_root.resolve(strict=True)
     if not str(root).startswith("/limx_embap/tos/user/Yaleon/"):
@@ -198,8 +218,9 @@ def main():
                      "--output-json", root / "paired_comparison.json"],
                     root / "queue_jobs/comparison", runtime, state_path, env)
             write_json(state_path, {"status": "complete", "variants": VARIANTS, "seed": 21, "updated_at": now()})
-        except Exception as error:
-            write_json(state_path, {"status": "failed", "error": str(error), "updated_at": now()})
+        except BaseException as error:
+            previous = json.loads(state_path.read_text()) if state_path.exists() else {}
+            write_json(state_path, {**previous, "status": "failed", "error": str(error), "updated_at": now()})
             raise
 
 
