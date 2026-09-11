@@ -38,8 +38,9 @@ prompt schedule。每步记录 `prompt_batch_sha256` 与 prompt/rollout ID。
 `ROOT=/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd`。
 启动器使用以下独立目录，不能覆盖历史实验：
 
-- 正式训练：`$ROOT/runs/20260911v2_sliding_window_seed21_ml2/{variant}`。
-- 小型 resume gate：`$ROOT/runs/20260911v2_sliding_window_probe_seed21_ml2/{variant}`。
+- 正式训练：`$ROOT/runs/20260911v2r1_sliding_window_seed21_ml2/{variant}`。
+- 小型 resume gate：`$ROOT/runs/20260911v2r1_sliding_window_probe_seed21_ml2/{variant}`。
+- 启动记录：原 `20260911v2` 的 Random3 门禁在 Ray 初始化时因 Unix socket 路径过长退出，未进入模型训练；原日志完整保留。`v2r1` 仅缩短缓存路径并换用独立目录，不改变数值配置。
 
 这里的 probe 目录仅用于小型恢复门禁，不表示启动下文已推迟的完整 Stage A。
 

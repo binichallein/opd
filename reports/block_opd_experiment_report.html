@@ -287,7 +287,7 @@
           </tbody>
         </table>
         <p><strong>完成后停止：</strong>只执行这两个 run 及各自全部 Step50/100/200 评测，然后停止并报告。不论 seed21 得分方向如何，均不自动继续 seeds22/23，不增加 fresh fixed3/token 对照，不换 seed 取代低分结果；扩大范围须另行明确授权。</p>
-        <p><strong>启动授权与目录：</strong>用户已授权实现验收与门禁通过后启动上述两次正式训练及规定评测；当前仍为待验收状态，不表示门禁已通过或训练已启动。正式目录为 <code>$ROOT/runs/20260911v2_sliding_window_seed21_ml2/{variant}</code>，小型恢复门禁单独使用 <code>$ROOT/runs/20260911v2_sliding_window_probe_seed21_ml2/{variant}</code>；此 probe 目录不代表启动完整 Stage A。</p>
+        <p><strong>启动授权与目录：</strong>用户已授权实现验收与门禁通过后启动上述两次正式训练及规定评测；当前仍为待验收状态，不表示门禁已通过或训练已启动。正式目录为 <code>$ROOT/runs/20260911v2r1_sliding_window_seed21_ml2/{variant}</code>，小型恢复门禁单独使用 <code>$ROOT/runs/20260911v2r1_sliding_window_probe_seed21_ml2/{variant}</code>；此 probe 目录不代表启动完整 Stage A。首次 <code>v2</code> 门禁在 Ray 初始化时因 socket 路径过长退出，未进入模型训练；保留失败日志，<code>v2r1</code> 仅缩短缓存路径，训练数值配置不变。</p>
         <p><strong>模型与训练不变：</strong>Qwen3-1.7B-Base 学生 / Qwen3-4B-Base-GRPO 教师；DAPO-Math-17K raw 1,791,700 行池；两组独立从相同 Base 权重出发，使用相同 seed21 prompt schedule。每步 4 prompt x 8 rollout、LR=2e-6、max response=16,384，其余 PPO、长度、采样、四卡与 offload 设置继承 v1；每步保存 prompt batch hash。random3 的独立 PCG64 offset seed=910021，恢复时核对 RNG 和下一次抽样位置。</p>
         <p><strong>保留门禁、推迟高成本探针：</strong>保留 unit loss/gradient identity、mask/边界/clipping 回归，以及两方法在真实指定师生模型上 Step1 保存、退出、恢复至 Step2 的小型 resume gate；门禁开销单列，正式训练重新从 Base 开始。冻结 full Stage A 的 1,024 条 rollout 和每 25 步三偏移的完整参数额外反向传播均推迟以节省算力，不作为本轮前置条件，也不标记为已通过。</p>
         <p><strong>恢复保证边界：</strong>门禁核对模型、optimizer、scheduler/global step、数据身份/sampler 位置、offset 状态与下一次抽样，以及所有 rank 的 torch RNG。上游不保存 vLLM 引擎内部 sampling stream，因此不承诺精确恢复该采样流，也不宣称恢复后的生成 rollout 与不中断运行逐位一致。</p>

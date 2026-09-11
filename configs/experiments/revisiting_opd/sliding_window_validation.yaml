@@ -14,8 +14,8 @@ scope:
   deferred_training_seeds: [22, 23]
   stop_after: both_seed21_runs_and_all_checkpoint_evaluations
   expansion_requires_explicit_user_authorization: true
-  run_directory_template: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2_sliding_window_seed21_ml2/{variant}
-  resume_gate_directory_template: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2_sliding_window_probe_seed21_ml2/{variant}
+  run_directory_template: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2r1_sliding_window_seed21_ml2/{variant}
+  resume_gate_directory_template: /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2r1_sliding_window_probe_seed21_ml2/{variant}
 baseline_code:
   submodule: external/revisiting_opd
   commit: f32f284f25bae5b16d2d44ee336b52851dccc736

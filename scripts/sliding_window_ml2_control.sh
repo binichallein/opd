@@ -37,12 +37,16 @@ fi
 export RUNTIME_ROOT="${ASSET_ROOT}/deployments/${SOURCE_COMMIT}"
 export REMOTE_ROOT="${RUNTIME_ROOT}"
 export AUDIT_SCRIPT_OVERRIDE="${RUNTIME_ROOT}/scripts/audit_window_control.py"
-export DATE_TAG="20260911v2"
+export DATE_TAG="20260911v2r1"
 export RUN_TAG="sliding_window"
 export VARIANT
 export PROJECT_NAME="opd_sliding_window"
 export EXP_PREFIX="${VARIANT}-sliding-window-ml2"
-export CACHE_ROOT="/limx_embap/tos/swr/0911v2/${VARIANT}"
+# Ray appends a session timestamp and socket name; Linux allows only 107 bytes.
+case "${VARIANT}" in
+  random3) export CACHE_ROOT="/limx_embap/tos/wr/3r" ;;
+  sliding3) export CACHE_ROOT="/limx_embap/tos/wr/3s" ;;
+esac
 export ENV_SEED=21
 export OPD_WINDOW_SEED="$((910000 + ENV_SEED))"
 export ROLLOUT_GPU_MEMORY_UTILIZATION="0.6"

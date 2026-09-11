@@ -105,8 +105,11 @@ def test_window_wrapper_locks_ml2_contract_and_records_provenance(captured_ssh, 
     assert card["resume_mode"] == "disable"
     assert "no automatic deletion" in card["checkpoint_policy"]
     assert f"deployments/{COMMIT}" in command
-    assert f"20260911v2_sliding_window_seed21_ml2/{variant}" in command
-    assert f"/swr/0911v2/{variant}/formal" in command
+    assert f"20260911v2r1_sliding_window_seed21_ml2/{variant}" in command
+    cache = "/limx_embap/tos/wr/3r" if variant == "random3" else "/limx_embap/tos/wr/3s"
+    assert cache + "/formal" in command
+    socket = cache + "/formal/tmp/ray/session_2026-09-11_09-32-57_625051_9999999999/sockets/plasma_store"
+    assert len(socket.encode()) <= 107
     assert "OPD_WINDOW_SEED='910021'" in command
     assert "opd_ext/window_supervision.py" in command
     assert "window_supervision_sha256" in card
@@ -140,7 +143,7 @@ def test_default_action_is_read_only_status_and_source_defaults_to_head(captured
     assert result.returncode == 0, result.stderr
     commands = ssh_calls(capture)
     assert len(commands) == 1 and commands[0][0] == "ml2"
-    assert "20260911v2_sliding_window_seed21_ml2/sliding3" in commands[0][-1]
+    assert "20260911v2r1_sliding_window_seed21_ml2/sliding3" in commands[0][-1]
     assert "nohup bash" not in commands[0][-1]
 
 
