@@ -267,7 +267,7 @@
     <h1>Block Reverse-KL OPD：从单 token 到连续 token block 的验证</h1>
     <p class="subtitle">目标：验证“teacher 同时给学生连续 2/3/5/10 个 token 的采样路径打分，再用 block 级 reverse-KL 风格信号更新学生”是否比标准 token-level OPD 更有效或更稳定。</p>
     <div class="meta">
-      <span class="pill">实验机：train + ml2</span>
+      <span class="pill">历史实验：train + ml2；本轮仅 ml2</span>
       <span class="pill">配对验证：Qwen3 + DeepSeek/JustRL</span>
       <span class="pill">训练数据：DAPO-Math-17K raw 1,791,700 rows</span>
       <span class="pill">状态：两对师生 step-200 full eval、外部重评分与配对 CI 已完成</span>
@@ -278,7 +278,7 @@
     <section class="grid" id="sliding-window-v2-seed21">
       <div class="span-12">
         <h2>滑动窗口 v2 范围修订：仅 seed21 的 random3 / sliding3（2026-09-11）</h2>
-        <p><strong>状态：范围已收窄，等待实现验收与门禁；本节没有新增实验结果，也不作有效性结论。</strong>本节覆盖下方保留的 v1 四方法、三 seed 方案中冲突的范围、预算和统计规则；其他历史结果不变。本轮仅可访问 <code>ml2</code>，绝不连接、复制自或依赖 <code>train</code>；报告其他位置的历史机器信息不是本轮授权。</p>
+        <p><strong>启动快照（2026-09-11 12:25:30 UTC）：两组恢复门禁均已通过，正式串行队列已启动；Random3 正在初始化，Sliding3 排队。正式评测尚未完成，不作有效性结论。</strong>本节覆盖下方保留的 v1 四方法、三 seed 方案中冲突的范围、预算和统计规则；其他历史结果不变。本轮仅可访问 <code>ml2</code>，绝不连接、复制自或依赖 <code>train</code>；报告其他位置的历史机器信息不是本轮授权。</p>
         <table class="config-table window-plan-table">
           <thead><tr><th>执行顺序 / 方法</th><th>本轮固定设置</th><th>正式预算</th></tr></thead>
           <tbody>
@@ -287,17 +287,17 @@
           </tbody>
         </table>
         <p><strong>完成后停止：</strong>只执行这两个 run 及各自全部 Step50/100/200 评测，然后停止并报告。不论 seed21 得分方向如何，均不自动继续 seeds22/23，不增加 fresh fixed3/token 对照，不换 seed 取代低分结果；扩大范围须另行明确授权。</p>
-        <p><strong>启动授权与目录：</strong>用户已授权实现验收与门禁通过后启动上述两次正式训练及规定评测；当前仍为待验收状态，不表示门禁已通过或训练已启动。正式目录为 <code>$ROOT/runs/20260911v2r1_sliding_window_seed21_ml2/{variant}</code>，小型恢复门禁单独使用 <code>$ROOT/runs/20260911v2r1_sliding_window_probe_seed21_ml2/{variant}</code>；此 probe 目录不代表启动完整 Stage A。首次 <code>v2</code> 门禁在 Ray 初始化时因 socket 路径过长退出，未进入模型训练；保留失败日志，<code>v2r1</code> 仅缩短缓存路径，训练数值配置不变。</p>
+        <p><strong>启动与目录：</strong>队列 PID <code>3094013</code>，Random3 训练 PID <code>3094023</code>，均由服务器后台运行。runtime 固定为 <code>fbad852a638de18e20d571a061b2be0437942a38</code>。正式目录为 <code>$ROOT/runs/20260911v2r1_sliding_window_seed21_ml2/{variant}</code>，小型恢复门禁单独使用 <code>$ROOT/runs/20260911v2r1_sliding_window_probe_seed21_ml2/{variant}</code>；此 probe 目录不代表启动完整 Stage A。首次 <code>v2</code> 门禁在 Ray 初始化时因 socket 路径过长退出，未进入模型训练；保留失败日志，<code>v2r1</code> 仅缩短缓存路径，训练数值配置不变。门禁中的收尾 worker 警告也已保留，不能将门禁数值当作正式实验结果。</p>
         <p><strong>模型与训练不变：</strong>Qwen3-1.7B-Base 学生 / Qwen3-4B-Base-GRPO 教师；DAPO-Math-17K raw 1,791,700 行池；两组独立从相同 Base 权重出发，使用相同 seed21 prompt schedule。每步 4 prompt x 8 rollout、LR=2e-6、max response=16,384，其余 PPO、长度、采样、四卡与 offload 设置继承 v1；每步保存 prompt batch hash。random3 的独立 PCG64 offset seed=910021，恢复时核对 RNG 和下一次抽样位置。</p>
         <p><strong>保留门禁、推迟高成本探针：</strong>保留 unit loss/gradient identity、mask/边界/clipping 回归，以及两方法在真实指定师生模型上 Step1 保存、退出、恢复至 Step2 的小型 resume gate；门禁开销单列，正式训练重新从 Base 开始。冻结 full Stage A 的 1,024 条 rollout 和每 25 步三偏移的完整参数额外反向传播均推迟以节省算力，不作为本轮前置条件，也不标记为已通过。</p>
         <p><strong>恢复保证边界：</strong>门禁核对模型、optimizer、scheduler/global step、数据身份/sampler 位置、offset 状态与下一次抽样，以及所有 rank 的 torch RNG。上游不保存 vLLM 引擎内部 sampling stream，因此不承诺精确恢复该采样流，也不宣称恢复后的生成 rollout 与不中断运行逐位一致。</p>
         <p><strong>监控不取消：</strong>每步保留训练 loss、普通训练裁剪前 grad norm、长度/截断、clipping、non-finite 与耗时；Step1 及每 5 步保留师生 entropy/gap、Top-16 overlap 与相关信用分配统计。保留 128-token bins 的 step x position 热图、position-mod-3、bin 样本数和共享色标，低覆盖标缺失；窗口覆盖与 clipped-token 比例按窗口定义记录。</p>
-        <p><strong>轻量 per-phase 诊断：</strong>每 5 步（Step5/10/.../200）在 CPU 上复用同一已缓存的完整训练 batch，使用更新前 <code>old = current</code> 的 detached log-prob/mask 输入，输出各 phase loss 与输入导数 norm、cosine/dispersion 的 <code>loss_input_*</code> 标量摘要；这不是更新后 clipping 测量。未定义 cosine 在 JSON 中用 0 占位并保存有效性/有效计数，聚合只用有效项，禁止 NaN/Infinity，不能把占位 0 当成正交。这是 loss 输入导数，<strong>不是完整参数梯度</strong>；不穿过模型额外反向、不增加模型/教师前向或 rollout、不改变 RNG/训练状态，不能据此声称参数梯度 D_phase 或方差下降；普通训练 grad norm 主监控不变。</p>
+        <p><strong>轻量 per-phase 诊断：</strong>Step1 及每 5 步（Step1/5/10/.../200）在 CPU 上复用同一已缓存的完整训练 batch，使用更新前 <code>old = current</code> 的 detached log-prob/mask 输入，输出各 phase loss 与输入导数 norm、cosine/dispersion 的 <code>loss_input_*</code> 标量摘要；这不是更新后 clipping 测量。未定义 cosine 在 JSON 中用 0 占位并保存有效性/有效计数，聚合只用有效项，禁止 NaN/Infinity，不能把占位 0 当成正交。这是 loss 输入导数，<strong>不是完整参数梯度</strong>；不穿过模型额外反向、不增加模型/教师前向或 rollout、不改变 RNG/训练状态，不能据此声称参数梯度 D_phase 或方差下降；普通训练 grad norm 主监控不变。</p>
         <p><strong>完整评测与保留：</strong>两个 run 的 Step50/100/200 全量评测 MATH500=500、AIME24=30、AIME25=30、AMC23=83，共 643 题，每题 n=8、eval seeds21-28；temperature=1.0、top-p=0.9、max response=16,384、thinking 关闭。主 grader 保持 <code>historical_utils_sha04f7.py</code> 及原 SHA-256，内置 grader 仅作敏感性视图。完整保留所有 Step50/100/200 checkpoint 与失败产物，不删除、不自动裁剪。</p>
         <p><strong>主分析改为本轮探索性 sliding3 - random3：</strong>Step200 的等权任务 macro Avg@8 / Pass@8，按 <code>(task, example_id, rollout_id, eval_seed)</code> 完整配对。seed21 单独做 10,000 次 task-stratified paired prompt bootstrap（bootstrap seed=20260911，95% 区间），整题保留八个回答，只反映固定 seed/checkpoint 下的题目不确定性。training seed 的 n=1，不计算 seed 级 tCI 或 SD，不沿用 v1 的三 seed 强支持判据；Step50/100 和分任务结果保持探索性，不替换主终点。</p>
         <p><strong>历史结果仅作背景：</strong>旧 fixed3/token 不是本轮 fresh paired comparison，不进入当前 paired bootstrap，不可拼为训练重复，也不能据此宣称新方法优于旧基线。历史 Base eval 仅在 manifest 与 resolved eval config 完全一致（权重/tokenizer、数据/题目、解码、数量/seeds、grader）时复用；身份未知或不匹配则不复用。不得自动启动 Base eval，需另行授权并单列成本。</p>
         <p><strong>预算：</strong>2 run x 200 = <strong>400 formal steps</strong>；400 x 4 x 8 = <strong>12,800 条 nominal training rollout</strong>；2 x 3 x 643 x 8 = <strong>30,864 条 checkpoint eval rollout</strong>。full Stage A 本轮为 0；新增 Base eval 本轮为 0，若另行授权则额外 5,144 条，评测总数才变为 36,008。resume gate、失败重试及诊断耗时单列，不能混入正式预算。</p>
-        <p class="muted">协议：<a href="../docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md">v2 seed21 范围修订</a>；<a href="../configs/experiments/revisiting_opd/sliding_window_validation.yaml">当前配置摘要（非可执行 Hydra 配置）</a>；<a href="../docs/plans/2026-09-11-sliding-window-opd-validation.md">原始 v1 设计（保留）</a>。当前范围与恢复保证以上述修订为准；无新增实验结果。</p>
+        <p class="muted">协议：<a href="../docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md">v2 seed21 范围修订</a>；<a href="../configs/experiments/revisiting_opd/sliding_window_validation.yaml">配置摘要（非可执行 Hydra 配置）</a>；<a href="../docs/results/2026-09-11-window-seed21-startup.md">验收证据与启动记录</a>；<a href="../docs/plans/2026-09-11-sliding-window-opd-validation.md">原始 v1 设计（保留）</a>。此处是带日期的启动快照，实时状态以 ml2 的 queue_state.json 和日志为准；无新增正式评测结论。</p>
       </div>
     </section>
 

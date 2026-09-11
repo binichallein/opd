@@ -1,9 +1,10 @@
 # 滑动窗口 OPD v2：seed21 双方法范围修订
 
-状态：范围已修订，等待实现验收与门禁；本修订没有新增实验结果。
+状态：实现与两组恢复门禁已通过；2026-09-11T12:25:30Z 正式串行队列已启动。
+本轮正式评测尚未完成；实际启动证据见[启动记录](../results/2026-09-11-window-seed21-startup.md)。
 日期：2026-09-11。协议版本：`20260911v2_seed21_random3_sliding3`。
 用户已授权在实现验收与门禁通过后启动本轮两次正式训练及规定的完整评测；
-这不是门禁已通过或训练已启动的声明。
+以下保留预注册的验收要求与结论边界，实际执行状态以上述带日期记录为准。
 
 ## 1. 修订依据与适用范围
 
@@ -106,7 +107,7 @@ trajectory 共用该偏移。保存 offset RNG 与下一步位置；恢复不得
    逐位一致。optimizer、数据、offset 和 all-rank torch RNG 的检查不能
    被解释为已经证明整个生成引擎的逐位可复现。
 4. 验证监控与 loss-input 诊断不改变模型/optimizer 状态、不消耗 RNG、
-   不把诊断导数累加到正常训练梯度；保存实际验收证据。本修订不声明门禁已通过。
+   不把诊断导数累加到正常训练梯度；实际验收证据见启动记录，门禁不是性能结论。
 
 OOM、non-finite、产物缺失或 data/hash/state 不一致时停止并保留失败目录。
 不静默调整 LR、长度、batch 或 clipping；数值相关配置必须改动时建立新
@@ -128,7 +129,7 @@ advantage。保留历史 sign-flip、weighted sign-flip、normalized leakage 定
 
 轻量 per-phase 诊断采用如下实际计算口径：
 
-- 每 5 步执行一次，即 Step5/10/.../200；在 CPU 上复用同一个已缓存的
+- Step1 及每 5 步执行一次，即 Step1/5/10/.../200；在 CPU 上复用同一个已缓存的
   完整训练 batch，不只选首个 prompt group，不增加 rollout。
 - 使用更新前的 log-prob 与 mask，`old = current`；把 detached current
   log-prob 作为独立输入叶节点，计算各 phase loss 对这些输入的导数。

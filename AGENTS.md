@@ -3,6 +3,21 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Active Window Experiment (2026-09-11)
+
+- Read `docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md`
+  and `docs/results/2026-09-11-window-seed21-startup.md` before acting.
+- This approved experiment uses only `ml2`; never connect to `train`.
+- Only `random3` and `sliding3`, training seed21, 200 steps each. No automatic
+  additional seeds, token/fixed baselines, or model pairs.
+- Its explicit model/data/eval protocol supersedes the historical clean-room
+  defaults below: student Qwen3-1.7B-Base, teacher Qwen3-4B-Base-GRPO, the recorded DAPO pool,
+  all four math tasks with n=8 at Step50/100/200. Do not substitute other assets.
+- Runtime is frozen at `fbad852a638de18e20d571a061b2be0437942a38`; pass that value
+  as `SOURCE_COMMIT` to window control commands after documentation-only commits.
+- Inspect live queue state before any launch. Do not duplicate a queued run or
+  present resume-gate measurements as formal training/evaluation results.
+
 ## Hard Rules
 
 - Do not use user-trained or private checkpoints unless the user explicitly

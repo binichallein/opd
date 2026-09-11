@@ -1,6 +1,6 @@
 name: sliding_window_opd_boundary_validation
 date: '2026-09-11'
-status: scope_amended_pending_implementation_acceptance_and_gates
+status: formal_queue_launched_evaluation_pending
 executable_hydra_config: false
 protocol_version: 20260911v2_seed21_random3_sliding3
 plan: docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md
@@ -19,7 +19,16 @@ scope:
 baseline_code:
   submodule: external/revisiting_opd
   commit: f32f284f25bae5b16d2d44ee336b52851dccc736
-  runtime_commit: null  # Freeze after implementation and acceptance.
+  runtime_commit: fbad852a638de18e20d571a061b2be0437942a38
+execution_snapshot:
+  at_utc: '2026-09-11T12:25:30Z'
+  resume_gates: passed_both_variants_step1_to_step2
+  queue_pid: 3094013
+  random3_train_pid: 3094023
+  random3_status: launched_initializing
+  sliding3_status: queued
+  formal_evaluation_status: pending
+  result_note: docs/results/2026-09-11-window-seed21-startup.md
 models:
   student: Qwen3-1.7B-Base
   student_path: /limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base

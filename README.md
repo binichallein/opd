@@ -9,7 +9,21 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 当前论文级实验设置
+## 本轮窗口实验
+
+2026-09-11 的受限算力实验仅在 `ml2` 执行 `random3` 和 `sliding3`，
+各 training seed21、200 steps。两组保存/恢复检查已通过，串行训练队列
+已于 `12:25:30 UTC` 启动；不自动追加其他方法或 seed。
+保留 Step50/100/200 的四任务全量 `n=8` 评测、监控与热图，尚无正式评测结论。
+
+- [固定方案与预算](docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md)
+- [启动证据、PID、目录和查询命令](docs/results/2026-09-11-window-seed21-startup.md)
+- [HTML 报告](reports/block_opd_experiment_report.html#sliding-window-v2-seed21)
+
+runtime 固定为 `fbad852a638de18e20d571a061b2be0437942a38`；之后的文档提交
+不改变训练代码。下文的旧实验设置与结果是历史背景，不是本轮执行清单。
+
+## 历史论文级实验设置
 
 为了和 `Rethinking OPD` / `Blockwise Policy-Drift Gating` 的数学 OPD
 实验线对齐，当前 DAPO-Math-17K 对比使用：
