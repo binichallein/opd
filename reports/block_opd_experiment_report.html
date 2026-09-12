@@ -293,7 +293,7 @@
           <tr><td>指标与保护</td><td>保留 student/teacher entropy、gap、Top16 overlap、overlap mass/advantage、信用分配、PG loss、裁剪前grad norm、长度/截断率和位置热图。checkpoint、原始回答、失败记录不自动删除。</td></tr>
         </tbody>
       </table>
-      <p style="margin-top:14px">执行顺序：旧窗口队列全部完成 → Token 恢复门禁 → Token 训练及三轮完整评测 → Block3 恢复门禁 → Block3 训练及三轮完整评测 → 配对报告。新阶段最多48个四卡机时，等待旧队列不计入；超时保留产物并标记未完成，不缩减 eval。</p>
+      <p style="margin-top:14px">执行顺序：旧窗口队列全部完成 → Token 恢复门禁 → Token 训练及三轮完整评测 → Block3 恢复门禁 → Block3 训练及三轮完整评测 → 配对报告。用户于2026-09-13后续取消48小时硬停；仍只做这两组各200步，不缩减eval、不自动加组，异常时保留产物并停止。</p>
       <p class="muted">兼容性限制：0.6B与历史1.7B学生 tokenizer 和模板一致；教师共有词表映射一致，但历史教师额外注册了4个 think/tool 标签。本次不更换词表或mask，保留原实验处理并明确披露，不声称师生 tokenizer 完全相同。</p>
     </section>
     <section class="grid" id="window-recovery-20260912">

@@ -7,7 +7,7 @@
 
 **Architecture:** 复用现有 Revisiting OPD loss、训练启动器、诊断、评测和
 历史 grader。新增范围固定的服务器队列，只负责资产身份、前驱等待、
-配对门禁及 48 小时预算，不修改 loss 或覆盖任何旧 runtime/run。
+配对门禁及作业生命周期管理，不修改 loss 或覆盖任何旧 runtime/run。
 
 **Tech Stack:** Python 3.12、Bash、PyTorch/VERL/FSDP、vLLM、pytest。
 
@@ -15,6 +15,8 @@
 
 用户于 2026-09-13 批准：仅先做 0.6B，Token OPD 在先，Block3 mean 在后，
 尤其注意实验条件对齐。暂不做 4B 学生、不加 seed、不开发新权重方法。
+同日后续明确“不要顾忌时间，放心做实验”，因此取消原48小时硬停；
+训练仍各200步，完整评测与实验组数不变，不自动无限追加实验。
 
 - Student：官方 `Qwen/Qwen3-0.6B-Base`，固定 Hub revision
   `da87bfb608c14b7cf20ba1ce41287e8de496c0cd`。
@@ -70,11 +72,10 @@ tokenizer mismatch 的蒸馏环境。
 执行顺序为 Token gate -> Token 正式训练/三轮完整评测 -> Block3 gate ->
 Block3 正式训练/三轮完整评测 -> 配对比较/报告。两组正式配置提前一致性审计。
 
-用户给新增实验48个四卡机时，即192 GPU小时。计时从前驱完成后新阶段
-开始，包含门禁、训练、eval、合并和阶段内开销；准备公共资产不占用 GPU，
-等待前驱不计新增预算。硬时限应预留进程组清理时间；超时停止自己的作业，
-保留最近 checkpoint，标记未完成，不删数据、不缩 eval、不自动越过预算。
-不能保证48小时必定完成；更不能将残缺结果当作配对结论。
+原48个四卡机时上限已由用户取消。新阶段仍记录开始时间与完整耗时，
+`budget_seconds`与`deadline_epoch`记为null，不再因累计超过48小时中断训练
+或评测。进程异常、OOM、资产/配置不一致等仍会关闭队列并保留产物，
+不自动改参、重试、删checkpoint或缩减eval；不把残缺结果当作配对结论。
 
 ## Task 1: 固定资产及对照合同
 

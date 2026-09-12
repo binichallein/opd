@@ -8,7 +8,8 @@ reproducibility, data safety, and clear experiment lineage.
 - New user-approved follow-on (2026-09-13): read
   `docs/plans/2026-09-13-qwen06-paired-validation.md`. Only official Qwen3-0.6B-Base
   with the existing public 4B GRPO teacher; Token OPD before original Block3 mean,
-  identical data/seed/full eval. Maximum 48 new four-GPU machine hours. No 4B student
+  identical data/seed/full eval. User subsequently removed the 48-hour time cap on
+  2026-09-13; keep both runs at 200 steps with full eval. No 4B student
   or extra seeds. Wait for the current window queue to complete; never preempt it.
   Read `docs/results/2026-09-13-qwen06-pair-startup.md` before any action.
   Its queue is already running as PID3544990, waiting for the old queue; do not

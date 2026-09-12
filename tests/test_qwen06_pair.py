@@ -30,7 +30,7 @@ def cards(mod):
 def test_approved_scope_and_identical_control():
     mod = module()
     assert mod.VARIANTS == ("token_opd", "block3_mean")
-    assert mod.BUDGET_SECONDS == 48 * 3600
+    assert mod.BUDGET_SECONDS is None  # User removed the wall-clock cap, not the experiment scope.
     assert mod.STEPS == (50, 100, 200)
     mod.validate_prepared_pair(cards(mod))
 
@@ -106,6 +106,18 @@ def test_completion_refuses_expired_deadline(monkeypatch):
     monkeypatch.setattr(mod.time, "time", lambda: 200)
     with pytest.raises(TimeoutError, match="budget"):
         mod.require_budget(199)
+
+
+def test_user_approved_uncapped_phase_has_no_deadline():
+    mod = module()
+    mod.require_budget(None)
+    assert mod.phase_deadline(1000) is None
+
+
+def test_finite_budget_still_calculates_a_deadline(monkeypatch):
+    mod = module()
+    monkeypatch.setattr(mod, "BUDGET_SECONDS", 48 * 3600)
+    assert mod.phase_deadline(1000) == 1000 + 48 * 3600
 
 
 def test_audit_command_requires_public_student_and_full_protocol(tmp_path):

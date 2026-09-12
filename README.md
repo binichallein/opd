@@ -15,7 +15,8 @@ reverse-KL 目标。
 公共 `Qwen3-4B-Base-GRPO`。顺序固定为 Token OPD 完整训练/评测，再做
 原版 Block3 mean；两组从同一 Base 独立初始化，仅改变监督方法。
 同一 DAPO 文件、seed21、200 steps，Step50/100/200 四任务全量 n8，
-历史 grader、监控和热图不变。等待旧窗口队列完成，新增阶段上限48个四卡机时。
+历史 grader、监控和热图不变。等待旧窗口队列完成；用户后续已取消48小时
+硬停限制，仍只执行这两组各200步及完整评测，不自动追加实验。
 
 - [完整对照合同与执行计划](docs/plans/2026-09-13-qwen06-paired-validation.md)
 - [部署与后台等待证据](docs/results/2026-09-13-qwen06-pair-startup.md)：PID3544990，

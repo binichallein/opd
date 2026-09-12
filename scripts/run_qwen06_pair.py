@@ -30,7 +30,7 @@ DATA = ROOT / "data/math_opd_dapo17k_hf_full_eval4"
 CACHE = Path("/limx_embap/tos/q06/0913v1")
 VARIANTS = ("token_opd", "block3_mean")
 STEPS = (50, 100, 200)
-BUDGET_SECONDS = 48 * 3600
+BUDGET_SECONDS = None  # User removed the time cap on 2026-09-13; the two-run scope is unchanged.
 
 
 def read_json(path):
@@ -254,8 +254,12 @@ def preflight_assets():
     return protected
 
 
+def phase_deadline(start):
+    return None if BUDGET_SECONDS is None else start + BUDGET_SECONDS
+
+
 def require_budget(deadline):
-    if time.time() >= deadline:
+    if deadline is not None and time.time() >= deadline:
         raise TimeoutError("Machine-time budget exhausted; cannot declare completion")
 
 
@@ -293,7 +297,8 @@ def main():
         (RUN_ROOT / "queue.pid").write_text(str(os.getpid()) + "\n")
         try:
             jobs.write_json(state_path, {"status": "waiting_for_predecessor", "predecessor": str(PREDECESSOR),
-                            "order": VARIANTS, "budget_started": False, "updated_at": jobs.now()})
+                            "order": VARIANTS, "phase_started": False, "budget_seconds": BUDGET_SECONDS,
+                            "updated_at": jobs.now()})
             while not predecessor_ready(PREDECESSOR):
                 time.sleep(60)
             with (PREDECESSOR / "queue.lock").open("a") as previous_lock:
@@ -301,7 +306,7 @@ def main():
                 if not predecessor_ready(PREDECESSOR):
                     raise ValueError("predecessor changed after lock acquisition")
                 start = time.time()
-                deadline = start + BUDGET_SECONDS
+                deadline = phase_deadline(start)
                 jobs.write_json(RUN_ROOT / "queue_manifest.json", {
                     "source_commit": commit, "runtime": str(runtime), "started_at": jobs.now(),
                     "start_epoch": start, "deadline_epoch": deadline, "budget_seconds": BUDGET_SECONDS,
