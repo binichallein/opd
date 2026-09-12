@@ -1,5 +1,79 @@
 # Qwen3-0.6B 配对验证启动记录
 
+## 06:45巡检：正式Token通过Step50保存检查
+
+正式训练PID3594635已完成Step50并继续后续训练，Block3仍未启动。
+没有更改任何对照条件，没有缩减评测或把probe结果计入正式实验。
+
+- `global_step_50`包含四rank的model/optim/extra_state共12个非空文件，
+  另有`data.pt`和模型/tokenizer配置。实际读取四rank extra_state及data.pt，
+  scheduler步数均为50，RNG字段完整，dataloader消费位置为50。
+- 正式日志Step1..50无缺步/重复步；11个诊断JSON记录及对应NPZ完整可读，
+  step与prompt哈希对应，全部标量非有限、上溢、下溢检查通过。
+  此时正式日志没有Traceback、CUDA OOM或DataLoader worker killed。
+- 每步日志的裁剪前grad norm最小0.568、中位数8.386、P95约74.120、
+  最大144.305。Step41与47分别为144.305、130.734，随后回落；
+  这是尖峰，不足以据此认定持续梯度爆炸。统计使用日志的三位小数精度。
+- 前50步逐批平均截断率33.5%，最初10步60%，最后10步40%；
+  Step4、8、14全批截断。Step50本批为75%，grad norm8.17324，
+  student/teacher entropy分别0.096077/0.030132。
+  不同step使用不同prompt，不能把这些批次差异直接解释为学习增益。
+
+独立CPU分析快照：`$ROOT/analyses/20260913_qwen06_token_step50_supervision/`，
+`snapshot_manifest.json`记录来源、范围及复制后文件SHA。
+复用冻结版本的绘图脚本生成5张PNG与HTML，没有改正式run或占用训练GPU。
+本地注释版：`/home/tyf/paper/outputs/qwen06-token-step50-supervision/figures/diagnostics.html`。
+远端保留原始生成HTML，注释版另存于同一分析目录的
+`figures/diagnostics_annotated.html`，没有覆盖原始报告或诊断输入。
+已检查热图和优化曲线非空。注释版纠正旧模板硬编码的Block3名称，并明确：
+**图形仅用每5步诊断点，会遗漏Step41/47的梯度尖峰；判断尖峰必须看每步日志。**
+热图灰色表示有效样本不足，不是零熵。
+
+尚无0.6B benchmark得分。原队列是先完成200步训练，再对Step50/100/200
+各自完整评测；不为提前出分中断训练。每个benchmark独立计分的规则不变。
+
+## 夜间巡检：Token 恢复测试通过并开始正式训练
+
+以下为北京时间2026-09-13的实际观测，不是预计启动时间。
+用户要求直接监督实验；本轮采用只读SSH巡检，没有新增后台巡检服务，
+没有重启队列、修改训练参数、覆盖runtime或连接train。
+
+- 04:21:05，旧窗口恢复队列完整结束，`queue_state.json.status=complete`，
+  `recoveries/jsonl_20260912_r1/protected_inputs_verified.json.passed=true`。
+  Sliding3 Step100的四任务原始及内置评分JSONL均逐物理行解析通过，
+  回答数依次为4000、240、240、664，退出码0；Step200及历史重评分随后结束。
+- 04:21:31，0.6B队列开始新阶段，runtime仍为`ec0a7a9`，
+  `budget_seconds=null`，没有抢占前驱。运行时和资产检查重新通过，
+  两组正式run-card一致性检查写入`paired_preflight.json`。
+- 04:23:12，Token probe1启动；04:35完成Step1保存及审计。
+  04:36:22，probe2从该checkpoint恢复；04:47完成Step2及恢复门禁。
+  两个checkpoint均包含四rank的model/optim/extra_state，共12个非空状态文件，
+  另有`data.pt`及模型/tokenizer配置。四rank的加载日志、scheduler步数、
+  RNG字段和dataloader消费位置均通过`probes/token_opd/resume_gate.json`检查。
+  这不证明vLLM内部随机流能够逐位恢复。
+- 04:47:25，正式Token训练进程PID **3594635** 启动，控制器仍为PID3547500。
+  正式run-card为`resume_mode=disable`、空`resume_from_path`，从原始官方Base
+  重新开始200步，不接续probe权重。约04:58完成正式Step1。
+
+正式Step1诊断：裁剪前grad norm36.9889、student entropy0.0416895、
+teacher entropy0.0353452、response mean8394.25、截断率0.5；
+所有nonfinite/overflow计数为0。首批prompt SHA为
+`00e902b1ea756ff9ec0cb6e86e8c1e0c17418ff6b448186026d0b9803ec5e402`，
+与probe1一致。高梯度、低熵和长回答需要多批次跟踪，不能依据一个点
+宣称爆炸、崩塌或长期稳定。Block3尚未训练，不能声称已验证方法有效。
+
+两次probe在完成保存、输出最终指标之后，析构阶段各出现一次
+`DataLoader worker ... killed by signal: Killed`，两作业和审计均exit0。
+它们没有发生在正常训练循环内；根因尚未证实，不能直接等同于GPU OOM，
+也不能把整个日志描述为“零异常”。当前容器无可读cgroup内存计数器，
+`dmesg`访问被拒绝，不能声称已从内核日志排除host OOM。
+截至04:59，正式训练未复现此告警；原始记录保留在两个probe作业日志中。
+
+本轮重新验证全套测试：510 passed、2 skipped。只读核对两个冻结runtime
+共1312/1274个文件及30个受保护模型、数据、grader文件，全部通过。
+后续仍按Token完整训练/三轮完整eval后再Block3的既定顺序执行；
+各benchmark单独报告，不以总分替代。
+
 ## 最新变更：取消时间上限
 
 用户随后明确“不用顾忌时间，放心做实验”。北京时间2026-09-13 01:05:29，

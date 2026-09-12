@@ -28,8 +28,13 @@ reproducibility, data safety, and clear experiment lineage.
   2026-09-13; keep both runs at 200 steps with full eval. No 4B student
   or extra seeds. Wait for the current window queue to complete; never preempt it.
   Read `docs/results/2026-09-13-qwen06-pair-startup.md` before any action.
-  Its queue is already running as PID3547500, waiting for the old queue; do not
-  launch a duplicate. Qwen06 runtime is frozen at
+  Its queue is already running as PID3547500; do not launch a duplicate.
+  On 2026-09-13 04:21 Beijing, the predecessor completed. Token resume gate
+  passed, and formal Token training started at 04:47 as PID3594635, from Base
+  with resume disabled. Check live state before acting; Block3 remains queued.
+  Read the startup note's night-supervision section, including probe teardown
+  warnings and the distinction between probe and formal diagnostics.
+  Qwen06 runtime is frozen at
   `ec0a7a950540d7f4753c08b18bc26c544f6a7cde` (no time cap). The earlier waiting
   controller PID3544990 was retired before any GPU job; its evidence is archived.
   Later docs commits do not replace the runtime.
