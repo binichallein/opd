@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "audit_block10_run.py"
@@ -120,7 +121,8 @@ def test_numerical_audit_promotes_nonfinite_values_and_positive_error_counts_to_
     assert any("post_update_block_ratio_overflow_count=2.0" in issue for issue in issues)
 
 
-def test_eval_audit_requires_exact_dataset_size_config_and_rollout_seeds(tmp_path):
+@pytest.mark.parametrize("separator", ["", "\u0085", "\u2028", "\u2029"])
+def test_eval_audit_requires_exact_dataset_size_config_and_rollout_seeds(tmp_path, separator):
     audit = load_audit_module()
     eval_dir = tmp_path / "eval_step_50_n8"
     outputs = eval_dir / "outputs"
@@ -171,7 +173,8 @@ def test_eval_audit_requires_exact_dataset_size_config_and_rollout_seeds(tmp_pat
         rows = []
         for example_id in range(count):
             for seed in range(21, 29):
-                rows.append(json.dumps({"example_id": str(example_id), "seed": seed}))
+                rows.append(json.dumps({"example_id": str(example_id), "seed": seed,
+                                        "response": f"before{separator}after"}, ensure_ascii=False))
         (outputs / f"{task}_graded.jsonl").write_text("\n".join(rows) + "\n")
 
     assert audit.eval_issues(

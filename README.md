@@ -18,6 +18,7 @@ reverse-KL 目标。
 
 - [固定方案与预算](docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md)
 - [启动证据、PID、目录和查询命令](docs/results/2026-09-11-window-seed21-startup.md)
+- [JSONL 审计修复与评测恢复](docs/results/2026-09-12-window-eval-recovery.md)
 - [HTML 报告](reports/block_opd_experiment_report.html#sliding-window-v2-seed21)
 
 runtime 固定为 `fbad852a638de18e20d571a061b2be0437942a38`；之后的文档提交

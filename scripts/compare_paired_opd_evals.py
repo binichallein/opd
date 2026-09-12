@@ -131,11 +131,9 @@ def load_json(path: Path) -> dict[str, Any]:
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         raise ValueError(f"missing graded JSONL: {path}")
-    return [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    # Iterate physical lines; splitlines() also splits valid Unicode string content.
+    with path.open(encoding="utf-8") as stream:
+        return [json.loads(line) for line in stream if line.strip()]
 
 
 def _valid_sha256(value: Any) -> bool:

@@ -17,6 +17,9 @@ reproducibility, data safety, and clear experiment lineage.
   as `SOURCE_COMMIT` to window control commands after documentation-only commits.
 - Inspect live queue state before any launch. Do not duplicate a queued run or
   present resume-gate measurements as formal training/evaluation results.
+- For the reviewed JSONL failure, read `docs/results/2026-09-12-window-eval-recovery.md`.
+  Recovery uses a separate committed analysis release; never overwrite the frozen
+  training runtime, original failed job, or completed raw/graded predictions.
 
 ## Hard Rules
 

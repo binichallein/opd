@@ -436,11 +436,13 @@ def eval_issues(
             issues.append(f"step {step} {task}: missing graded JSONL")
             continue
         seeds_by_example: dict[str, list[int]] = defaultdict(list)
-        for line in graded_path.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            seeds_by_example[str(row["example_id"])].append(int(row["seed"]))
+        # Unicode line separators inside JSON strings are not JSONL record boundaries.
+        with graded_path.open(encoding="utf-8") as stream:
+            for line in stream:
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                seeds_by_example[str(row["example_id"])].append(int(row["seed"]))
         if len(seeds_by_example) != expected_examples:
             issues.append(
                 f"step {step} {task}: graded JSONL has {len(seeds_by_example)} examples"
