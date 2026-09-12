@@ -12,9 +12,11 @@ reproducibility, data safety, and clear experiment lineage.
   2026-09-13; keep both runs at 200 steps with full eval. No 4B student
   or extra seeds. Wait for the current window queue to complete; never preempt it.
   Read `docs/results/2026-09-13-qwen06-pair-startup.md` before any action.
-  Its queue is already running as PID3544990, waiting for the old queue; do not
+  Its queue is already running as PID3547500, waiting for the old queue; do not
   launch a duplicate. Qwen06 runtime is frozen at
-  `937ac50f9fe3abb9f9bed4eee870c100b297b22a`. Later docs commits do not replace it.
+  `ec0a7a950540d7f4753c08b18bc26c544f6a7cde` (no time cap). The earlier waiting
+  controller PID3544990 was retired before any GPU job; its evidence is archived.
+  Later docs commits do not replace the runtime.
 
 - Read `docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md`
   and `docs/results/2026-09-11-window-seed21-startup.md` before acting.

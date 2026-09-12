@@ -19,8 +19,8 @@ reverse-KL 目标。
 硬停限制，仍只执行这两组各200步及完整评测，不自动追加实验。
 
 - [完整对照合同与执行计划](docs/plans/2026-09-13-qwen06-paired-validation.md)
-- [部署与后台等待证据](docs/results/2026-09-13-qwen06-pair-startup.md)：PID3544990，
-  runtime `937ac50`，当前等待旧评测队列完成，尚无0.6B新得分。
+- [部署与后台等待证据](docs/results/2026-09-13-qwen06-pair-startup.md)：最新PID3547500，
+  runtime `ec0a7a9`，已取消时间上限，当前等待旧评测队列完成，尚无0.6B新得分。
 - [HTML 对照表](reports/block_opd_experiment_report.html#qwen06-pair-20260913)
 - `scripts/run_qwen06_pair.py`：限定 ml2、前驱完成门禁、配置审计、恢复验证、串行队列。
 
