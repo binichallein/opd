@@ -74,5 +74,80 @@ def test_queue_interrupt_stops_only_its_child_process_group(tmp_path, monkeypatc
     monkeypatch.setattr(mod.os, "killpg", lambda pid, sig: calls.append((pid, sig)))
     with pytest.raises(KeyboardInterrupt):
         mod.run_job(["unused"], tmp_path / "job", tmp_path, tmp_path / "state.json", {})
-    assert calls == [(999999, signal.SIGTERM)]
+    assert calls == [(999999, signal.SIGTERM), (999999, signal.SIGKILL)]
     assert (tmp_path / "job/exit_code.txt").exists()
+
+
+def test_expired_budget_never_launches_a_job(tmp_path, monkeypatch):
+    mod = module()
+    monkeypatch.setattr(mod.time, "time", lambda: 100.0)
+    monkeypatch.setattr(mod.subprocess, "Popen", lambda *a, **kw: pytest.fail("must not launch"))
+    with pytest.raises(TimeoutError, match="budget"):
+        mod.run_job(["unused"], tmp_path / "job", tmp_path, tmp_path / "state.json", {}, deadline_epoch=150)
+    assert not (tmp_path / "job/started_at.txt").exists()
+
+
+def test_budget_timeout_terminates_only_own_child_with_cleanup_reserve(tmp_path, monkeypatch):
+    mod = module()
+    waits, signals = [], []
+
+    class Process:
+        pid = 999998
+
+        def wait(self, timeout=None):
+            waits.append(timeout)
+            if len(waits) == 1:
+                raise mod.subprocess.TimeoutExpired("unused", timeout)
+            return -signal.SIGTERM
+
+    monkeypatch.setattr(mod.time, "time", lambda: 100.0)
+    monkeypatch.setattr(mod.subprocess, "Popen", lambda *a, **kw: Process())
+    monkeypatch.setattr(mod.os, "killpg", lambda pid, sig: signals.append((pid, sig)))
+    with pytest.raises(mod.subprocess.TimeoutExpired):
+        mod.run_job(["unused"], tmp_path / "job", tmp_path, tmp_path / "state.json", {}, deadline_epoch=170)
+    assert waits == [10.0, 59]
+    assert signals == [(999998, signal.SIGTERM), (999998, signal.SIGKILL)]
+    assert (tmp_path / "job/exit_code.txt").read_text().strip() == "-15"
+
+
+def test_exiting_leader_does_not_leave_term_resistant_child(tmp_path):
+    import os
+    import subprocess
+    import sys
+    import time
+    import psutil
+
+    mod = module()
+    child_file = tmp_path / "child.pid"
+    program = ("import subprocess,sys,time; from pathlib import Path; "
+               "p=subprocess.Popen([sys.executable,'-c','import signal,time; signal.signal(signal.SIGTERM,signal.SIG_IGN); time.sleep(120)']); "
+               f"Path({str(child_file)!r}).write_text(str(p.pid)); time.sleep(120)")
+    process = subprocess.Popen([sys.executable, "-c", program], start_new_session=True)
+    try:
+        deadline = time.monotonic() + 5
+        while not child_file.exists() and time.monotonic() < deadline:
+            time.sleep(0.02)
+        child = psutil.Process(int(child_file.read_text()))
+        time.sleep(0.2)
+        mod.stop_process_group(process)
+        deadline = time.monotonic() + 2
+        while child.is_running() and child.status() != psutil.STATUS_ZOMBIE and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
+    finally:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+
+
+def test_gpu_probe_itself_has_a_bounded_subprocess_timeout(monkeypatch):
+    mod = module()
+    observed = []
+    def run(*a, **kw):
+        observed.append(kw.get("timeout"))
+        return mod.subprocess.CompletedProcess(a[0], 0, "0,0\n" * 4)
+    monkeypatch.setattr(mod.subprocess, "run", run)
+    mod.wait_for_idle(timeout=2)
+    assert 0 < observed[0] <= 2

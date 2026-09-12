@@ -48,6 +48,17 @@
 - 原有熵/overlap/信用分配/grad norm/截断指标和位置热图不取消。
   所有 checkpoint、失败记录保留，不自动清理，不因低分换 seed 或改参。
 
+### 已核验的 tokenizer 限制
+
+0.6B 与历史 1.7B 学生的 BPE、added token、prompt 模板一致。
+教师 tokenizer 序列化采用不同版本的 merges 格式，使用 tokenizers 库
+规范化后，BPE及共有 token 映射一致；但教师额外注册 ID151665..151668
+对应 `<tool_response>`、`</tool_response>`、`<think>`、`</think>`。
+这是原教师已有的差异，不是新0.6B引入。新实验不改教师、词表、mask 或
+原有评分实现，以保持对照；只能称“共有 token 对齐”，不能声称 tokenizer
+完全相同。此限制需随新旧实验共同披露，不能把新结果单独归因于完全无
+tokenizer mismatch 的蒸馏环境。
+
 ## 顺序、预算与隔离
 
 前驱仍是 `20260911v2r1_sliding_window_seed21_ml2`，必须完整成功并释放

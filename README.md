@@ -9,6 +9,20 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 新增 0.6B 配对验证
+
+2026-09-13 用户批准仅先做官方 `Qwen/Qwen3-0.6B-Base`，教师仍为原来
+公共 `Qwen3-4B-Base-GRPO`。顺序固定为 Token OPD 完整训练/评测，再做
+原版 Block3 mean；两组从同一 Base 独立初始化，仅改变监督方法。
+同一 DAPO 文件、seed21、200 steps，Step50/100/200 四任务全量 n8，
+历史 grader、监控和热图不变。等待旧窗口队列完成，新增阶段上限48个四卡机时。
+
+- [完整对照合同与执行计划](docs/plans/2026-09-13-qwen06-paired-validation.md)
+- [HTML 对照表](reports/block_opd_experiment_report.html#qwen06-pair-20260913)
+- `scripts/run_qwen06_pair.py`：限定 ml2、前驱完成门禁、配置审计、恢复验证、串行队列。
+
+这不是早期 0.6B Instruct clean-room pilot，也不代表已有 0.6B 配对结果。
+
 ## 本轮窗口实验
 
 2026-09-11 的受限算力实验仅在 `ml2` 执行 `random3` 和 `sliding3`，

@@ -46,14 +46,31 @@ def verify_file(path, record):
 
 
 def tokenizer_alignment(student, teacher, reference):
-    values = [json.loads((p / "tokenizer.json").read_text()) for p in (student, teacher, reference)]
-    for key in ("model", "added_tokens", "normalizer", "pre_tokenizer", "decoder", "post_processor"):
+    from tokenizers import Tokenizer
+
+    paths = [p / "tokenizer.json" for p in (student, teacher, reference)]
+    raw = [json.loads(p.read_text()) for p in paths]
+    # The library canonicalizes legacy string merges vs pair lists and default fields.
+    values = [json.loads(Tokenizer.from_file(str(p)).to_str()) for p in paths]
+    for key in ("model", "normalizer", "pre_tokenizer", "decoder", "post_processor"):
         if any(value.get(key) != values[0].get(key) for value in values[1:]):
             raise ValueError(f"Incompatible tokenizer component: {key}")
+    additions = [{t["id"]: t for t in value.get("added_tokens", [])} for value in raw]
+    if additions[0] != additions[2] or any(additions[1].get(i) != t for i, t in additions[0].items()):
+        raise ValueError("Incompatible tokenizer shared added-token mapping")
+    extras = [token for i, token in additions[1].items() if i not in additions[0]]
+    expected_extras = [
+        {"id": i, "content": text, "single_word": False, "lstrip": False, "rstrip": False,
+         "normalized": False, "special": False} for i, text in
+        [(151665, "<tool_response>"), (151666, "</tool_response>"), (151667, "<think>"), (151668, "</think>")]]
+    if extras and extras != expected_extras:
+        raise ValueError("Unexpected teacher-only tokens; historical exception is narrowly fixed")
     configs = [json.loads((p / "tokenizer_config.json").read_text()) for p in (student, reference)]
     for key in ("chat_template", "bos_token", "eos_token", "pad_token"):
         if configs[0].get(key) != configs[1].get(key):
             raise ValueError(f"Changed student prompt template/special token: {key}")
+    return {"student_matches_historical_student": True, "shared_token_mapping_matches": True,
+            "teacher_only_tokens": extras, "fully_identical_teacher_tokenizer": not extras}
 
 
 def main():
@@ -73,11 +90,12 @@ def main():
     snapshot_download(REPO, revision=REVISION, local_dir=STUDENT, allow_patterns=list(FILES), max_workers=2)
     for name in FILES:
         verify_file(STUDENT / name, records[name])
-    tokenizer_alignment(STUDENT, TEACHER, REFERENCE)
+    alignment = tokenizer_alignment(STUDENT, TEACHER, REFERENCE)
     (STUDENT / "HF_REVISION").write_text(REVISION + "\n")
     hashes = {name: sha256(STUDENT / name) for name in (*FILES, "HF_REVISION", "source_metadata.json")}
     (STUDENT / "asset_manifest.json").write_text(json.dumps({
-        "repo": REPO, "revision": REVISION, "tokenizer_alignment": True, "sha256": hashes,
+        "repo": REPO, "revision": REVISION, "tokenizer_alignment": True,
+        "tokenizer_compatibility": alignment, "sha256": hashes,
     }, indent=2) + "\n")
     print(json.dumps({"student": str(STUDENT), "revision": REVISION, "verified": True}), flush=True)
 

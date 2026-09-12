@@ -275,6 +275,26 @@
   </header>
 
   <main>
+    <section id="qwen06-pair-20260913" style="padding:18px 0 26px;border-bottom:1px solid var(--line)">
+      <h2>新增验证：Qwen3-0.6B，先 Token OPD，再 Block3 mean</h2>
+      <p><strong>2026-09-13 已批准的执行合同，尚无新配对得分。</strong>目标是检验原版 Block3 mean 在更小学生上能否复现增益，不同时更换教师、数据或评测方法。</p>
+      <table class="config-table">
+        <thead><tr><th>对照项</th><th>两组共同设置</th></tr></thead>
+        <tbody>
+          <tr><td>学生与初始化</td><td>官方 Qwen/Qwen3-0.6B-Base，revision <code>da87bfb608c14b7cf20ba1ce41287e8de496c0cd</code>。两组各自从同一原始 Base 初始化，不从 Token 训练结果继续训练 Block3。</td></tr>
+          <tr><td>教师</td><td>沿用历史 Qwen3-4B-Base-GRPO 的原始本地权重哈希。研究者公共 checkpoint，不是用户私有模型，也不是 Qwen 官方 GRPO 发布。</td></tr>
+          <tr><td>唯一处理差异</td><td>Token：k=1；Block3 mean：固定 offset=0、k=3、block mean advantage 与 joint ratio。不是 Sliding3，不另加新的权重归一化。</td></tr>
+          <tr><td>训练数据</td><td>同一 DAPO-Math-17K raw pool parquet，1,791,700 行（不是唯一题目数），不重新抽取数据文件。seed21；训练后核对41个诊断点的实际 prompt batch 哈希。</td></tr>
+          <tr><td>训练预算</td><td>各200步；每步4 prompt × 8 nominal rollout；mini-batch32，PPO epoch1，LR2e-6；prompt/response上限2048/16384；temperature1、top-p0.9。</td></tr>
+          <tr><td>硬件与显存</td><td>仅 ml2 四张 A100 80GB；actor/rollout-logp/ref micro-batch=1/4/1，vLLM=0.6。完整状态保存/退出/恢复验证先于各自正式训练。</td></tr>
+          <tr><td>完整评测</td><td>各 Step50/100/200：MATH500 500题、AIME24 30题、AIME25 30题、AMC23 83题；n8，seeds21..28，temperature1、top-p0.9、max16384，thinking关闭。每轮5144条，共30864条。</td></tr>
+          <tr><td>评分和主终点</td><td>固定历史 grader SHA <code>04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f</code>。比较 Step200 的 Block3−Token macro Avg@8 / Pass@8；任务内整题配对 bootstrap 10000次。一个训练seed，区间不包含训练方差。</td></tr>
+          <tr><td>指标与保护</td><td>保留 student/teacher entropy、gap、Top16 overlap、overlap mass/advantage、信用分配、PG loss、裁剪前grad norm、长度/截断率和位置热图。checkpoint、原始回答、失败记录不自动删除。</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:14px">执行顺序：旧窗口队列全部完成 → Token 恢复门禁 → Token 训练及三轮完整评测 → Block3 恢复门禁 → Block3 训练及三轮完整评测 → 配对报告。新阶段最多48个四卡机时，等待旧队列不计入；超时保留产物并标记未完成，不缩减 eval。</p>
+      <p class="muted">兼容性限制：0.6B与历史1.7B学生 tokenizer 和模板一致；教师共有词表映射一致，但历史教师额外注册了4个 think/tool 标签。本次不更换词表或mask，保留原实验处理并明确披露，不声称师生 tokenizer 完全相同。</p>
+    </section>
     <section class="grid" id="window-recovery-20260912">
       <div class="span-12">
         <h2>最新结果：历史 grader 已恢复，Sliding3 尚在评测</h2>

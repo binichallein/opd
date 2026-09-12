@@ -81,7 +81,22 @@ CKPTS_DIR="${RUN_DIR}/checkpoints"
 LOG_DIR="${RUN_DIR}/logs"
 OPD_DIAG_OUTPUT_DIR="${OPD_DIAG_OUTPUT_DIR:-${RUN_DIR}/diagnostics}"
 
-ssh "${REMOTE}" "set -euo pipefail
+run_on_target() {
+  case "${LAUNCH_TRANSPORT:-ssh}" in
+    ssh) ssh "${REMOTE}" "$1" ;;
+    local)
+      if [[ "${REMOTE}" != ml2 || "${PREPARE_ONLY}" != true ||
+            ! "${REMOTE_ROOT}" =~ ^/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/deployments/[0-9a-f]{40}$ ]]; then
+        echo 'local transport requires approved ml2 runtime and PREPARE_ONLY=true' >&2
+        exit 2
+      fi
+      bash -c "$1"
+      ;;
+    *) echo 'Unknown LAUNCH_TRANSPORT' >&2; exit 2 ;;
+  esac
+}
+
+run_on_target "set -euo pipefail
 test -d '${REMOTE_ROOT}'
 if [[ '${SOURCE_COMMIT}' != unknown ]]; then
   test \"\$(cat '${REMOTE_ROOT}/DEPLOYED_COMMIT')\" = '${SOURCE_COMMIT}'

@@ -47,16 +47,38 @@ def test_file_verification_handles_git_blobs_and_lfs_without_changing_bytes(tmp_
 def test_tokenizer_mapping_and_prompt_template_must_align(tmp_path):
     mod = module()
     roots = [tmp_path / n for n in ["student", "teacher", "reference"]]
-    data = {"model": {"vocab": {"a": 0, "b": 1}}, "added_tokens": []}
+    data = {"model": {"type": "BPE", "vocab": {"a": 0, "b": 1}, "merges": []}, "added_tokens": []}
     for root in roots:
         root.mkdir()
         (root / "tokenizer.json").write_text(json.dumps(data))
         (root / "tokenizer_config.json").write_text(json.dumps({"chat_template": "fixed"}))
     mod.tokenizer_alignment(*roots)
-    (roots[0] / "tokenizer.json").write_text(json.dumps({**data, "model": {"vocab": {"a": 1, "b": 0}}}))
+    (roots[0] / "tokenizer.json").write_text(json.dumps({**data, "model": {**data["model"], "vocab": {"a": 1, "b": 0}}}))
     with pytest.raises(ValueError, match="tokenizer"):
         mod.tokenizer_alignment(*roots)
     (roots[0] / "tokenizer.json").write_text(json.dumps(data))
     (roots[0] / "tokenizer_config.json").write_text(json.dumps({"chat_template": "changed"}))
     with pytest.raises(ValueError, match="template"):
+        mod.tokenizer_alignment(*roots)
+
+
+def test_historical_teacher_extras_are_explicit_not_arbitrary_new_ids(tmp_path):
+    mod = module()
+    roots = [tmp_path / n for n in ["student", "teacher", "reference"]]
+    data = {"model": {"type": "BPE", "vocab": {"a": 0, "b": 1, "ab": 2}, "merges": ["a b"]}}
+    for root in roots:
+        root.mkdir()
+        (root / "tokenizer.json").write_text(json.dumps(data))
+        (root / "tokenizer_config.json").write_text("{}")
+    extras = [{"id": i, "content": text, "single_word": False, "lstrip": False, "rstrip": False,
+               "normalized": False, "special": False} for i, text in
+              [(151665, "<tool_response>"), (151666, "</tool_response>"), (151667, "<think>"), (151668, "</think>")]]
+    teacher = {**data, "model": {**data["model"], "merges": [["a", "b"]], "ignore_merges": False}, "added_tokens": extras}
+    (roots[1] / "tokenizer.json").write_text(json.dumps(teacher))
+    result = mod.tokenizer_alignment(*roots)
+    assert result["teacher_only_tokens"] == extras
+    assert result["student_matches_historical_student"] is True
+    teacher["added_tokens"][0]["id"] = 151664
+    (roots[1] / "tokenizer.json").write_text(json.dumps(teacher))
+    with pytest.raises(ValueError, match="teacher-only"):
         mod.tokenizer_alignment(*roots)

@@ -68,9 +68,12 @@ def eval_command(runtime, python, model, data, output, student):
 def wait_for_idle(timeout=180):
     deadline = time.monotonic() + timeout
     while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("GPU idle probe deadline exceeded")
         result = subprocess.run([
             "nvidia-smi", "--query-gpu=memory.used,utilization.gpu", "--format=csv,noheader,nounits",
-        ], check=True, capture_output=True, text=True)
+        ], check=True, capture_output=True, text=True, timeout=min(30, remaining))
         rows = [[int(v.strip()) for v in row.split(",")] for row in result.stdout.splitlines()]
         if len(rows) != 4:
             raise RuntimeError("This queue requires exactly four GPUs")
@@ -78,15 +81,40 @@ def wait_for_idle(timeout=180):
             return
         if time.monotonic() >= deadline:
             raise RuntimeError("GPUs are not idle; no competing process will be terminated")
-        time.sleep(5)
+        time.sleep(min(5, max(0, deadline - time.monotonic())))
 
 
-def run_job(argv, job, runtime, state_path, env, *, pid_name="job.pid", log_name="job.log", gpu=False):
+def stop_process_group(process):
+    code = None
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+        code = process.wait(timeout=59)
+    except (ProcessLookupError, subprocess.TimeoutExpired):
+        pass
+    finally:
+        # The leader can exit before its children; always remove surviving group members.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    return process.wait(timeout=1) if code is None else code
+
+
+def run_job(argv, job, runtime, state_path, env, *, pid_name="job.pid", log_name="job.log", gpu=False,
+            deadline_epoch=None):
     job.mkdir(parents=True, exist_ok=True)
     if completed_or_new(job):
         return
+    def remaining():
+        seconds = None if deadline_epoch is None else deadline_epoch - time.time() - 60
+        if seconds is not None and seconds <= 0:
+            raise TimeoutError("Machine-time budget exhausted; reserving 60 seconds for cleanup")
+        return seconds
+
+    remaining()
     if gpu:
-        wait_for_idle()
+        wait_for_idle(timeout=min(180, remaining()) if deadline_epoch is not None else 180)
+    timeout = remaining()
     logs = job / "logs"
     logs.mkdir(exist_ok=True)
     (job / "queued_command.txt").write_text(shlex.join(list(map(str, argv))) + "\n")
@@ -98,17 +126,10 @@ def run_job(argv, job, runtime, state_path, env, *, pid_name="job.pid", log_name
         write_json(state_path, {"status": "running", "job": str(job), "pid": process.pid, "updated_at": now()})
         print(f"{now()} started {job} pid={process.pid}", flush=True)
         try:
-            code = process.wait()
+            code = process.wait(timeout=timeout)
         except BaseException:
             # Only signal the process group created by this queue, never a global Ray/GPU kill.
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-                code = process.wait(timeout=60)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                code = process.wait()
-            except ProcessLookupError:
-                code = process.wait()
+            code = stop_process_group(process)
             (job / "exit_code.txt").write_text(str(code or 130) + "\n")
             (job / "finished_at.txt").write_text(now() + "\n")
             raise
