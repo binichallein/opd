@@ -12,14 +12,16 @@ reverse-KL 目标。
 ## 本轮窗口实验
 
 2026-09-11 的受限算力实验仅在 `ml2` 执行 `random3` 和 `sliding3`，
-各 training seed21、200 steps。两组保存/恢复检查已通过，串行训练队列
-已于 `12:25:30 UTC` 启动；不自动追加其他方法或 seed。
-保留 Step50/100/200 的四任务全量 `n=8` 评测、监控与热图，尚无正式评测结论。
+各 training seed21、200 steps。两组训练均已完成；截至 2026-09-12 23:40
+北京时间，评测读取故障已修复，Random3 三轮历史重评完成，Sliding3 正在
+补齐完整评测。保留 Step50/100/200 四任务全量 `n=8`、监控与热图；
+最终配对结论尚待结果，不自动追加其他方法或 seed。
 
 - [固定方案与预算](docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md)
 - [启动证据、PID、目录和查询命令](docs/results/2026-09-11-window-seed21-startup.md)
 - [JSONL 审计修复与评测恢复](docs/results/2026-09-12-window-eval-recovery.md)
-- [HTML 报告](reports/block_opd_experiment_report.html#sliding-window-v2-seed21)
+- [后续研究草案：归一化信用分配与跨师生/数据验证](docs/plans/2026-09-12-post-window-research.md)
+- [HTML 报告](reports/block_opd_experiment_report.html#window-recovery-20260912)
 
 runtime 固定为 `fbad852a638de18e20d571a061b2be0437942a38`；之后的文档提交
 不改变训练代码。下文的旧实验设置与结果是历史背景，不是本轮执行清单。

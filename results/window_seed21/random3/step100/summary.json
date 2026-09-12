@@ -1,0 +1,64 @@
+{
+  "n_expected": 8,
+  "grader": "external",
+  "eval_seed": 21,
+  "rollout_seeds": [
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28
+  ],
+  "enable_thinking": false,
+  "tasks": {
+    "math500": {
+      "num_examples": 500,
+      "total_rollouts": 4000,
+      "avg_at_n": 0.367,
+      "pass_at_n": 0.824,
+      "solve_none": 88,
+      "solve_all": 2,
+      "format_error_rollouts": 1347,
+      "avg_response_length_tokens": 3772.22425,
+      "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2r1_sliding_window_seed21_ml2/random3/eval_step_100_n8/historical_external_grader/math500_graded.jsonl"
+    },
+    "aime24": {
+      "num_examples": 30,
+      "total_rollouts": 240,
+      "avg_at_n": 0.020833333333333332,
+      "pass_at_n": 0.13333333333333333,
+      "solve_none": 26,
+      "solve_all": 0,
+      "format_error_rollouts": 87,
+      "avg_response_length_tokens": 4840.125,
+      "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2r1_sliding_window_seed21_ml2/random3/eval_step_100_n8/historical_external_grader/aime24_graded.jsonl"
+    },
+    "aime25": {
+      "num_examples": 30,
+      "total_rollouts": 240,
+      "avg_at_n": 0.016666666666666666,
+      "pass_at_n": 0.1,
+      "solve_none": 27,
+      "solve_all": 0,
+      "format_error_rollouts": 132,
+      "avg_response_length_tokens": 5932.041666666667,
+      "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2r1_sliding_window_seed21_ml2/random3/eval_step_100_n8/historical_external_grader/aime25_graded.jsonl"
+    },
+    "amc23": {
+      "num_examples": 83,
+      "total_rollouts": 664,
+      "avg_at_n": 0.14909638554216867,
+      "pass_at_n": 0.4819277108433735,
+      "solve_none": 43,
+      "solve_all": 0,
+      "format_error_rollouts": 343,
+      "avg_response_length_tokens": 5616.942771084337,
+      "graded_jsonl": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260911v2r1_sliding_window_seed21_ml2/random3/eval_step_100_n8/historical_external_grader/amc23_graded.jsonl"
+    }
+  },
+  "macro_avg_at_n": 0.13839909638554215,
+  "macro_pass_at_n": 0.3848152610441767
+}

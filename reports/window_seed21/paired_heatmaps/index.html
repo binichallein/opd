@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Random3 与 Sliding3 诊断</title>
+<style>body{font:16px/1.6 sans-serif;color:#20252c;margin:24px auto;padding:0 16px;max-width:1500px;letter-spacing:0}
+h1{font-size:26px}h2{font-size:18px;overflow-wrap:anywhere}section{margin:32px 0}img{display:block;width:100%;height:auto}
+</style><h1>Random3 与 Sliding3：seed21 训练诊断</h1>
+<p>仅比较本轮两个方法。loss_input 指对采样 log-prob 的导数，不是完整模型参数梯度；
+sign-flip 和 leakage 为各偏移窗口均值的共享信号视图，不直接等于错误归因。
+位置图使用共同色标，低覆盖位置记为缺失；零范数 cosine 需结合有效性计数，不作正交解释。
+最终准确率结论须结合完整评测，不能由这些曲线单独判定。</p><section><h2>position_heatmaps.png</h2><img src="position_heatmaps.png" alt="position_heatmaps.png"></section><section><h2>scalar_alignment.png</h2><img src="scalar_alignment.png" alt="scalar_alignment.png"></section><section><h2>scalar_credit.png</h2><img src="scalar_credit.png" alt="scalar_credit.png"></section><section><h2>scalar_optimization.png</h2><img src="scalar_optimization.png" alt="scalar_optimization.png"></section><section><h2>loss_input_phase.png</h2><img src="loss_input_phase.png" alt="loss_input_phase.png"></section></html>

@@ -270,11 +270,37 @@
       <span class="pill">历史实验：train + ml2；本轮仅 ml2</span>
       <span class="pill">配对验证：Qwen3 + DeepSeek/JustRL</span>
       <span class="pill">训练数据：DAPO-Math-17K raw 1,791,700 rows</span>
-      <span class="pill">状态：两对师生 step-200 full eval、外部重评分与配对 CI 已完成</span>
+      <span class="pill">历史两对师生验证完成；当前窗口组评测恢复中</span>
     </div>
   </header>
 
   <main>
+    <section class="grid" id="window-recovery-20260912">
+      <div class="span-12">
+        <h2>最新结果：历史 grader 已恢复，Sliding3 尚在评测</h2>
+        <p><strong>状态快照：2026-09-12 23:40，北京时间。</strong>Random3 和 Sliding3 均完成 200 步训练。Random3 的三轮完整评测已按约定历史 grader 重评；Sliding3 正在生成 Step50 的回答，随后执行 Step100/200、历史重评分和配对比较。以下不是两组最终结论。</p>
+        <table class="config-table">
+          <thead><tr><th>方法</th><th>训练步</th><th>Macro Avg@8</th><th>Macro Pass@8</th><th>评测状态</th></tr></thead>
+          <tbody>
+            <tr><td>Random3</td><td>50</td><td>17.8411%</td><td>39.9482%</td><td>完整历史重评</td></tr>
+            <tr><td>Random3</td><td>100</td><td>13.8399%</td><td>38.4815%</td><td>完整历史重评</td></tr>
+            <tr><td>Random3</td><td>200</td><td>9.1768%</td><td>34.3137%</td><td>完整历史重评</td></tr>
+            <tr><td>Sliding3</td><td>50 / 100 / 200</td><td>尚未得到</td><td>尚未得到</td><td>Step50 进行中，其余排队</td></tr>
+          </tbody>
+        </table>
+        <p>每轮都是 MATH500 500 题、AIME24 30 题、AIME25 30 题、AMC23 83 题，共 643 题、5,144 条回答；四任务等权平均。n=8、seeds21–28、temperature=1.0、top-p=0.9、max tokens=16,384、thinking 关闭。历史 grader SHA-256 仍为 <code>04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f</code>；内置评分保留，不择优选 grader。</p>
+        <p><strong>修复了什么：</strong>合法 JSON 字符串中的 Unicode 分隔符被 <code>splitlines()</code> 错当成新记录，导致审计停止。现在按物理行读取，未改变判分规则、原始答案或权重。部署前还修复了 ml2 同名 Python 包的导入冲突。483 项本地测试通过、2 项因缺失绘图库跳过；Random3 的三轮输入/输出哈希校验通过。</p>
+        <p><strong>当前能下的结论：</strong>Random3 后期退化并未因恢复历史 grader 而消失。MATH500 平均长度从 Step50 的 3,418 token 增至 Step200 的 7,091，格式错误从 1,101/4,000 增至 2,436/4,000。它们与退化同时发生，但还不是因果证明。Sliding3 未测完，不能提前宣布滑动窗口有效。</p>
+        <h3>下一步优先验证什么</h3>
+        <p><strong>先分离邻域信息和梯度尺度。</strong>当前 block mean 配合 joint ratio 与长度权重，在 ratio=1 时，每个 token 实际接收的是窗口 advantage 之和。受控 CPU 导数检查中，恒定 advantage=1 时，Token 系数为 1，Fixed3 和 Sliding3 内部位置为 3；这不等于 Adam 参数更新必然放大三倍。</p>
+        <p>优先候选是<strong>单位增益的邻域平滑 + 原有 token PPO ratio</strong>：邻域权重之和固定为 1，再考察限制邻域修正幅度是否能减少异号污染。它们均是待验证假设，不是已实现的新方法。新实验应先与同轮 Token 对照，再决定是否增加 Fixed3、外部方法和多个 training seed。</p>
+        <p><strong>泛化不能只挑正结果。</strong>历史 Qwen3 配对有 Block3 单 seed 增益，DeepSeek/JustRL 未复现。后续保留该反例，优先增加配对 seeds 和第二训练数据；预算允许时再测试官方 Qwen3-4B-Base 学生与现有公共 GRPO 教师。新增训练尚未启动。</p>
+        <p>主终点仍是 Step200，不能改挑 Step50。候选提出与测试集已被查看的事实必须披露；当前单 seed 题目 bootstrap 不能替代多次训练，也不足以保证论文所需的泛化证据。</p>
+        <p><a href="window_seed21/paired_heatmaps/index.html">完整训练热图与诊断曲线</a> · <a href="../docs/results/2026-09-12-window-eval-recovery.md">恢复记录与结果来源</a> · <a href="../docs/plans/2026-09-12-post-window-research.md">后续研究草案、数学依据与相关工作区别</a></p>
+        <p class="muted">训练 runtime：<code>fbad852a</code>；独立分析 release：<code>460cdc8</code>；恢复队列 PID：<code>3533800</code>。后续状态以 ml2 队列记录为准；下方保留 9 月 11 日启动快照，不代表当前训练仍在排队。</p>
+      </div>
+    </section>
+
     <section class="grid" id="sliding-window-v2-seed21">
       <div class="span-12">
         <h2>滑动窗口 v2 范围修订：仅 seed21 的 random3 / sliding3（2026-09-11）</h2>
