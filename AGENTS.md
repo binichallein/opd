@@ -10,6 +10,10 @@ reproducibility, data safety, and clear experiment lineage.
   with the existing public 4B GRPO teacher; Token OPD before original Block3 mean,
   identical data/seed/full eval. Maximum 48 new four-GPU machine hours. No 4B student
   or extra seeds. Wait for the current window queue to complete; never preempt it.
+  Read `docs/results/2026-09-13-qwen06-pair-startup.md` before any action.
+  Its queue is already running as PID3544990, waiting for the old queue; do not
+  launch a duplicate. Qwen06 runtime is frozen at
+  `937ac50f9fe3abb9f9bed4eee870c100b297b22a`. Later docs commits do not replace it.
 
 - Read `docs/plans/2026-09-11-sliding-window-opd-validation-v2-seed21.md`
   and `docs/results/2026-09-11-window-seed21-startup.md` before acting.
