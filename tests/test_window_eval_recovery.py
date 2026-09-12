@@ -1,10 +1,26 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_cli_ignores_unrelated_installed_scripts_package(tmp_path):
+    package = tmp_path / "scripts"
+    package.mkdir()
+    (package / "__init__.py").write_text("raise RuntimeError('unrelated scripts package')\n")
+    result = subprocess.run(
+        [sys.executable, "-B", str(ROOT / "scripts/recover_window_evaluation.py"), "--help"],
+        cwd=tmp_path, env={**os.environ, "PYTHONPATH": str(tmp_path)},
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--recovery-id" in result.stdout
 
 
 def module():

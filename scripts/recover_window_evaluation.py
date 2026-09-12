@@ -15,9 +15,10 @@ import signal
 import subprocess
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts import run_window_queue as queue
-from scripts.regrade_opd_eval_external import HISTORICAL_GRADER_SHA256, validate_grader_hash
+# Resolve release-local siblings, not an unrelated installed package named scripts.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import run_window_queue as queue
+from regrade_opd_eval_external import HISTORICAL_GRADER_SHA256, validate_grader_hash
 
 TRAINING_COMMIT = "fbad852a638de18e20d571a061b2be0437942a38"
 ASSET_ROOT = Path("/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd")
