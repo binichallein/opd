@@ -45,8 +45,13 @@
 - 主 grader 为历史 SHA
   `04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f`；
   保留内置评分和原始回答，物理行 JSONL 修复必须包含在新 runtime 中。
-- 主终点 Step200 的 Block3-Token macro Avg@8/Pass@8。任务内整题配对
-  bootstrap10000次，seed20260913。一个 training seed，CI不覆盖训练方差。
+- 用户于2026-09-13追加要求：每个benchmark独立计分，不合并计分。
+  主终点改为分别报告 MATH500、AIME24、AIME25、AMC23 的 Step200
+  Token/Block3 Avg@8、Pass@8及差值；Step50/100同样分任务报告，不挑选
+  最优checkpoint替代Step200。不得用macro/pooled总分代替分任务结论。
+  历史macro字段保留作为原始审计记录，不作为新版报告结果；若计算各任务CI，
+  必须在该任务内部整题配对bootstrap，不能把原macro区间当作单任务区间。
+  一个training seed，题目bootstrap不覆盖训练方差。
 - 原有熵/overlap/信用分配/grad norm/截断指标和位置热图不取消。
   所有 checkpoint、失败记录保留，不自动清理，不因低分换 seed 或改参。
 
@@ -96,6 +101,8 @@ Files: `scripts/run_qwen06_pair.py`, `tests/test_qwen06_pair.py`；有限修改
 ## Task 3: 恢复门禁与报告
 
 复用checkpoint/eval审计、历史重评分、paired comparison及现有HTML生成器。
+评分数据本身已按任务独立保存；交付报告前必须采用上述分benchmark口径，
+不能直接交付冻结队列生成的旧macro优先模板。仅报告口径变化不重训或重评。
 在queue中逐步检查退出码；验证保存的scheduler/RNG/data状态以及真正的
 resume日志。任一失败均关闭队列，禁止隐式自动重试。
 

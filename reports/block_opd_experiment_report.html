@@ -277,6 +277,7 @@
   <main>
     <section id="qwen06-pair-20260913" style="padding:18px 0 26px;border-bottom:1px solid var(--line)">
       <h2>新增验证：Qwen3-0.6B，先 Token OPD，再 Block3 mean</h2>
+      <p><strong>最新计分要求：每个benchmark独立报告，不合并计分。</strong>MATH500、AIME24、AIME25、AMC23分别展示Token/Block3的Avg@8、Pass@8与差值，Step50/100/200各自列出。下方旧实验的macro图表为历史存档，不作为新实验的报告模板或结论。</p>
       <p><strong>2026-09-13 已批准的执行合同，尚无新配对得分。</strong>目标是检验原版 Block3 mean 在更小学生上能否复现增益，不同时更换教师、数据或评测方法。</p>
       <p>北京时间2026-09-13 01:05更新：用户取消48小时硬停，已将尚未开始GPU作业的等待控制器替换为PID3547500，独立runtime <code>ec0a7a9</code>。状态仍是 <code>waiting_for_predecessor</code>，<code>budget_seconds=null</code>。模型、数据、训练及eval代码未改，旧实验未中断或覆盖。</p>
       <table class="config-table">
@@ -289,7 +290,7 @@
           <tr><td>训练预算</td><td>各200步；每步4 prompt × 8 nominal rollout；mini-batch32，PPO epoch1，LR2e-6；prompt/response上限2048/16384；temperature1、top-p0.9。</td></tr>
           <tr><td>硬件与显存</td><td>仅 ml2 四张 A100 80GB；actor/rollout-logp/ref micro-batch=1/4/1，vLLM=0.6。完整状态保存/退出/恢复验证先于各自正式训练。</td></tr>
           <tr><td>完整评测</td><td>各 Step50/100/200：MATH500 500题、AIME24 30题、AIME25 30题、AMC23 83题；n8，seeds21..28，temperature1、top-p0.9、max16384，thinking关闭。每轮5144条，共30864条。</td></tr>
-          <tr><td>评分和主终点</td><td>固定历史 grader SHA <code>04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f</code>。比较 Step200 的 Block3−Token macro Avg@8 / Pass@8；任务内整题配对 bootstrap 10000次。一个训练seed，区间不包含训练方差。</td></tr>
+          <tr><td>评分和主终点</td><td>固定历史 grader SHA <code>04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f</code>。四个benchmark分别比较Step200的Token/Block3 Avg@8、Pass@8及差值，不合并计分。单任务置信区间须单独计算，不能沿用历史macro区间；一个训练seed不覆盖训练方差。</td></tr>
           <tr><td>指标与保护</td><td>保留 student/teacher entropy、gap、Top16 overlap、overlap mass/advantage、信用分配、PG loss、裁剪前grad norm、长度/截断率和位置热图。checkpoint、原始回答、失败记录不自动删除。</td></tr>
         </tbody>
       </table>

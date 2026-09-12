@@ -3,6 +3,22 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Benchmark Reporting Policy (2026-09-13)
+
+- User requires independent scores for MATH500, AIME24, AIME25, and AMC23.
+  Report each benchmark's Avg@8, Pass@8 and Block3-minus-Token differences at
+  Step50/100/200. Never combine benchmarks into a total score or substitute a
+  macro/pooled score or overall verdict for these separate results.
+- Existing evaluation already retains task-specific graded files and `per_task`
+  comparisons. Preserve historical raw artifacts and aggregate fields for lineage,
+  but do not use their aggregate scores as new user-facing results.
+- Frozen queue/report scripts still produce historical macro summaries. Before
+  delivering a new final report, render the per-task results separately instead
+  of publishing that old macro-first report unchanged. Do not interrupt training
+  or regrade unchanged predictions merely to change presentation.
+- A macro bootstrap interval is not a per-benchmark interval. Any task-specific
+  uncertainty analysis must be calculated using that task's paired examples.
+
 ## Active Window Experiment (2026-09-11)
 
 - New user-approved follow-on (2026-09-13): read

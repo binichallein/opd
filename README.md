@@ -26,6 +26,11 @@ reverse-KL 目标。
 
 这不是早期 0.6B Instruct clean-room pilot，也不代表已有 0.6B 配对结果。
 
+**最新计分要求（2026-09-13）：四个benchmark分别计分、分别报告。**
+MATH500、AIME24、AIME25、AMC23各自列出Token/Block3的Avg@8、Pass@8与差值，
+不合并成总分，也不用macro代替。Step50/100/200都按此方式展示。底层分任务
+评分记录已存在；以下旧实验的macro记录仅保留作历史证据，不是新的报告口径。
+
 ## 本轮窗口实验
 
 2026-09-11 的受限算力实验仅在 `ml2` 执行 `random3` 和 `sliding3`，
