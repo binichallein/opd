@@ -26,6 +26,15 @@ reproducibility, data safety, and clear experiment lineage.
   This standalone controller trains Token and builds diagnostic figures only;
   full benchmark evaluation is not automatically resumed by this authorization.
 - Inspect live state before launching; never duplicate a running controller.
+- v4 controller PID3844168 uses frozen runtime
+  `0ce73aa42d7f734b9d34c379f474458bb6d48771`. Read
+  `docs/results/2026-09-13-qwen06-nonthinking-startup.md` and live queue state.
+  Later documentation commits must not replace this runtime in audit commands.
+- GPU gate and two-step four-rank resume/rollout audits passed. Formal Token
+  PID3867901 started at 18:06:07 Beijing, and its first update/archive/diagnostic
+  figures are verified. Training is ongoing, not complete. Both the GPU gate and
+  actual first training batch produced no new think tags, but length truncation
+  persists (formal Step1: 16/32). Do not claim non-thinking solved truncation.
 
 ## Non-Thinking Training Policy (2026-09-13)
 
