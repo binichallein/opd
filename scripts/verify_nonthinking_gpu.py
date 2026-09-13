@@ -13,6 +13,11 @@ from opd_ext.math_protocol import (DISABLED_SUFFIX, PROTOCOL, STOP_TOKEN_IDS,
                                    generation_record, generated_think_tags, math_prompt, render_nonthinking)
 
 
+def configure_gpu_process():
+    os.environ['CUDA_VISIBLE_DEVICES']='0'
+    os.environ['VLLM_WORKER_MULTIPROC_METHOD']='spawn'
+
+
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--model', required=True)
@@ -20,7 +25,7 @@ def main():
     parser.add_argument('--eval-data', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args=parser.parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES']='0'
+    configure_gpu_process()
     from transformers import AutoTokenizer
     import numpy as np
     from omegaconf import OmegaConf
@@ -68,6 +73,7 @@ def main():
         checked[file.name]=len(rows)
     with (args.output/'input_contract.json').open('x') as f:
         json.dump({'protocol':PROTOCOL,'enable_thinking':False,'eval_rows_checked':checked,
+                   'vllm_worker_multiproc_method':os.environ['VLLM_WORKER_MULTIPROC_METHOD'],
                    'train_eval_prompt_ids_identical':True,'n':len(prompts)},f,indent=2)
 
     llm=LLM(model=args.model,tokenizer=args.model,dtype='bfloat16',tensor_parallel_size=1,

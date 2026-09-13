@@ -55,3 +55,6 @@
 - v2 / 8a0a2d3：GPU检查在CPU测试输入构造处报缺少batch字段，未生成响应、
   未启动训练；源版本与失败目录均保留。修正为真实DataProto输入后以v3启动，
   没有原地覆盖失败记录或冻结版本。
+- v3 / 7724141：16题训推token一致性和四项评测共643条prompt规则校验通过；
+  独立vLLM引擎因fork后CUDA重新初始化失败，尚未生成响应。v4将此检查进程
+  的VLLM_WORKER_MULTIPROC_METHOD显式设为spawn，训练超参数未改变。

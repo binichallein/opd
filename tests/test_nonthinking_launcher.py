@@ -33,3 +33,16 @@ def test_probe_resume_uses_a_distinct_attempt_without_changing_input_seed(tmp_pa
     assert second['ROLLOUT_ATTEMPT_ID']=='probe2'
     assert second['RESUME_MODE']=='resume_path'
     assert first['ENV_SEED']==second['ENV_SEED']=='21'
+
+
+def test_gpu_gate_explicitly_uses_cuda_safe_spawn(monkeypatch):
+    import os
+    path=Path(__file__).resolve().parents[1]/'scripts/verify_nonthinking_gpu.py'
+    spec=importlib.util.spec_from_file_location('nonthinking_gpu_gate',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    monkeypatch.setenv('VLLM_WORKER_MULTIPROC_METHOD','fork')
+    monkeypatch.setenv('CUDA_VISIBLE_DEVICES','0,1,2,3')
+    mod.configure_gpu_process()
+    assert os.environ['VLLM_WORKER_MULTIPROC_METHOD']=='spawn'
+    assert os.environ['CUDA_VISIBLE_DEVICES']=='0'
