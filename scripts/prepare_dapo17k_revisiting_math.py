@@ -117,9 +117,8 @@ def env_row(question: str, answer: str, split: str, source: str, idx: int) -> di
 
 
 def eval_json_row(question: str, answer: str, source: str, split: str, idx: int) -> dict[str, Any]:
-    prompt = question.strip()
-    if "put your final answer" not in prompt:
-        prompt = prompt + "\n\nPlease reason step by step, and put your final answer within \\boxed{}."
+    from opd_ext.math_protocol import math_prompt
+    prompt = math_prompt(question)
     return {
         "id": f"{source}/{split}/{idx}",
         "source": source,

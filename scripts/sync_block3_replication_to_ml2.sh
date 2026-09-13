@@ -14,6 +14,7 @@ FILES=(
   opd_ext/analysis.py
   opd_ext/diagnostics.py
   opd_ext/window_supervision.py
+  opd_ext/math_protocol.py
   patches/revisiting_opd/blockwise_sampled_opd.patch
   scripts/setup_revisiting_opd.sh
   scripts/run_revisiting_sampled_block_opd_math.sh
@@ -26,6 +27,11 @@ FILES=(
   scripts/audit_window_run.py
   scripts/audit_window_control.py
   scripts/run_window_queue.py
+  scripts/run_qwen06_pair.py
+  scripts/prepare_qwen06_assets.py
+  scripts/prepare_dapo17k_revisiting_math.py
+  scripts/run_qwen06_nonthinking.py
+  scripts/verify_nonthinking_gpu.py
   scripts/plot_window_diagnostics.py
   configs/window_plot_requirements.txt
   scripts/regrade_opd_eval_external.py

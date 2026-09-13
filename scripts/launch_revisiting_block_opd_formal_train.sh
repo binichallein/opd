@@ -11,6 +11,9 @@ LOCAL_CACHE_ROOT="${LOCAL_CACHE_ROOT:-/tmp/opd_block3_dapo17k}"
 SOURCE_COMMIT="${SOURCE_COMMIT:-unknown}"
 SUBMODULE_BASE_COMMIT="${SUBMODULE_BASE_COMMIT:-f32f284f25bae5b16d2d44ee336b52851dccc736}"
 PREPARE_ONLY="${PREPARE_ONLY:-false}"
+OPD_PROMPT_PROTOCOL="${OPD_PROMPT_PROTOCOL:-legacy}"
+LOSSLESS_ROLLOUT_DIR="${LOSSLESS_ROLLOUT_DIR:-}"
+ROLLOUT_ATTEMPT_ID="${ROLLOUT_ATTEMPT_ID:-}"
 case "${PREPARE_ONLY}" in
   true|false) ;;
   *) echo "PREPARE_ONLY must be true or false" >&2; exit 2 ;;
@@ -166,6 +169,10 @@ sha256sum \
   '${REMOTE_ROOT}/manifests/revisiting_opd_runtime.sha256' \
   '${REMOTE_ROOT}/opd_ext/diagnostics.py' \
   '${REMOTE_ROOT}/opd_ext/window_supervision.py' \
+  '${REMOTE_ROOT}/opd_ext/math_protocol.py' \
+  '${REMOTE_ROOT}/external/revisiting_opd/agent_system/environments/env_manager.py' \
+  '${REMOTE_ROOT}/external/revisiting_opd/agent_system/multi_turn_rollout/rollout_loop.py' \
+  '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/ppo/core_algos.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/trainer/ppo/ray_trainer_multitask.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/actor/dp_actor.py' \
@@ -248,6 +255,9 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"resume_mode\": \"${RESUME_MODE}\",
   \"resume_from_path\": \"${RESUME_FROM_PATH}\",
   \"diagnostic_output_dir\": \"${OPD_DIAG_OUTPUT_DIR}\",
+  \"opd_prompt_protocol\": \"${OPD_PROMPT_PROTOCOL}\",
+  \"lossless_rollout_dir\": \"${LOSSLESS_ROLLOUT_DIR}\",
+  \"rollout_attempt_id\": \"${ROLLOUT_ATTEMPT_ID}\",
   \"checkpoint_policy\": \"preserve all milestone checkpoints; no automatic deletion\",
   \"baseline_alignment\": \"${BASELINE_ALIGNMENT}\"
 }
@@ -282,6 +292,10 @@ export OUTLINES_CACHE_DIR='${LOCAL_CACHE_ROOT}/outlines'
 export PYTHONUNBUFFERED=1
 cd '${REMOTE_ROOT}'
 VARIANT='${VARIANT}' \
+OPD_PROMPT_PROTOCOL='${OPD_PROMPT_PROTOCOL}' \
+LOSSLESS_ROLLOUT_DIR='${LOSSLESS_ROLLOUT_DIR}' \
+ROLLOUT_ATTEMPT_ID='${ROLLOUT_ATTEMPT_ID}' \
+SOURCE_COMMIT='${SOURCE_COMMIT}' \
 PROJECT_NAME='${PROJECT_NAME}' \
 EXP_NAME='${EXP_NAME}' \
 STUDENT_MODEL='${STUDENT_MODEL}' \

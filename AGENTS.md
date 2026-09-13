@@ -3,6 +3,92 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Non-Thinking Token Run (2026-09-13)
+
+- User now authorizes a NEW official Qwen3-0.6B-Base Token OPD run on ml2, with
+  explicit thinking disable, training/evaluation prompt agreement, lossless
+  training trajectories and all existing OPD diagnostics. Read
+  `docs/plans/2026-09-13-qwen06-nonthinking-token.md` before acting.
+- The only new run is `20260913v2_qwen06_nonthinking_token_seed21_ml2`;
+  controller `scripts/run_qwen06_nonthinking.py`. It gates training on real GPU
+  prompt/output checks and a two-step training-state/rollout-retention resume test.
+- Keep original seed21, data, teacher, 200 steps and Step50/100/200 state retention.
+  Start formal Token from the official Base, never from old/probe weights. New
+  protocol also matches evaluation EOS stops and uses actual generation lengths
+  for masks. Do not silently attribute protocol changes to Block3.
+- The OLD Qwen06 queue remains stopped. Do not launch Block3 or revive old eval.
+  This standalone controller trains Token and builds diagnostic figures only;
+  full benchmark evaluation is not automatically resumed by this authorization.
+- Inspect live state before launching; never duplicate a running controller.
+
+## Non-Thinking Training Policy (2026-09-13)
+
+- User requires all subsequent training to disable thinking mode. This overrides
+  historical prompt defaults; it does not authorize restarting the paused queue.
+- Explicitly pass `enable_thinking=False` to supported chat templates, including
+  the active rollout path (`data.apply_chat_template_kwargs` in Revisiting OPD).
+  An empty kwargs mapping is not an explicit disable. Remove environment/prompt
+  instructions requiring reasoning inside `<think>...</think>` as well.
+- Inspect the actual rendered prompt and token IDs in preflight, not just the
+  run card. Qwen's tokenizer may express disabled thinking with an EMPTY,
+  already-closed think block in the assistant prefix. Do not delete that control
+  prefix just to make a string search find no think tags. This is not a guarantee
+  that a Base model can never generate such tags or ordinary reasoning text.
+- Preserve historic deployments, configs and trajectories unchanged. The paused
+  Qwen06 runtime is not yet amended for this policy or full rollout retention;
+  it must not be resumed blindly. Use a new versioned protocol and run identity.
+- Apply the same protocol to Token and Block3 comparison arms. Do not compare a
+  newly non-thinking Block3 arm against the historical thinking-unspecified,
+  think-instructed Token arm as a controlled method-only ablation.
+- Historical audit: ml2 1.7B Token/Block3 and current 0.6B Token training used
+  empty template kwargs plus an environment instruction requiring think tags;
+  their evaluation path explicitly passes false. The recent `no_think` diagnostic
+  only removed an instruction; it did NOT set `enable_thinking=False`.
+  See `docs/results/2026-09-13-token-truncation-comparison.md`.
+
+## Active User Pause (2026-09-13)
+
+- User stopped the Qwen06 evaluation queue to diagnose 0.6B truncation against
+  1.7B. Controller PID3547500 and Step50 eval PID3822051 were terminated at
+  2026-09-13 14:04 Beijing. The queue records `failed/error=143` and eval exit -15
+  because of this deliberate stop, not a spontaneous training failure.
+- Do not restart full evaluation, dispatch Block3, or relaunch the old controller
+  until the user redirects from this diagnosis. All training checkpoints remain.
+- Small matched inference-only diagnostics are authorized. Preserve raw tokens,
+  special-token text and finish reasons; keep them separate from historical
+  training trajectories and benchmark scores. Never call regenerated responses
+  the original training rollouts.
+- The bounded diagnosis is complete: 192 raw responses, all eight generation
+  jobs exited 0. Read `docs/results/2026-09-13-qwen06-truncation-diagnosis.md`.
+  The four GPUs were verified idle afterwards. Recommendations in that note are
+  not launched experiments; the evaluation/Block3 pause still applies.
+
+## Training Rollout Retention Policy (2026-09-13)
+
+- User requires future training runs to retain their actual on-policy rollout
+  trajectories. Scalar metrics, position heatmaps, and evaluation predictions
+  are not substitutes for training trajectories.
+- Save every training step and every sampled response, not only checkpoint or
+  diagnostic steps. Retain run/attempt ID, step, prompt/sample/group identity,
+  unmodified prompt and response token IDs, response length/mask, and decoded
+  text that preserves special tokens. Link records to the run's sampling seeds,
+  generation settings, tokenizer identity, and source revision.
+- Preserve the generation engine's actual finish/stop reason when available,
+  together with EOS/stop configuration. A length-at-cap indicator is a separate
+  measurement, not proof of the engine's finish reason. Never invent missing
+  reasons or reconstruct original trajectories by sampling a checkpoint again.
+- Make retention part of preflight and the resume gate: verify readable records,
+  step/sample coverage, special-token preservation, and no overwrite on resume.
+  Logging must not consume sampling RNG or change loss, batches, or decoding.
+- Keep raw trajectories in the experiment artifact store, never in Git. Preserve
+  prior attempts and use distinct files/segments on resume; no silent pruning.
+- This is a requirement for subsequent new launches, not evidence that the
+  existing frozen Qwen06 queue already saves trajectories. Its completed Token
+  run has no raw rollout dump. Do not hot-edit that runtime; any logging amendment
+  to an already queued job must be explicit, versioned, and verified first.
+- Historical truncation comparison and evidence limits are recorded in
+  `docs/results/2026-09-13-token-truncation-comparison.md`.
+
 ## Benchmark Reporting Policy (2026-09-13)
 
 - User requires independent scores for MATH500, AIME24, AIME25, and AMC23.

@@ -1,3 +1,66 @@
+diff --git a/agent_system/environments/env_manager.py b/agent_system/environments/env_manager.py
+index 8939229..7cb9608 100644
+--- a/agent_system/environments/env_manager.py
++++ b/agent_system/environments/env_manager.py
+@@ -645,9 +645,11 @@ class MathEnvironmentManager(EnvironmentManagerBase):
+         postprocess_text_obs: List[str] = []
+ 
+         for i in range(len(text_obs)):
+-            obs_i = MATH_TEMPLATE.format(
+-                task_description=self.tasks[i]
+-            )
++            if self.config.data.get('opd_prompt_protocol', 'legacy') == 'math_eval_nonthinking_v1':
++                from opd_ext.math_protocol import math_prompt
++                obs_i = math_prompt(self.tasks[i])
++            else:
++                obs_i = MATH_TEMPLATE.format(task_description=self.tasks[i])
+             postprocess_text_obs.append(obs_i)
+ 
+         return postprocess_text_obs
+@@ -896,4 +898,4 @@ def make_multitask_envs(config):
+     
+     print(f"[MultiTask] Created environment managers for tasks: {list(train_env_managers.keys())}")
+     
+-    return train_multi_env, val_multi_env
+\ No newline at end of file
++    return train_multi_env, val_multi_env
+diff --git a/agent_system/multi_turn_rollout/rollout_loop.py b/agent_system/multi_turn_rollout/rollout_loop.py
+index fd53aff..a1a6096 100644
+--- a/agent_system/multi_turn_rollout/rollout_loop.py
++++ b/agent_system/multi_turn_rollout/rollout_loop.py
+@@ -105,12 +105,17 @@ class TrajectoryCollector:
+         }])
+         
+         # Apply chat template
+-        prompt_with_chat_template = self.tokenizer.apply_chat_template(
+-            chat,
+-            add_generation_prompt=True,
+-            tokenize=False,
+-            **apply_chat_template_kwargs
+-        )
++        if self.config.data.get('opd_prompt_protocol', 'legacy') == 'math_eval_nonthinking_v1':
++            from opd_ext.math_protocol import render_nonthinking, DISABLED_SUFFIX
++            if apply_chat_template_kwargs.get('enable_thinking') is not False:
++                raise ValueError('Non-thinking training requires explicit enable_thinking=False')
++            prompt_with_chat_template = render_nonthinking(self.tokenizer, obs_content)
++            if not prompt_with_chat_template.endswith(DISABLED_SUFFIX):
++                raise ValueError('Qwen non-thinking control prefix is missing')
++        else:
++            prompt_with_chat_template = self.tokenizer.apply_chat_template(
++                chat, add_generation_prompt=True, tokenize=False, **apply_chat_template_kwargs
++            )
+         
+         # Initialize return dict
+         row_dict = {}
+@@ -382,6 +387,8 @@ class TrajectoryCollector:
+ 
+             batch.non_tensor_batch['uid'] = uid_batch
+             batch.non_tensor_batch['traj_uid'] = traj_uid
++            if 'source_extra_info' in gen_batch.non_tensor_batch:
++                batch.non_tensor_batch['source_extra_info'] = gen_batch.non_tensor_batch['source_extra_info']
+ 
+             batch = batch.union(batch_output)
+             
 diff --git a/verl/trainer/config/ppo_trainer.yaml b/verl/trainer/config/ppo_trainer.yaml
 index dcff326..5b1d392 100644
 --- a/verl/trainer/config/ppo_trainer.yaml
@@ -193,7 +256,7 @@ index f754f25..fbec0cb 100644
      return L1, L2, not_in_topk_ratio
 -
 diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
-index cbf1a4f..ad6a517 100644
+index cbf1a4f..31bba09 100644
 --- a/verl/trainer/ppo/ray_trainer_multitask.py
 +++ b/verl/trainer/ppo/ray_trainer_multitask.py
 @@ -21,8 +21,10 @@ FSDP PPO Trainer with Ray-based single controller.
@@ -505,7 +568,32 @@ index cbf1a4f..ad6a517 100644
  
                  # pop those keys for generation
                  batch_keys_to_pop = ["input_ids", "attention_mask", "position_ids"]
-@@ -1342,6 +1581,10 @@ class RayPPOTrainer:
+@@ -1291,6 +1530,8 @@ class RayPPOTrainer:
+                 )
+ 
+                 is_last_step = self.global_steps >= self.total_training_steps
++                if self.config.trainer.get('lossless_rollout_dir', None):
++                    gen_batch.non_tensor_batch['source_extra_info'] = batch.non_tensor_batch['extra_info'].copy()
+ 
+                 with _timer("step", timing_raw):
+                     # generate a batch
+@@ -1331,6 +1572,15 @@ class RayPPOTrainer:
+                     # batch = batch.union(gen_batch_output)
+                     del batch
+                     batch = gen_batch_output
++                    if self.config.trainer.get('lossless_rollout_dir', None):
++                        from opd_ext.math_protocol import save_rollouts
++                        with _timer('lossless_rollout_archive', timing_raw):
++                            metrics.update(save_rollouts(
++                                batch, self.tokenizer, self.config.trainer.lossless_rollout_dir,
++                                step=self.global_steps, run_id=self.config.trainer.experiment_name,
++                                attempt_id=self.config.trainer.rollout_attempt_id,
++                                source_commit=self.config.trainer.source_commit,
++                            ))
+ 
+                     if self.config.algorithm.adv_estimator == AdvantageEstimator.GiGPO:
+                         step_rewards_tensor = core_gigpo.compute_step_discounted_returns(
+@@ -1342,6 +1592,10 @@ class RayPPOTrainer:
                      batch = adjust_batch(self.config, batch)
  
                      batch.batch["response_mask"] = compute_response_mask(batch)
@@ -516,7 +604,7 @@ index cbf1a4f..ad6a517 100644
                      # balance the number of valid tokens on each dp rank.
                      # Note that this breaks the order of data inside the batch.
                      # Please take care when you implement group based adv computation such as GRPO and rloo
-@@ -1481,6 +1724,27 @@ class RayPPOTrainer:
+@@ -1481,6 +1735,27 @@ class RayPPOTrainer:
                                      else:
                                          ref_log_prob = self.actor_rollout_wg.compute_ref_log_prob(batch)
                              batch = batch.union(ref_log_prob)
@@ -544,7 +632,7 @@ index cbf1a4f..ad6a517 100644
                          
                          # Compute student's log probs for teacher's top-k indices if using OPD topk
                          if use_opd_topk and "teacher_topk_indices" in batch.batch:
-@@ -1606,6 +1870,19 @@ class RayPPOTrainer:
+@@ -1606,6 +1881,19 @@ class RayPPOTrainer:
                                  clip_log_ratio=self.config.actor_rollout_ref.actor.get("clip_log_ratio", False), # this config is not that naturally related to OPD, but we keep it here for compatibility
                              )
  
@@ -564,7 +652,7 @@ index cbf1a4f..ad6a517 100644
                          if self.config.trainer.get("rollout_data_dir", None):
                              self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
  
-@@ -1625,6 +1902,123 @@ class RayPPOTrainer:
+@@ -1625,6 +1913,123 @@ class RayPPOTrainer:
                          actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                          metrics.update(actor_output_metrics)
  
@@ -688,7 +776,7 @@ index cbf1a4f..ad6a517 100644
                      # Log rollout generations if enabled
                      rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
                      if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
-@@ -1638,10 +2032,6 @@ class RayPPOTrainer:
+@@ -1638,10 +2043,6 @@ class RayPPOTrainer:
                                  last_val_metrics = val_metrics
                          metrics.update(val_metrics)
  
@@ -699,7 +787,7 @@ index cbf1a4f..ad6a517 100644
                  # training metrics
                  metrics.update(
                      {
-@@ -1656,10 +2046,93 @@ class RayPPOTrainer:
+@@ -1656,10 +2057,96 @@ class RayPPOTrainer:
                  n_gpus = self.resource_pool_manager.get_n_gpus()
                  metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
  
@@ -713,6 +801,9 @@ index cbf1a4f..ad6a517 100644
 +                                "response_length/mean",
 +                                "response_length/max",
 +                                "response_length/clip_ratio",
++                                "rollout_archive/count",
++                                "rollout_archive/length_stop_rate",
++                                "rollout_archive/generated_think_tag_rate",
 +                            }:
 +                            diagnostic_scalars[key] = float(value)
 +                    diagnostic_dir = Path(
@@ -1192,3 +1283,49 @@ index 0874078..547d505 100644
              output = self.ulysses_sharding_manager.postprocess_data(output)
  
          output = output.to("cpu")
+diff --git a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
+index 8546325..7b4b72f 100644
+--- a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
++++ b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
+@@ -222,6 +222,8 @@ class vLLMRollout(BaseRollout):
+         for k in config.keys():
+             if hasattr(SamplingParams(), str(k)):
+                 kwargs[k] = config.get(k)
++        if isinstance(kwargs.get('stop_token_ids'), ListConfig):
++            kwargs['stop_token_ids'] = list(kwargs['stop_token_ids'])
+ 
+         print(f"kwargs: {kwargs}")
+         self.sampling_params = SamplingParams(**kwargs)
+@@ -338,10 +340,18 @@ class vLLMRollout(BaseRollout):
+ 
+             response = []
+             rollout_log_probs = []
+-            for output in outputs:
++            generation_records = []
++            retain_generation_metadata = self.config.get('retain_generation_metadata', False)
++            for output_index, output in enumerate(outputs):
+                 for sample_id in range(len(output.outputs)):
+                     response_ids = output.outputs[sample_id].token_ids
+                     response.append(response_ids)
++                    if retain_generation_metadata:
++                        from opd_ext.math_protocol import generation_record
++                        generation_records.append(generation_record(
++                            vllm_inputs[output_index]['prompt_token_ids'], output.outputs[sample_id],
++                            self.sampling_params, eos_token_id,
++                        ))
+                     curr_log_prob = []
+                     for i, logprob in enumerate(output.outputs[sample_id].logprobs):
+                         curr_log_prob.append(logprob[response_ids[i]].logprob)
+@@ -377,6 +387,12 @@ class vLLMRollout(BaseRollout):
+         response_position_ids = position_ids[..., -1:] + delta_position_id
+         position_ids = torch.cat([position_ids, response_position_ids], dim=-1)
+         response_attention_mask = get_response_mask(response_id=response, eos_token=eos_token_id, dtype=attention_mask.dtype)
++        if retain_generation_metadata:
++            from opd_ext.math_protocol import length_mask
++            response_attention_mask = length_mask(response, [len(r['response_token_ids']) for r in generation_records]).to(attention_mask.dtype)
++            records_array = np.empty(len(generation_records), dtype=object)
++            records_array[:] = generation_records
++            non_tensor_batch['generation_record'] = records_array
+         attention_mask = torch.cat((attention_mask, response_attention_mask), dim=-1)
+ 
+         # all the tp ranks should contain the same data here. data in all ranks are valid

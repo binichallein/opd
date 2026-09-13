@@ -58,6 +58,24 @@ resume_mode="${RESUME_MODE:-disable}"
 resume_from_path="${RESUME_FROM_PATH:-}"
 window_mode=fixed
 window_seed="${OPD_WINDOW_SEED:-$((910000 + ${ENV_SEED:-21}))}"
+protocol_args=()
+if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 ]]; then
+    : "${LOSSLESS_ROLLOUT_DIR:?Complete rollout retention is required}"
+    : "${ROLLOUT_ATTEMPT_ID:?An explicit attempt identity is required}"
+    : "${SOURCE_COMMIT:?Source identity is required}"
+    protocol_args=(
+        +data.opd_prompt_protocol=math_eval_nonthinking_v1
+        +data.apply_chat_template_kwargs.enable_thinking=false
+        +actor_rollout_ref.rollout.retain_generation_metadata=true
+        '+actor_rollout_ref.rollout.stop_token_ids=[151643,151645]'
+        "+trainer.lossless_rollout_dir=${LOSSLESS_ROLLOUT_DIR}"
+        "+trainer.rollout_attempt_id=${ROLLOUT_ATTEMPT_ID}"
+        "+trainer.source_commit=${SOURCE_COMMIT}"
+    )
+elif [[ "${OPD_PROMPT_PROTOCOL:-legacy}" != legacy ]]; then
+    echo 'Unknown prompt protocol' >&2
+    exit 2
+fi
 
 case "${VARIANT}" in
   token_opd)
@@ -106,6 +124,7 @@ mkdir -p "${LOG_DIR}"
 
 set -x
 python3 -m verl.trainer.main_ppo_multitask \
+    "${protocol_args[@]}" \
     algorithm.adv_estimator=opd \
     actor_rollout_ref.actor.kl_loss_type=k1 \
     +actor_rollout_ref.actor.kl_topk_tokens=32 \

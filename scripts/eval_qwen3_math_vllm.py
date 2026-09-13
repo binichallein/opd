@@ -47,6 +47,9 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def apply_template(tokenizer: Any, prompt: str, enable_thinking: bool) -> str:
+    if enable_thinking is False:
+        from opd_ext.math_protocol import render_nonthinking
+        return render_nonthinking(tokenizer, prompt)
     messages = [{"role": "user", "content": prompt}]
     try:
         return tokenizer.apply_chat_template(

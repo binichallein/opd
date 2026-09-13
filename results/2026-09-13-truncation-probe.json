@@ -1,0 +1,161 @@
+{
+  "scope": "matched training-prompt diagnostic, not a held-out benchmark score",
+  "utc": "2026-09-13T06:31:37.601385+00:00",
+  "grader_sha256": "04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f",
+  "primary32": {
+    "q06_base": {
+      "n": 32,
+      "length_stop_count": 12,
+      "length_at_cap_count": 12,
+      "mean_length": 6869.1875,
+      "periodic_tail_count": 10,
+      "capped_periodic_tail_count": 10,
+      "earlier_im_end_count": 0,
+      "correct_count": 0,
+      "grading_errors": 0
+    },
+    "q06_step50": {
+      "n": 32,
+      "length_stop_count": 10,
+      "length_at_cap_count": 10,
+      "mean_length": 6169.78125,
+      "periodic_tail_count": 4,
+      "capped_periodic_tail_count": 4,
+      "earlier_im_end_count": 0,
+      "correct_count": 1,
+      "grading_errors": 0
+    },
+    "q17_base": {
+      "n": 32,
+      "length_stop_count": 16,
+      "length_at_cap_count": 16,
+      "mean_length": 8805.84375,
+      "periodic_tail_count": 10,
+      "capped_periodic_tail_count": 9,
+      "earlier_im_end_count": 0,
+      "correct_count": 1,
+      "grading_errors": 0
+    },
+    "q17_step50": {
+      "n": 32,
+      "length_stop_count": 4,
+      "length_at_cap_count": 4,
+      "mean_length": 4126,
+      "periodic_tail_count": 0,
+      "capped_periodic_tail_count": 0,
+      "earlier_im_end_count": 0,
+      "correct_count": 4,
+      "grading_errors": 0
+    }
+  },
+  "prompt_ablation_first16": {
+    "q06_base_no_think": {
+      "n": 16,
+      "length_stop_count": 5,
+      "length_at_cap_count": 5,
+      "mean_length": 5475.5,
+      "periodic_tail_count": 4,
+      "capped_periodic_tail_count": 4,
+      "earlier_im_end_count": 0,
+      "correct_count": 1,
+      "grading_errors": 0
+    },
+    "q06_base_plain": {
+      "n": 16,
+      "length_stop_count": 1,
+      "length_at_cap_count": 1,
+      "mean_length": 1586.5,
+      "periodic_tail_count": 1,
+      "capped_periodic_tail_count": 1,
+      "earlier_im_end_count": 0,
+      "correct_count": 1,
+      "grading_errors": 0
+    },
+    "q06_base_training": {
+      "n": 16,
+      "length_stop_count": 6,
+      "length_at_cap_count": 6,
+      "mean_length": 6582.3125,
+      "periodic_tail_count": 6,
+      "capped_periodic_tail_count": 6,
+      "earlier_im_end_count": 0,
+      "correct_count": 0,
+      "grading_errors": 0
+    },
+    "q17_base_no_think": {
+      "n": 16,
+      "length_stop_count": 1,
+      "length_at_cap_count": 1,
+      "mean_length": 2439.75,
+      "periodic_tail_count": 1,
+      "capped_periodic_tail_count": 1,
+      "earlier_im_end_count": 0,
+      "correct_count": 1,
+      "grading_errors": 0
+    },
+    "q17_base_plain": {
+      "n": 16,
+      "length_stop_count": 0,
+      "length_at_cap_count": 0,
+      "mean_length": 587.5625,
+      "periodic_tail_count": 0,
+      "capped_periodic_tail_count": 0,
+      "earlier_im_end_count": 0,
+      "correct_count": 0,
+      "grading_errors": 0
+    },
+    "q17_base_training": {
+      "n": 16,
+      "length_stop_count": 6,
+      "length_at_cap_count": 6,
+      "mean_length": 7081.875,
+      "periodic_tail_count": 4,
+      "capped_periodic_tail_count": 3,
+      "earlier_im_end_count": 0,
+      "correct_count": 1,
+      "grading_errors": 0
+    }
+  },
+  "artifacts": {
+    "q06_base_training_no_think_seed21": {
+      "raw_sha256": "57aa0239b0abdd75e3a862f7e6a4c3e64a53fa4da68143d9264228768fa9050f",
+      "grades_sha256": "6e9cafd9c6701aec988d06025817f45e030bafa4eeff17c97254ce9680688e35",
+      "n": 16
+    },
+    "q06_base_training_plain_seed21": {
+      "raw_sha256": "bb5729492e27b11b70a0642bd3f20eac1e00e873ca3dc0d0ec55f4b6ea44b1f5",
+      "grades_sha256": "7699d2a386117cadadb5c1631c834f18d95f59c5cb251431f91ecde805be5e8f",
+      "n": 16
+    },
+    "q06_base_training_training_seed21": {
+      "raw_sha256": "daeb304ae26fbd0044c3e7afc5b84ad5ec4a8fa5e75aa9a4eed4cb9146dc2c0f",
+      "grades_sha256": "da7148122bd671c4665b9fb3a90090f1ac58b29cd1c96f4c7f84393ab4eea988",
+      "n": 32
+    },
+    "q06_step50_training_training_seed21": {
+      "raw_sha256": "c46bfa3fe29b3729b269c780a26bb9eaca8419d25a474ec2dbd34858cf7d78bc",
+      "grades_sha256": "87f0f381ac87314bd010fddbbe504430336eb5780b3fae96cadd860e386bb2ee",
+      "n": 32
+    },
+    "q17_base_training_no_think_seed21": {
+      "raw_sha256": "09e51a9873548d2668a94a0268f6748385003da975f4e5ac1ae04d271d76e120",
+      "grades_sha256": "72f17669ac1a1a40245ad251fb7a00dd2109611af5c0b137b6005bc67cf8fbac",
+      "n": 16
+    },
+    "q17_base_training_plain_seed21": {
+      "raw_sha256": "3409a9889737527a1fbbc916720d9a833fe9ccd81b20d1b1c58bc20859b2be5b",
+      "grades_sha256": "3285ec87f3e99195a5501790347f98d37f1411af8d93f8d1ada43e65ffdc7781",
+      "n": 16
+    },
+    "q17_base_training_training_seed21": {
+      "raw_sha256": "f021eec025b22290ebb1427797f58c5cf621c9c4215c9ce28ebbb262c0d79a94",
+      "grades_sha256": "dc908a0bfe667294a81d79c53f409c81eda51a87ea0c18f83d5ede1ad43e35eb",
+      "n": 32
+    },
+    "q17_step50_training_training_seed21": {
+      "raw_sha256": "add6dff679563ea990bcfdbfb8ffb471fde566274d753d6c22d448d94169320b",
+      "grades_sha256": "52cf45ed76e033e46d3b77dcf6d592c038dbe89dde6afab101f1235d4360189d",
+      "n": 32
+    }
+  }
+}
