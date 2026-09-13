@@ -24,7 +24,8 @@ def main():
     from transformers import AutoTokenizer
     import numpy as np
     from omegaconf import OmegaConf
-    from types import SimpleNamespace
+    import torch
+    from verl import DataProto
     from agent_system.environments.env_manager import MathEnvironmentManager
     from agent_system.multi_turn_rollout.rollout_loop import TrajectoryCollector
     from eval_qwen3_math_vllm import apply_template
@@ -44,8 +45,10 @@ def main():
     collector=TrajectoryCollector(config,tokenizer)
     prompts=[]
     for i,row in enumerate(cohort):
-        gen=SimpleNamespace(non_tensor_batch={'raw_prompt':np.array([[{'role':'user','content':row['question']}]],dtype=object),
-                                               'data_source':np.array(['dapo-math-17k'])})
+        raw_prompt=np.empty(1,dtype=object)
+        raw_prompt[0]=[{'role':'user','content':row['question']}]
+        gen=DataProto.from_single_dict({'input_ids':torch.zeros((1,1),dtype=torch.long),
+                                       'raw_prompt':raw_prompt,'data_source':np.array(['dapo-math-17k'],dtype=object)})
         processed=collector.preprocess_single_sample(0,gen,{'text':[observations[i]]})
         evaluation=apply_template(tokenizer,math_prompt(row['question']),False)
         assert evaluation==render_nonthinking(tokenizer,observations[i])

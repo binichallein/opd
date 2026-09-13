@@ -17,8 +17,8 @@ import run_qwen06_pair as base
 import run_window_queue as jobs
 
 ROOT=base.ROOT
-RUN_ROOT=ROOT/'runs/20260913v2_qwen06_nonthinking_token_seed21_ml2'
-CACHE=Path('/limx_embap/tos/q06/0913v2')
+RUN_ROOT=ROOT/'runs/20260913v3_qwen06_nonthinking_token_seed21_ml2'
+CACHE=Path('/limx_embap/tos/q06/0913v3')
 PROTOCOL='math_eval_nonthinking_v1'
 
 

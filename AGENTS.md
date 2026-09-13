@@ -9,9 +9,12 @@ reproducibility, data safety, and clear experiment lineage.
   explicit thinking disable, training/evaluation prompt agreement, lossless
   training trajectories and all existing OPD diagnostics. Read
   `docs/plans/2026-09-13-qwen06-nonthinking-token.md` before acting.
-- The only new run is `20260913v2_qwen06_nonthinking_token_seed21_ml2`;
+- The active attempt is `20260913v3_qwen06_nonthinking_token_seed21_ml2`;
   controller `scripts/run_qwen06_nonthinking.py`. It gates training on real GPU
   prompt/output checks and a two-step training-state/rollout-retention resume test.
+- Attempt v2 stopped in the GPU gate's CPU input construction (missing batch on a
+  test stub), before any generation or training. Its runtime 8a0a2d3 and artifacts
+  remain intact. v3 uses a real DataProto fixture; do not restart v2.
 - Keep original seed21, data, teacher, 200 steps and Step50/100/200 state retention.
   Start formal Token from the official Base, never from old/probe weights. New
   protocol also matches evaluation EOS stops and uses actual generation lengths
