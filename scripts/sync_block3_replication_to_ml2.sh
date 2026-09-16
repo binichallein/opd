@@ -31,6 +31,7 @@ FILES=(
   scripts/prepare_qwen06_assets.py
   scripts/prepare_dapo17k_revisiting_math.py
   scripts/run_qwen06_nonthinking.py
+  scripts/run_nonthinking_eval_block3.py
   scripts/verify_nonthinking_gpu.py
   scripts/plot_window_diagnostics.py
   configs/window_plot_requirements.txt

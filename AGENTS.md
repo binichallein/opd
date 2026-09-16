@@ -3,6 +3,27 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Token Eval Then Block3 (2026-09-17)
+
+- Latest user explicitly authorizes full evaluation of the completed non-thinking
+  Qwen06 Token arm, followed by matched Block3 mean training. This overrides the
+  historical eval/Block3 pause below, but NEVER restarts the old thinking queue.
+- Read `docs/plans/2026-09-17-qwen06-token-eval-then-block3.md`. New ordered queue:
+  `20260917v1_qwen06_nonthinking_eval_block3_seed21_ml2`, controller
+  `scripts/run_nonthinking_eval_block3.py`. Check live state before launching.
+- Token source is the completed Sep13 v4 non-thinking run. Evaluate Steps200/100/50,
+  official 0.6B Base and existing 4B GRPO teacher with pinned historical grader,
+  full n8, all four benchmarks scored independently. No pooled headline score.
+- Only after ALL five model evaluations pass raw/graded/coverage checks may the
+  queue launch Block3's two-step resume probe and formal200. No weight warm-start
+  from Token/probes. No new seed, sliding/random variant, SFT or private model.
+- Block3 uses EXACT Token training runtime `0ce73aa42d7f734b9d34c379f474458bb6d48771`;
+  controller has its own release. Keep explicit non-thinking, full rollout archives,
+  original diagnostics and all50/100/200 complete checkpoints. Do not hot-edit
+  either runtime or overwrite Token outputs. Merges/evals go to the NEW run root.
+- Any eval failure or paired mismatch stops the queue. No auto retry/cleanup.
+  Block3 full evaluation is NOT auto-started by this controller.
+
 ## Authorized Non-Thinking Token Run (2026-09-13)
 
 - User now authorizes a NEW official Qwen3-0.6B-Base Token OPD run on ml2, with
