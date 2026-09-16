@@ -26,6 +26,9 @@ reproducibility, data safety, and clear experiment lineage.
   reached four-GPU MATH500 generation; Block3 is still gated behind evaluations.
   Read `docs/results/2026-09-17-qwen06-eval-block3-startup.md` and LIVE queue state.
   Later documentation commits must not change either frozen runtime identity.
+- User requested continuous supervision. Accepted per-benchmark scores and
+  monitoring evidence are in `docs/results/2026-09-17-qwen06-evaluation-progress.md`.
+  Read live state first; phase snapshots are not proof that subsequent jobs ran.
 - Any eval failure or paired mismatch stops the queue. No auto retry/cleanup.
   Block3 full evaluation is NOT auto-started by this controller.
 
