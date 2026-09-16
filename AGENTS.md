@@ -21,6 +21,11 @@ reproducibility, data safety, and clear experiment lineage.
   controller has its own release. Keep explicit non-thinking, full rollout archives,
   original diagnostics and all50/100/200 complete checkpoints. Do not hot-edit
   either runtime or overwrite Token outputs. Merges/evals go to the NEW run root.
+- Queue is launched: controller PID4130269, release
+  `788a2dca21902fda25777fca1a6863780973a8c1`. Step200 full evaluation PID4130750
+  reached four-GPU MATH500 generation; Block3 is still gated behind evaluations.
+  Read `docs/results/2026-09-17-qwen06-eval-block3-startup.md` and LIVE queue state.
+  Later documentation commits must not change either frozen runtime identity.
 - Any eval failure or paired mismatch stops the queue. No auto retry/cleanup.
   Block3 full evaluation is NOT auto-started by this controller.
 
