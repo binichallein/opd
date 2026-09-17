@@ -1,8 +1,8 @@
 # 0.6B Non-Thinking Token 评测监督记录
 
-截至2026-09-17 10:05北京时间，Token Step200、Step100、Step50、原始学生
-和教师的五组完整评测均已验收。Block3已进入保存/恢复测试的probe1，正式
-200步训练尚未开始。本文件是阶段记录，不能据此宣称Block3方法有效。
+截至2026-09-17 10:39北京时间，五组完整评测及Block3保存/恢复测试均已验收。
+正式Block3已启动并完成首步，200步训练仍在进行。本文件是阶段记录，不能
+据此宣称Block3方法有效。
 
 ## 协议与证据
 
@@ -87,6 +87,23 @@ Step200相对Step100在MATH500与AMC23上较高，AIME未呈现一致提升。�
 - 额外核验教师MATH500的500题/4000条覆盖和逐题输入身份；4000条解码文本
   均未出现think标签。当前冻结评测器没有保存生成token IDs，此项是文本检查，
   不是原始输出token审计；也不意味着输出不含普通文本推理。
+- 10:24前，probe2退出0，两个checkpoint的原生审计、`resume_gate.json`及
+  `rollout_acceptance.json`均通过。四个rank的model/optim/extra状态加载日志
+  完整，scheduler step从1推进到2，数据消费位置及rank RNG保存状态通过检查。
+  两步各32条轨迹、各16条length stop，均无新think标签。这不是逐位vLLM重放证明。
+- 10:24:49正式Block3进程PID7180启动；实际命令从官方0.6B Base初始化，
+  `RESUME_MODE=disable`、恢复路径为空、计划200步，不使用Token/probe权重。
+- 10:36前正式step1已更新：PG loss=0.17667435、裁剪前grad norm=30.088518、
+  SignFlipRate=0.03167072、NormalizedLeakage=0.88043940，记录数值均有限。
+  首批prompt摘要、师生熵、Top16 overlap、输出长度与Token首步完全一致。
+  两种loss的梯度不同是预期现象，单步范数差不等于梯度爆炸或方法收益。
+- 正式step1原始轨迹审计通过：32条、16条真实length stop、0新think标签，
+  实际prompt token IDs匹配评测协议。原始gzip SHA256为
+  `a39ebaf4a8166d416491bfde580c3f288832c39251677b25f2add3d91780a140`。
+  长度均值8360.5、截断率50%，不得声称非thinking消除了截断。
+- 首批五张诊断图及HTML由冻结绘图脚本在CPU生成，保存在
+  `block3_mean/monitor_figures/20260917_1037_step1/`，未覆盖最终图目录。
+  首步热图只有一个训练时间切片，尚不能用于判断熵随训练演化。
 - 未观察到OOM、CUDA异常或队列失败；工作进程正常结束时存在NCCL清理警告，
   原日志完整保留。GPU释放与工作进程完成对应，不把清理警告等同于训练崩溃。
 - 评测器关闭逐响应进度条、整项生成后写原始JSONL；CPU判分时GPU可以空闲。
@@ -97,7 +114,7 @@ Step200相对Step100在MATH500与AMC23上较高，AIME未呈现一致提升。�
 ## 后续检查
 
 五个视图已经全部验收，控制器已生成逐benchmark的`token_effect.json/.md`。
-继续监督Block3两步保存/恢复测试，验收后从同一官方Base正式训练200步。继续核验
+Block3两步保存/恢复测试已经验收，正式200步训练运行中。继续核验
 非thinking协议、每步完整rollout、原有诊断、50/100/200完整checkpoint与最终热图。
 
 本控制器不自动启动Block3完整benchmark评测。实时状态入口和完整方案见
