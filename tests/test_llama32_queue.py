@@ -103,3 +103,17 @@ def test_predecessor_requires_each_full_accepted_evaluation(tmp_path):
     (tmp_path / 'evaluations/block3_step50/exit_code.txt').write_text('1\n')
     with pytest.raises(ValueError):
         m.predecessor_ready(tmp_path)
+
+
+def test_native_eval_format_and_truncation_are_separate():
+    m = module()
+    rows = [{'response': r'\boxed{2}', 'response_token_ids': [3, 128009],
+             'num_generated_tokens': 2, 'finish_reason': 'stop'},
+            {'response': 'unfinished', 'response_token_ids': [4] * 16384,
+             'num_generated_tokens': 16384, 'finish_reason': 'length'}]
+    stats = m.native_eval_statistics(rows)
+    assert stats['format_error_rate'] == stats['engine_truncation_ratio'] == .5
+    assert stats['mean_generated_tokens'] == 8193
+    rows[0]['num_generated_tokens'] = 3
+    with pytest.raises(ValueError):
+        m.native_eval_statistics(rows)

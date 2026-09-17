@@ -9,6 +9,23 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 新增 Llama 3.2 配对验证
+
+2026-09-18 用户选择 `Llama-3.2-1B-Instruct <- Llama-3.2-3B-Instruct`，两者从
+ModelScope 固定 revision 获取。先等当前 Qwen06 Block3 三个 checkpoint
+完整评测成功结束，再执行零步 Instruct 学生评测、Token OPD 训练/评测、
+Block3 mean 训练/评测。两臂独立使用同一初始学生，保留同一 DAPO 文件、
+seed21、200步、全部监控及50/100/200完整状态与四任务 n8 历史评分器。
+
+- [执行计划和完整配置](docs/plans/2026-09-18-llama32-paired-validation.md)
+- `scripts/prepare_llama32_assets.py`：ModelScope 原始 BF16 权重及26文件校验。
+- `scripts/run_llama32_pair.py`：等待前驱、GPU prompt门禁、恢复门禁、串行实验。
+- Llama 使用原生模板/停止符、固定日期和显式 token IDs；不注入 Qwen think
+  标记。数据、loss和grader不变。新部署与旧实验隔离，不抢卡或自动重试。
+- 每个benchmark独立报告 Avg@8、Pass@8、缺boxed比例与真实引擎截断率。
+
+下面的0.6B/窗口运行状态保留历史时点记录；最新状态以服务器queue_state为准。
+
 ## 新增 0.6B 配对验证
 
 2026-09-13 用户批准仅先做官方 `Qwen/Qwen3-0.6B-Base`，教师仍为原来

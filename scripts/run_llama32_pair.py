@@ -138,6 +138,8 @@ def prompt_contract(model):
 
 
 def preflight():
+    if shutil.disk_usage(ROOT).free < 150_000_000_000:
+        raise ValueError('Less than 150 GB free; preserve old artifacts and stop')
     protected = assets.verify_assets()
     previous = base.read_json(PREDECESSOR / 'protected_inputs.json')
     paths = [base.DATA / 'train.parquet', base.DATA / 'test.parquet']
@@ -241,9 +243,30 @@ def evaluate_model(name, runtime, commit, runner):
     shared.verify_hashes(hashes)
     grading.validate_grader_hash(base.GRADER, grading.HISTORICAL_GRADER_SHA256)
     accepted = shared.audit_evaluation(folder / 'outputs', base.DATA / 'eval_jsonl', model)
+    config = base.read_json(folder / 'outputs/eval_config.json')
+    summary = base.read_json(folder / 'outputs/summary.json')
+    for task in shared.TASK_COUNTS:
+        rows = grading.load_jsonl(grading.raw_output_path(folder / 'outputs', task, config))
+        statistics = native_eval_statistics(rows)
+        if (summary['tasks'][task]['format_error_rollouts'] != statistics['format_error_rollouts']
+                or summary['tasks'][task]['engine_length_stop_rollouts'] != statistics['engine_length_stop_rollouts']):
+            raise ValueError('Evaluation format/truncation summary differs from raw generation')
+        accepted['per_task'][task].update(statistics)
     jobs.write_json(folder / 'acceptance.json', accepted)
     print(json.dumps({'evaluated': name, 'per_task': accepted['per_task']}), flush=True)
     return accepted
+
+
+def native_eval_statistics(rows):
+    if not rows or any(r.get('num_generated_tokens') != len(r.get('response_token_ids', []))
+                       or r.get('finish_reason') not in ('length', 'stop')
+                       or not 0 <= r['num_generated_tokens'] <= 16384 for r in rows):
+        raise ValueError('Incomplete native evaluation generation metadata')
+    formatting = sum('\\boxed' not in r['response'] for r in rows)
+    truncated = sum(r['finish_reason'] == 'length' for r in rows)
+    return {'format_error_rollouts': formatting, 'format_error_rate': formatting / len(rows),
+            'engine_length_stop_rollouts': truncated, 'engine_truncation_ratio': truncated / len(rows),
+            'mean_generated_tokens': sum(r['num_generated_tokens'] for r in rows) / len(rows)}
 
 
 def compare_prompt_order(root):
@@ -264,16 +287,17 @@ def write_comparison(root, results):
     report = {'protocol': LLAMA_PROTOCOL, 'per_benchmark': {}}
     for task in shared.TASK_COUNTS:
         report['per_benchmark'][task] = {}
-        lines += [f'## {task}', '', '| Model | Avg@8 | Pass@8 |', '|---|---:|---:|']
+        lines += [f'## {task}', '', '| Model | Avg@8 | Pass@8 | 缺boxed (%) | 实际截断 (%) |', '|---|---:|---:|---:|---:|']
         for name, result in results.items():
             value = result['per_task'][task]
             report['per_benchmark'][task][name] = value
-            lines.append(f"| {name} | {100*value['avg_at_8']:.4f} | {100*value['pass_at_8']:.4f} |")
+            lines.append(f"| {name} | {100*value['avg_at_8']:.4f} | {100*value['pass_at_8']:.4f} | "
+                         f"{100*value['format_error_rate']:.4f} | {100*value['engine_truncation_ratio']:.4f} |")
         for step in sorted(STEPS):
             left, right = (results[f'{v}_step{step}']['per_task'][task] for v in VARIANTS)
             delta = {metric: 100 * (right[metric] - left[metric]) for metric in ('avg_at_8', 'pass_at_8')}
             report['per_benchmark'][task][f'delta_step{step}_pp'] = delta
-            lines.append(f"| Block3 - Token Step{step} (pp) | {delta['avg_at_8']:+.4f} | {delta['pass_at_8']:+.4f} |")
+            lines.append(f"| Block3 - Token Step{step} (pp) | {delta['avg_at_8']:+.4f} | {delta['pass_at_8']:+.4f} | | |")
         lines.append('')
     lines += ['单训练seed的对照，不构成跨seed显著性结论；不得将执行验收当作方法有效性证明。', '']
     jobs.write_json(root / 'paired_comparison.json', report)

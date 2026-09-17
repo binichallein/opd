@@ -30,6 +30,7 @@ def main():
     args=parser.parse_args()
     if args.cpu_only:
         os.environ['CUDA_VISIBLE_DEVICES'] = ''
+        os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
     else:
         configure_gpu_process()
     from transformers import AutoTokenizer
