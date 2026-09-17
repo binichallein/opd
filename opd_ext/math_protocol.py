@@ -10,6 +10,57 @@ PROTOCOL = 'math_eval_nonthinking_v1'
 DISABLED_SUFFIX = '<|im_start|>assistant\n<think>\n\n</think>\n\n'
 ANSWER_INSTRUCTION = 'Please reason step by step, and put your final answer within \\boxed{}.'
 STOP_TOKEN_IDS = [151643, 151645]
+LLAMA_PROTOCOL = 'llama32_nonthinking_v1'
+LLAMA_SUFFIX = '<|start_header_id|>assistant<|end_header_id|>\n\n'
+LLAMA_STOP_IDS = [128001, 128008, 128009]
+LLAMA_DATE = '18 Sep 2026'
+
+
+def tokenizer_protocol(tokenizer):
+    get_vocab = getattr(tokenizer, 'get_added_vocab', getattr(tokenizer, 'get_vocab', lambda: {}))
+    vocab = get_vocab()
+    if vocab.get('<|begin_of_text|>') == 128000:
+        expected = {'<|end_of_text|>': 128001, '<|eom_id|>': 128008, '<|eot_id|>': 128009}
+        if any(vocab.get(token) != value for token, value in expected.items()):
+            raise ValueError('Incomplete Llama special-token mapping')
+        return LLAMA_PROTOCOL
+    return PROTOCOL
+
+
+def valid_control_prefix(text, tokenizer, expected_protocol):
+    actual = tokenizer_protocol(tokenizer)
+    suffix = LLAMA_SUFFIX if actual == LLAMA_PROTOCOL else DISABLED_SUFFIX
+    return actual == expected_protocol and text.endswith(suffix)
+
+
+def evaluation_stop_ids(tokenizer):
+    if tokenizer_protocol(tokenizer) == LLAMA_PROTOCOL:
+        return list(LLAMA_STOP_IDS)
+    stops = []
+    for token in ('<|im_end|>', '<|endoftext|>'):
+        try:
+            encoded = tokenizer.encode(token, add_special_tokens=False)
+            if encoded:
+                stops.append(encoded[0])
+        except Exception:
+            continue
+    return stops
+
+
+def evaluation_inputs(tokenizer, prompts):
+    # Native Llama templates already include BOS; string tokenization may add it again.
+    if tokenizer_protocol(tokenizer) == LLAMA_PROTOCOL:
+        return [{'prompt_token_ids': tokenizer.encode(text, add_special_tokens=False)} for text in prompts]
+    return prompts
+
+
+def native_eval_record(output, expected_ids):
+    if list(output.prompt_token_ids) != expected_ids:
+        raise ValueError('Engine evaluation prompt IDs differ from the training protocol')
+    sample = output.outputs[0]
+    return {'prompt_token_ids': list(output.prompt_token_ids), 'response_token_ids': list(sample.token_ids),
+            'num_generated_tokens': len(sample.token_ids), 'finish_reason': sample.finish_reason,
+            'stop_reason': sample.stop_reason}
 
 
 def math_prompt(question):
@@ -22,9 +73,10 @@ def math_prompt(question):
 
 
 def render_nonthinking(tokenizer, content):
+    kwargs = {'date_string': LLAMA_DATE} if tokenizer_protocol(tokenizer) == LLAMA_PROTOCOL else {}
     return tokenizer.apply_chat_template(
         [{'role': 'user', 'content': content}], tokenize=False,
-        add_generation_prompt=True, enable_thinking=False,
+        add_generation_prompt=True, enable_thinking=False, **kwargs,
     )
 
 
@@ -60,6 +112,7 @@ def _json_default(value):
 
 
 def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, source_commit):
+    protocol = tokenizer_protocol(tokenizer)
     if not attempt_id or Path(attempt_id).name != attempt_id or attempt_id in ('.', '..'):
         raise ValueError('A simple explicit attempt ID is required')
     folder = Path(directory) / attempt_id
@@ -96,7 +149,7 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
                 stopped += int(record['finish_reason'] == 'length')
                 record.update({
                     'run_id': run_id, 'attempt_id': attempt_id, 'step': step, 'sample_index': i,
-                    'source_commit': source_commit, 'protocol': PROTOCOL, 'enable_thinking': False,
+                    'source_commit': source_commit, 'protocol': protocol, 'enable_thinking': False,
                     'uid': str(batch.non_tensor_batch['uid'][i]),
                     'traj_uid': str(batch.non_tensor_batch['traj_uid'][i]),
                     'source_extra_info': batch.non_tensor_batch['source_extra_info'][i],

@@ -10,6 +10,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from opd_ext.math_protocol import (DISABLED_SUFFIX, PROTOCOL, STOP_TOKEN_IDS,
+                                   LLAMA_PROTOCOL, LLAMA_STOP_IDS, valid_control_prefix, evaluation_inputs,
                                    generation_record, generated_think_tags, math_prompt, render_nonthinking)
 
 
@@ -24,23 +25,28 @@ def main():
     parser.add_argument('--cohort', type=Path, required=True)
     parser.add_argument('--eval-data', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--protocol', choices=(PROTOCOL, LLAMA_PROTOCOL), default=PROTOCOL)
+    parser.add_argument('--cpu-only', action='store_true', help='Check the real collector inputs without loading any model')
     args=parser.parse_args()
-    configure_gpu_process()
+    if args.cpu_only:
+        os.environ['CUDA_VISIBLE_DEVICES'] = ''
+    else:
+        configure_gpu_process()
     from transformers import AutoTokenizer
     import numpy as np
     from omegaconf import OmegaConf
     import torch
     from verl import DataProto
+    from verl.utils.tokenizer import hf_tokenizer
     from agent_system.environments.env_manager import MathEnvironmentManager
     from agent_system.multi_turn_rollout.rollout_loop import TrajectoryCollector
     from eval_qwen3_math_vllm import apply_template
-    from vllm import LLM, SamplingParams
 
     args.output.mkdir(parents=True, exist_ok=False)
-    tokenizer=AutoTokenizer.from_pretrained(args.model,local_files_only=True)
+    tokenizer=hf_tokenizer(args.model,local_files_only=True)
     assert hashlib.sha256(args.cohort.read_bytes()).hexdigest() == 'dd9e79bc95378ae3ac4cbb194b511f3fed7d1b6fb9050ac29ee8d93ea3f33aee'
     cohort=[json.loads(line) for line in args.cohort.read_text().splitlines()][:16]
-    config=OmegaConf.create({'data':{'opd_prompt_protocol':PROTOCOL,
+    config=OmegaConf.create({'data':{'opd_prompt_protocol':args.protocol,
                             'apply_chat_template_kwargs':{'enable_thinking':False},
                             'max_prompt_length':2048,'truncation':'middle','return_raw_chat':True}})
     manager=MathEnvironmentManager.__new__(MathEnvironmentManager)
@@ -57,8 +63,10 @@ def main():
         processed=collector.preprocess_single_sample(0,gen,{'text':[observations[i]]})
         evaluation=apply_template(tokenizer,math_prompt(row['question']),False)
         assert evaluation==render_nonthinking(tokenizer,observations[i])
-        assert evaluation.endswith(DISABLED_SUFFIX)
+        assert valid_control_prefix(evaluation, tokenizer, args.protocol)
         ids=tokenizer.encode(evaluation,add_special_tokens=False)
+        if args.protocol == LLAMA_PROTOCOL:
+            assert evaluation_inputs(tokenizer, [evaluation])[0]['prompt_token_ids'] == ids
         if len(ids)>2048:
             ids=ids[:1024]+ids[-1024:]
         assert processed['raw_prompt_ids']==ids
@@ -72,15 +80,20 @@ def main():
             assert math_prompt(row['problem'])==row['prompt'], (file,row['id'])
         checked[file.name]=len(rows)
     with (args.output/'input_contract.json').open('x') as f:
-        json.dump({'protocol':PROTOCOL,'enable_thinking':False,'eval_rows_checked':checked,
+        json.dump({'protocol':args.protocol,'enable_thinking':False,'eval_rows_checked':checked,
                    'vllm_worker_multiproc_method':os.environ['VLLM_WORKER_MULTIPROC_METHOD'],
                    'train_eval_prompt_ids_identical':True,'n':len(prompts)},f,indent=2)
 
+    if args.cpu_only:
+        print(json.dumps({'cpu_input_contract_passed': True, 'gpu_check_performed': False}), flush=True)
+        return
+    from vllm import LLM, SamplingParams
     llm=LLM(model=args.model,tokenizer=args.model,dtype='bfloat16',tensor_parallel_size=1,
             gpu_memory_utilization=.6,max_model_len=18432,max_num_batched_tokens=18432,
             max_num_seqs=32,enforce_eager=False,enable_chunked_prefill=False,seed=21)
     params=SamplingParams(n=1,temperature=1.,top_p=.9,top_k=-1,seed=21,max_tokens=16384,
-                          ignore_eos=False,stop_token_ids=STOP_TOKEN_IDS,detokenize=False,logprobs=0)
+                          ignore_eos=False,stop_token_ids=LLAMA_STOP_IDS if args.protocol == LLAMA_PROTOCOL else STOP_TOKEN_IDS,
+                          detokenize=False,logprobs=0)
     for i,row in enumerate(prompts):
         llm.llm_engine.add_request(str(i),{'prompt_token_ids':row['prompt_token_ids']},params)
     records=[]
@@ -90,6 +103,7 @@ def main():
                 if not result.finished:
                     continue
                 row=prompts[int(result.request_id)]
+                assert list(result.prompt_token_ids) == row['prompt_token_ids']
                 record={**row,**generation_record(row['prompt_token_ids'],result.outputs[0],params,tokenizer.eos_token_id)}
                 record['response_text']=tokenizer.decode(record['response_token_ids'],skip_special_tokens=False,
                                                          clean_up_tokenization_spaces=False)
@@ -103,7 +117,7 @@ def main():
                                   'tokens':len(record['response_token_ids']),
                                   'finish':record['finish_reason'],'generated_think_tags':record['generated_think_tags']}),flush=True)
     violations=sum(r['generated_think_tags'] for r in records)
-    summary={'passed':len(records)==16 and violations==0,'protocol':PROTOCOL,'n':len(records),
+    summary={'passed':len(records)==16 and violations==0,'protocol':args.protocol,'n':len(records),
              'generated_think_tag_count':violations,'length_stop_count':sum(r['finish_reason']=='length' for r in records),
              'mean_length':sum(len(r['response_token_ids']) for r in records)/len(records),
              'raw_sha256':hashlib.sha256((args.output/'raw.jsonl').read_bytes()).hexdigest(),

@@ -9,7 +9,7 @@ index 8939229..7cb9608 100644
 -            obs_i = MATH_TEMPLATE.format(
 -                task_description=self.tasks[i]
 -            )
-+            if self.config.data.get('opd_prompt_protocol', 'legacy') == 'math_eval_nonthinking_v1':
++            if self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
 +                from opd_ext.math_protocol import math_prompt
 +                obs_i = math_prompt(self.tasks[i])
 +            else:
@@ -38,13 +38,13 @@ index fd53aff..a1a6096 100644
 -            tokenize=False,
 -            **apply_chat_template_kwargs
 -        )
-+        if self.config.data.get('opd_prompt_protocol', 'legacy') == 'math_eval_nonthinking_v1':
-+            from opd_ext.math_protocol import render_nonthinking, DISABLED_SUFFIX
++        if self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
++            from opd_ext.math_protocol import render_nonthinking, valid_control_prefix
 +            if apply_chat_template_kwargs.get('enable_thinking') is not False:
 +                raise ValueError('Non-thinking training requires explicit enable_thinking=False')
 +            prompt_with_chat_template = render_nonthinking(self.tokenizer, obs_content)
-+            if not prompt_with_chat_template.endswith(DISABLED_SUFFIX):
-+                raise ValueError('Qwen non-thinking control prefix is missing')
++            if not valid_control_prefix(prompt_with_chat_template, self.tokenizer, self.config.data.opd_prompt_protocol):
++                raise ValueError('Model-specific non-thinking control prefix is missing')
 +        else:
 +            prompt_with_chat_template = self.tokenizer.apply_chat_template(
 +                chat, add_generation_prompt=True, tokenize=False, **apply_chat_template_kwargs

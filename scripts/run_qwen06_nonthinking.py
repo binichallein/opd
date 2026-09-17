@@ -35,10 +35,11 @@ def training_env(runtime, commit, root, probe_step=None):
     return env
 
 
-def audit_rollouts(run, steps):
+def audit_rollouts(run, steps, *, student=None, protocol=PROTOCOL, stop_ids=None):
     from transformers import AutoTokenizer
     from opd_ext.math_protocol import math_prompt, render_nonthinking
-    tokenizer=AutoTokenizer.from_pretrained(str(base.assets.STUDENT),local_files_only=True)
+    tokenizer=AutoTokenizer.from_pretrained(str(student or base.assets.STUDENT),local_files_only=True)
+    stop_ids = [151643,151645] if stop_ids is None else stop_ids
     evidence=[]
     for step in steps:
         files=list((run/'rollouts').glob(f'*/step_{step:06d}/raw.jsonl.gz'))
@@ -57,9 +58,9 @@ def audit_rollouts(run, steps):
             ids=tokenizer.encode(text,add_special_tokens=False)
             if len(ids)>2048:
                 ids=ids[:1024]+ids[-1024:]
-            if ids!=row['prompt_token_ids'] or row['enable_thinking'] is not False:
+            if ids!=row['prompt_token_ids'] or row['enable_thinking'] is not False or row['protocol'] != protocol:
                 raise ValueError('Actual training prompt does not match evaluation protocol')
-            if row['sampling']['stop_token_ids'] != [151643,151645]:
+            if row['sampling']['stop_token_ids'] != stop_ids:
                 raise ValueError('Train/eval stopping protocol differs')
             if row['finish_reason'] not in ('length','stop'):
                 raise ValueError('Missing engine finish reason')

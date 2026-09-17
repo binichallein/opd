@@ -16,6 +16,7 @@
 - seed21、200步、每步4个 prompt、每题名义8个 rollout、LR2e-6、PPO epoch1、micro-batch1、vLLM0.6、prompt2048/response16384、temperature1/top_p0.9。
 - Token: k1/sum；Block3: 固定不重叠 k3/mean。两臂仅聚合方式及各自输出目录不同。历史组内 rollout seed 重复行为保留，不能把8条称为8个独立样本。
 - 相同题目指令及 `\\boxed{}` 要求，Llama 原生聊天模板；显式传 false，不注入 Qwen think 前缀。停止符按原生 generation_config `[128001,128008,128009]`；训练与评测一致。普通文字推理不等于 thinking 模式。
+- 模板自带的日期固定为 `18 Sep 2026`，避免跨天两臂输入变化；评测显式传 token IDs，避免重复添加 BOS。GPU核对引擎实际接收的 IDs。
 - 四个 benchmark 各自计分：MATH500(500)、AIME24(30)、AIME25(30)、AMC23(83)，每题8次，seeds21..28，temperature1/top_p0.9/max16384。历史 grader SHA256 `04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f`。
 - 保存50/100/200完整训练状态，每个 checkpoint 完整评测。每次评测643题/5144回答；零步加两臂三个 checkpoint 共7次完整学生评测，不用抽样替代。
 - 每步保存全部训练 rollout；保留原 entropy、gap、top16 overlap/mass/advantage、PG loss、裁剪前梯度、长度/截断、advantage sign-flip等诊断与位置热图。format error 继续定义为缺少 `\\boxed`，不混同解析失败。

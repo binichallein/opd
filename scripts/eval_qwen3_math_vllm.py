@@ -103,16 +103,11 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
             gpu_memory_utilization=0.9,
         )
         tokenizer = llm.get_tokenizer()
-        stop_token_ids: list[int] = []
-        for stop_token in ["<|im_end|>", "<|endoftext|>"]:
-            try:
-                encoded = tokenizer.encode(stop_token, add_special_tokens=False)
-                if encoded:
-                    stop_token_ids.append(encoded[0])
-            except Exception:
-                pass
+        from opd_ext.math_protocol import evaluation_stop_ids, evaluation_inputs, native_eval_record
+        stop_token_ids = evaluation_stop_ids(tokenizer)
 
         prompts = [apply_template(tokenizer, row["prompt"], enable_thinking) for row in rows]
+        generation_inputs = evaluation_inputs(tokenizer, prompts)
         for rollout_id in rollout_ids:
             sampling = SamplingParams(
                 temperature=temperature,
@@ -121,8 +116,9 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
                 stop_token_ids=stop_token_ids or None,
                 seed=eval_seed + rollout_id,
             )
-            outputs = llm.generate(prompts, sampling, use_tqdm=False)
-            for row, output in zip(rows, outputs):
+            outputs = llm.generate(generation_inputs, sampling, use_tqdm=False)
+            for row, output, input_value in zip(rows, outputs, generation_inputs):
+                extra = native_eval_record(output, input_value['prompt_token_ids']) if isinstance(input_value, dict) else {}
                 results.append(
                     {
                         "task": task_name,
@@ -134,6 +130,7 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
                         "rollout_id": rollout_id,
                         "seed": eval_seed + rollout_id,
                         "response": output.outputs[0].text,
+                        **extra,
                     }
                 )
     finally:
@@ -207,6 +204,8 @@ def grade_outputs(
         per_example_best: list[float] = []
         lengths: list[int] = []
         format_errors = 0
+        engine_length_stops = 0
+        engine_finish_count = 0
         total_rollouts = 0
         graded_path = summary_path.with_name(f"{task.lower()}_graded.jsonl")
         with graded_path.open("w", encoding="utf-8") as f:
@@ -217,7 +216,11 @@ def grade_outputs(
                     score = bool(grade_answer(response, str(row["answer"])))
                     if "\\boxed" not in response:
                         format_errors += 1
-                    if length_tokenizer is not None:
+                    if 'num_generated_tokens' in row:
+                        lengths.append(row['num_generated_tokens'])
+                        engine_finish_count += 1
+                        engine_length_stops += int(row['finish_reason'] == 'length')
+                    elif length_tokenizer is not None:
                         lengths.append(len(length_tokenizer.encode(response)))
                     else:
                         lengths.append(len(response))
@@ -243,6 +246,11 @@ def grade_outputs(
             ),
             "graded_jsonl": str(graded_path),
         }
+        if engine_finish_count:
+            if engine_finish_count != total_rollouts:
+                raise ValueError('Incomplete engine finish-reason coverage')
+            summary['tasks'][task]['engine_length_stop_rollouts'] = engine_length_stops
+            summary['tasks'][task]['engine_truncation_ratio'] = engine_length_stops / total_rollouts
 
     task_values = list(summary["tasks"].values())
     summary["macro_avg_at_n"] = sum(t["avg_at_n"] for t in task_values) / max(1, len(task_values))

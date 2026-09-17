@@ -108,10 +108,14 @@ test -f '${REMOTE_ROOT}/scripts/run_revisiting_sampled_block_opd_math.sh'
 test -d '${STUDENT_MODEL}'
 test -d '${MATH_TEACHER}'
 if [[ -n '${STUDENT_MODEL_REVISION}' ]]; then
-  test \"\$(cat '${STUDENT_MODEL}/HF_REVISION')\" = '${STUDENT_MODEL_REVISION}'
+  revision_file='${STUDENT_MODEL}/HF_REVISION'
+  if [[ '${OPD_PROMPT_PROTOCOL}' == llama32_nonthinking_v1 ]]; then revision_file='${STUDENT_MODEL}/SOURCE_REVISION'; fi
+  test \"\$(cat \"\${revision_file}\")\" = '${STUDENT_MODEL_REVISION}'
 fi
 if [[ -n '${TEACHER_MODEL_REVISION}' ]]; then
-  test \"\$(cat '${MATH_TEACHER}/HF_REVISION')\" = '${TEACHER_MODEL_REVISION}'
+  revision_file='${MATH_TEACHER}/HF_REVISION'
+  if [[ '${OPD_PROMPT_PROTOCOL}' == llama32_nonthinking_v1 ]]; then revision_file='${MATH_TEACHER}/SOURCE_REVISION'; fi
+  test \"\$(cat \"\${revision_file}\")\" = '${TEACHER_MODEL_REVISION}'
 fi
 test -x '${VENV}/bin/python'
 test -f '${TRAIN_DATA}'
