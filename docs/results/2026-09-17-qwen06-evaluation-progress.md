@@ -1,8 +1,8 @@
 # 0.6B Non-Thinking Token 评测监督记录
 
-截至2026-09-17 09:10北京时间，已验收Token Step200、Step100、Step50和原始
-学生；教师评测已启动，Block3训练尚未开始。本文件是阶段记录，不能
-据此宣称全部评测、Block3启动或方法有效性验证已经完成。
+截至2026-09-17 10:05北京时间，Token Step200、Step100、Step50、原始学生
+和教师的五组完整评测均已验收。Block3已进入保存/恢复测试的probe1，正式
+200步训练尚未开始。本文件是阶段记录，不能据此宣称Block3方法有效。
 
 ## 协议与证据
 
@@ -17,6 +17,8 @@
   的`passed=true`。每个验收记录含14份配置、输入、原始输出、判分和汇总文件哈希。
 - 原始学生`evaluations/student_base/acceptance.json`也为`passed=true`，退出0，
   使用同样的输入、采样、历史grader和完整性检查。
+- 教师`evaluations/teacher/acceptance.json`及五组总验收
+  `token_eval_acceptance.json`均为`passed=true`。教师也退出0，保留14份证据哈希。
 - 每个checkpoint共643题、5144条输出；MATH500=500/4000、AIME24=30/240、
   AIME25=30/240、AMC23=83/664。覆盖、题目/prompt/答案身份、采样编号/seed、
   判分行与原始行一致性以及汇总分数重算均通过。
@@ -55,6 +57,18 @@ Step200相对Step100在MATH500与AMC23上较高，AIME未呈现一致提升。�
 跨seed稳定性或普适性证明。不能仅由分数差异区分格式学习、长度变化与推理
 能力变化各自的贡献；此处不作未经验证的机制归因。
 
+## 教师对照
+
+教师为现有公共`Qwen3-4B-Base-GRPO`模型，使用相同四项完整评测及历史grader。
+以下单位为百分比；教师分数不是学生必须达到的硬上限，也不等于Block3的结果。
+
+| Benchmark | Teacher Avg@8 | Teacher Pass@8 |
+|---|---:|---:|
+| MATH500 | 83.43 | 93.40 |
+| AIME24 | 23.33 | 43.33 |
+| AIME25 | 18.75 | 26.67 |
+| AMC23 | 57.68 | 77.11 |
+
 ## 监督经过与边界
 
 - 用户要求持续监督后，约每两分钟只读检查队列、控制器/工作进程、GPU、
@@ -66,6 +80,13 @@ Step200相对Step100在MATH500与AMC23上较高，AIME未呈现一致提升。�
   Token Step200完全一致；没有更换提示协议或提前启动Block3。
 - 原始学生于09:10前完成判分和验收，队列启动教师评测PID4171012。
   教师643题输入检查也通过，显式非thinking，输入token IDs摘要与学生一致。
+- 教师于09:59前完成判分和验收；`block_launch_gate.json`在09:58:21记录
+  `passed=true`，随后09:58:55启动probe1 PID4180845。正式训练PID尚未产生。
+  实际命令确认k3/mean、micro-batch1、vLLM0.6、seed21、显式关闭thinking，
+  总计划2步但第1步保存退出，供随后恢复到第2步。没有将probe冒充正式训练。
+- 额外核验教师MATH500的500题/4000条覆盖和逐题输入身份；4000条解码文本
+  均未出现think标签。当前冻结评测器没有保存生成token IDs，此项是文本检查，
+  不是原始输出token审计；也不意味着输出不含普通文本推理。
 - 未观察到OOM、CUDA异常或队列失败；工作进程正常结束时存在NCCL清理警告，
   原日志完整保留。GPU释放与工作进程完成对应，不把清理警告等同于训练崩溃。
 - 评测器关闭逐响应进度条、整项生成后写原始JSONL；CPU判分时GPU可以空闲。
@@ -75,9 +96,8 @@ Step200相对Step100在MATH500与AMC23上较高，AIME未呈现一致提升。�
 
 ## 后续检查
 
-继续完成现有公共4B Base-GRPO教师的完整评测。
-五个视图全部验收后，控制器生成逐benchmark的Token对Base报告，再执行
-Block3两步保存/恢复测试，最后从同一官方Base正式训练200步。继续核验
+五个视图已经全部验收，控制器已生成逐benchmark的`token_effect.json/.md`。
+继续监督Block3两步保存/恢复测试，验收后从同一官方Base正式训练200步。继续核验
 非thinking协议、每步完整rollout、原有诊断、50/100/200完整checkpoint与最终热图。
 
 本控制器不自动启动Block3完整benchmark评测。实时状态入口和完整方案见
