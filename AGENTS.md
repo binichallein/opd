@@ -21,11 +21,15 @@ reproducibility, data safety, and clear experiment lineage.
   controller has its own release. Keep explicit non-thinking, full rollout archives,
   original diagnostics and all50/100/200 complete checkpoints. Do not hot-edit
   either runtime or overwrite Token outputs. Merges/evals go to the NEW run root.
-- Queue is launched: controller PID4130269, release
-  `788a2dca21902fda25777fca1a6863780973a8c1`. Step200 full evaluation PID4130750
-  reached four-GPU MATH500 generation; Block3 is still gated behind evaluations.
-  Read `docs/results/2026-09-17-qwen06-eval-block3-startup.md` and LIVE queue state.
-  Later documentation commits must not change either frozen runtime identity.
+- Queue completed at 2026-09-17 20:10:49 Beijing: all five full evaluations,
+  Block3 resume probe, formal200, full rollout/checkpoint audits and final figures.
+  Protected inputs verified unchanged. Controller release remains
+  `788a2dca21902fda25777fca1a6863780973a8c1`; later documentation commits must not
+  replace either runtime. Read live state before any new launch; never restart it.
+- Execution acceptance is NOT method validation: Block3 showed severe gibberish,
+  off-topic output and repetition; full-run truncation63.75% vs Token40.625%.
+  All6400 nominal training trajectories/41 diagnostics retained; actual prompt
+  IDs and ordering match Token for every step. Full Block3 benchmarks NOT run.
 - User requested continuous supervision. Accepted per-benchmark scores and
   monitoring evidence are in `docs/results/2026-09-17-qwen06-evaluation-progress.md`.
   Read live state first; phase snapshots are not proof that subsequent jobs ran.

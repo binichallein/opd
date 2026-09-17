@@ -1,9 +1,9 @@
-# 0.6B Non-Thinking Token 评测监督记录
+# 0.6B Non-Thinking Token评测与Block3训练监督记录
 
-截至2026-09-17 15:02北京时间，五组完整评测及Block3保存/恢复测试均已验收。
-正式Block3已完成至少100步，Step50/100状态检查通过，200步训练仍在进行。
-**输出质量警报：Step100已出现严重跑题与重复退化；数值有限和checkpoint
-完整不代表方法有效。** 尚未对Block3 checkpoint做完整benchmark评测。
+2026-09-17 20:10:49北京时间，队列完成：五组完整评测、Block3保存/恢复测试、
+正式200步训练、全量轨迹审计和最终绘图均已验收，受保护输入哈希复核通过。
+**输出质量警报：Block3出现严重跑题、乱码和重复退化，最终抽查仍未恢复；
+执行验收通过不代表方法有效。** 尚未对Block3 checkpoint做完整benchmark评测。
 
 ## 协议与证据
 
@@ -270,11 +270,55 @@ token处正常停止，代表性输出仍围绕数学题展开并给出答案。
 位置热图已目视检查非空、标题可读，后期师生熵同步变化及共享概率质量变化均
 保留。Step200的正式最终图仍由控制器生成，此处未覆盖最终图或历史快照。
 
-## 后续检查
+## 最终验收与质量结论
 
-五个视图已经全部验收，控制器已生成逐benchmark的`token_effect.json/.md`。
-Block3两步保存/恢复测试已经验收，正式200步训练运行中。继续核验
-非thinking协议、每步完整rollout、原有诊断、50/100/200完整checkpoint与最终热图。
+控制器`queue_state.json`记录complete、block3_training_steps=200、
+protected_inputs_verified=true、block3_eval_started=false。训练退出码为0；
+`block3_mean/acceptance.json`的passed=true、issues=[]，source_commit仍为0ce73aa。
+这代表执行协议与产物验收，不是正确率或算法有效性验收。
+
+- 原生全量rollout验收覆盖200步6400条名义采样轨迹，4080条真实length stop，
+  新生成think标签为0；所有gzip哈希、轨迹身份、prompt协议与停止配置通过。
+  每步32条仍含历史组内重复，不能视为32个独立样本。
+- 补齐step176至200逐行prompt IDs/样本顺序检查，与先前审计合计覆盖全部200步，
+  两组实际输入完全一致。相同prompt不意味着两组必须生成相同响应。
+- 50/100/200三个checkpoint四rank的model/optim/extra非空，实际读取的scheduler、
+  data消费位置与目标step一致，四rank的cpu/cuda/numpy/random RNG齐全。
+  正式checkpoint没有再次重启测试；实际恢复测试已在独立两步probe完成。
+- 41份诊断及41份位置快照齐全，无记录到的NaN/Inf；控制器完成五张最终图和HTML。
+  最终图位于`block3_mean/figures/`，本地副本
+  `/home/tyf/paper/outputs/qwen06-block3-nonthinking-final-20260917/`，已目视检查。
+- 旧Token checkpoint、日志及受保护模型/数据哈希复核通过；没有热改运行时、
+  改超参、重启、删checkpoint或自动追加Block3评测。训练结束后四GPU已释放。
+
+| 全程或末期训练观测 | Token | Block3 mean |
+|---|---:|---:|
+| 200步累计截断率 | 40.625% | 63.750% |
+| 最后20步截断率 | 35.000% | 88.750% |
+| 全程平均响应长度 | 8290.56 | 11411.45 |
+| 裁剪前grad norm最大值（日志舍入） | 172.335（step86） | 1002.753（step47） |
+| 裁剪前grad norm中位数（日志舍入） | 6.3575 | 4.0500 |
+
+step167至193连续27步全部响应长度截断，step194才降至75%。最终step200
+Block3有24/32条长度截断，另8条在8277 token处EOS停止；四题代表性文本仍有
+乱码、无关词句或混乱的推导片段。Token同批8/32截断，另三题各8条在
+1898/3752/5546 token处停止，其中也有一题表现异常。这不是“Token所有输出
+都正常”的证据，也没有把抽查文本人工计为benchmark正确率。
+
+最终诊断中Block3学生/教师熵6.4072/6.0513，Top16 overlap为0.8380，但共享概率
+质量仅0.2762/0.2926；sign-flip rate为31.33%，normalized leakage为0.8597。
+这些是本批学生前缀上的观测，不证明退化由某个单独指标、block credit分配或
+梯度尖峰导致。需要后续受控消融和独立完整评测，不能从相关性直接给出因果结论。
+
+当前证据支持：Token完整评测相对Base有改善；本次0.6B Block3训练发生了明显
+行为退化。**它不支持“Block3在这对师生上已经有效”的主张，也不足以在没有完整
+Block3评测的情况下宣布各benchmark降分幅度。** 单seed结果同样不能外推到
+其他模型对或否定该方法在所有条件下的可能性。
+
+## 后续边界
+
+五个视图已经全部验收，逐benchmark分数见本页前述表格及队列生成的
+`token_effect.json/.md`。Block3的完整评测尚未启动，不能拿训练截断率代替分数。
 
 本控制器不自动启动Block3完整benchmark评测。实时状态入口和完整方案见
 [启动记录](2026-09-17-qwen06-eval-block3-startup.md)及
