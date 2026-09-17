@@ -3,6 +3,23 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Llama 3.2 Pair (2026-09-18)
+
+- User selected Llama-3.2-1B-Instruct student / Llama-3.2-3B-Instruct teacher,
+  obtained only through ModelScope. Read `docs/plans/2026-09-18-llama32-paired-validation.md`.
+- New queue must wait for the current Sep17v2 Qwen06 Block3 FULL evaluation
+  (Steps200/100/50) and protection checks to succeed, then all GPUs idle.
+- Order: zero-step Instruct student evaluation, Token training/evaluation,
+  original Block3 mean training/evaluation. Both formal arms initialize from the
+  same pinned original student. Preserve data/seed21/hyperparameters/grader/full
+  n8 four-task evaluation; native Llama template/EOS replaces Qwen-specific control.
+- Keep full rollout archives, existing diagnostics/heatmaps, complete50/100/200
+  checkpoints and per-benchmark results. Require actual GPU prompt/output and
+  two-step four-rank resume gates. Do not claim success before these gates run.
+- Only ml2; no train, private models, extra seed, automatic retry or pruning.
+- Prepare a new immutable runtime; never hot-edit an existing deployment or
+  interrupt the predecessor. Read live state before launching a duplicate queue.
+
 ## Authorized Block3 Full Evaluation (2026-09-17)
 
 - User explicitly requested starting evaluation without further questions. This
