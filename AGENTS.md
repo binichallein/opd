@@ -19,6 +19,10 @@ reproducibility, data safety, and clear experiment lineage.
   no automatic retry or restarting v1. Failure or incomplete output stops v2.
 - Plan: `docs/plans/2026-09-17-qwen06-block3-full-eval.md`. Execution acceptance
   does not remove the documented Block3 output-quality warning.
+- v2 is launched: PID252025, controller831c0af58f34ad90ac6776f1a5444622a5b82262.
+  Preflight and Step200 merge/prompt checks passed; eval PID252473 entered
+  four-GPU MATH500 generation. Steps100/50 remain queued. Read live state and
+  `docs/results/2026-09-17-qwen06-block3-eval-startup.md`; do not launch a duplicate.
 
 ## Authorized Token Eval Then Block3 (2026-09-17)
 
