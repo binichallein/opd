@@ -19,6 +19,12 @@ reproducibility, data safety, and clear experiment lineage.
 - Only ml2; no train, private models, extra seed, automatic retry or pruning.
 - Prepare a new immutable runtime; never hot-edit an existing deployment or
   interrupt the predecessor. Read live state before launching a duplicate queue.
+- Waiting controller launched at 2026-09-18 02:32 Beijing, PID297837, runtime
+  `f2d148e74c06283617a878b1a03fabdd5ef390da`, run
+  `20260918v1_llama32_1b_3b_nonthinking_seed21_ml2`. State verified
+  `waiting_predecessor`; no Llama GPU work has started. Read
+  `docs/results/2026-09-18-llama32-preparation.md` and live state. Never duplicate
+  or replace its runtime with later documentation commits.
 
 ## Authorized Block3 Full Evaluation (2026-09-17)
 

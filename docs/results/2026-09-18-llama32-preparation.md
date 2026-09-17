@@ -43,3 +43,23 @@ CPU准备证据：`asset_preparations/20260918_llama32/`。
 训练轨迹、41个诊断时点及热图。评测完整覆盖每模型643题/5144条回答，各任务分别计分。
 
 本记录的准备成功不等于GPU门禁通过，也不代表这对师生已产生新实验得分。
+
+## 后台等待队列已启动
+
+2026-09-18 **02:32:03北京时间**，ml2以nohup启动控制器 **PID297837**。
+02:32:07完成部署哈希验证，状态为 **waiting_predecessor**，确认前驱PID252025
+仍在运行。此时没有启动任何Llama GPU推理或训练；GPU仍属于原Qwen评测。
+
+- 冻结runtime：`deployments/f2d148e74c06283617a878b1a03fabdd5ef390da`。
+- 后台脚本：`scripts/run_llama32_pair.py`，每120秒检查前驱；完成所有200/100/50
+  完整评测与旧输入保护验收后，才允许GPU门禁与本轮实验。
+- 运行目录：`runs/20260918v1_llama32_1b_3b_nonthinking_seed21_ml2`。
+- 现场证据：`controller_command.txt`、`runtime_path.txt`、`launch.pid`、`queue.pid`、
+  `queue_manifest.json`、`queue_state.json`、`logs/controller.log`。
+- 最终runtime CPU测试 **501通过、2跳过**，本地隔离测试 **56通过**，合计
+  **557通过、2跳过**。最终小差异复查另有18项通过，没有发现阻断问题。
+- 最终runtime教师CPU collector检查也通过，和先前学生检查一致。GPU检查尚未执行。
+- GitHub分支：`feat/llama32-opd-pair`，代码已推送。后续文档提交不替换上述runtime。
+
+不要把等待状态解释为正在训练。若门禁、评测、训练或审计失败，队列会记录failed并
+停止；保留原始证据，再人工排查，不会按低分自动重跑或删除checkpoint。

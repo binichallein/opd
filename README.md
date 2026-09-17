@@ -18,6 +18,8 @@ Block3 mean 训练/评测。两臂独立使用同一初始学生，保留同一 
 seed21、200步、全部监控及50/100/200完整状态与四任务 n8 历史评分器。
 
 - [执行计划和完整配置](docs/plans/2026-09-18-llama32-paired-validation.md)
+- [准备、测试及后台等待证据](docs/results/2026-09-18-llama32-preparation.md)：
+  02:32北京时间，PID297837、runtime `f2d148e`，等待当前Qwen完整评测，尚未占用GPU。
 - `scripts/prepare_llama32_assets.py`：ModelScope 原始 BF16 权重及26文件校验。
 - `scripts/run_llama32_pair.py`：等待前驱、GPU prompt门禁、恢复门禁、串行实验。
 - Llama 使用原生模板/停止符、固定日期和显式 token IDs；不注入 Qwen think
