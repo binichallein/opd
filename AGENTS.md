@@ -3,6 +3,23 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Block3 Full Evaluation (2026-09-17)
+
+- User explicitly requested starting evaluation without further questions. This
+  overrides the prior no-autostart boundary, not the completed queue's identity.
+- New evaluation-only queue: `20260917v2_qwen06_nonthinking_block3_eval_seed21_ml2`,
+  controller `scripts/run_nonthinking_block3_eval.py`. Read live state before launch.
+- Evaluate completed v1 Block3 checkpoints200/100/50, all four tasks, full n8,
+  explicit non-thinking and exact historical grader. Use frozen evaluator0ce73aa,
+  not a newly modified evaluator. No new training, private models, or extra seed.
+- Token reference is the accepted v1 evaluations of Sep13v4 Token checkpoints;
+  verify originals and reuse their scores, not rerun them. Report each benchmark's
+  Avg@8/Pass@8 and matched-step Block3-minus-Token percentage-point differences.
+- New merges/results only in v2. Protect all old checkpoints/results, no pruning,
+  no automatic retry or restarting v1. Failure or incomplete output stops v2.
+- Plan: `docs/plans/2026-09-17-qwen06-block3-full-eval.md`. Execution acceptance
+  does not remove the documented Block3 output-quality warning.
+
 ## Authorized Token Eval Then Block3 (2026-09-17)
 
 - Latest user explicitly authorizes full evaluation of the completed non-thinking

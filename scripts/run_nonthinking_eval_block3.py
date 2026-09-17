@@ -179,12 +179,12 @@ def prompt_contract(model):
             'max_prompt_tokens': max(lengths), 'actual_input_sha256': inputs.hexdigest()}
 
 
-def evaluate_model(name, root, runner):
+def evaluate_model(name, root, runner, *, checkpoint_run=TOKEN, checkpoint_prefix='token_step'):
     folder = root / 'evaluations' / name
     folder.mkdir(parents=True, exist_ok=False)
-    if name.startswith('token_step'):
-        step = int(name.removeprefix('token_step'))
-        actor = TOKEN / f'checkpoints/global_step_{step}/actor'
+    if name.startswith(checkpoint_prefix):
+        step = int(name.removeprefix(checkpoint_prefix))
+        actor = checkpoint_run / f'checkpoints/global_step_{step}/actor'
         model = root / 'merged' / name
         if model.exists():
             raise FileExistsError(f'Merged model already exists: {model}')
