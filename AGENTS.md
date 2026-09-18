@@ -5,6 +5,21 @@ reproducibility, data safety, and clear experiment lineage.
 
 ## User-Directed Historical Re-evaluation (2026-09-18)
 
+- User explicitly requested active training supervision and repair on Sep19.
+  Read `docs/results/2026-09-19-llama-historical17-supervision.md` and live v4 state.
+  Both Token probes completed; four-rank model/optim/extra_state loading and
+  advancement to Step2 confirmed, acceptance passed with no issues/warnings.
+  Formal Token PID647058 launched00:10:44 Beijing with resume disabled from the
+  original student. At01:19:04 formal Step52 completed. Step50 full four-rank
+  optimizer/scheduler/RNG and dataloader states inspected; scheduler/optimizer50,
+  LR2e-6, sampler200 prompts. First50 raw archives/1600 outputs passed SHA/mask/
+  finite-logprob checks; 11 diagnostics and Step50 plots verified. Cumulative
+  truncation272/1600=17%; repetitive/off-topic outputs exist even without truncation.
+  Historical per-request seed yields identical8 responses per prompt (200 groups,
+  200 unique within-group outputs), not1600 independent samples. Preserve paired
+  conditions; do not silently change sampling mid-run or claim bit-exact vLLM
+  resume. Actual restored Step2 prompts match uninterrupted Step2. Block3 not yet
+  started. Read live state for progress; supervision is not method validation.
 - Latest live audit: all six Qwen evaluations and the Llama initial evaluation/GPU
   prompt gates completed. v2 stopped at23:04:54 Beijing in token_opd_probe1 BEFORE
   training because its Ray AF_UNIX socket path exceeded107 bytes. No Llama training
