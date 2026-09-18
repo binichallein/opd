@@ -31,6 +31,12 @@ reproducibility, data safety, and clear experiment lineage.
   grading, all training and evaluation rollouts, diagnostics/heatmaps, and complete
   checkpoints. New immutable deployment only; failure stops queue, no auto retry,
   extra seeds, private models, pruning, or access to train.
+- New controller launched at 2026-09-18 12:32:57 Beijing, PID434226, runtime
+  `94be7ea1d659309256c8356681925bb9710895c4`. Preflight passed; Token Step50
+  evaluation PID435131 launched at12:39:43, all four workers loaded the correct
+  historical weights. The six-checkpoint evaluation precedes all new Llama jobs. Read live
+  state and `docs/results/2026-09-18-historical17-reeval-startup.md`; do not start
+  a duplicate or replace its runtime with later documentation commits.
 
 ## Authorized Llama 3.2 Pair (2026-09-18)
 

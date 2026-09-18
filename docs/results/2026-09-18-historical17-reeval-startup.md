@@ -38,5 +38,39 @@ Llama 仍用原生聊天模板、固定日期和原生 EOS，不使用 Qwen 特�
 
 ## 启动状态
 
-正在实现和验证新不可变运行时；本节不代表新评测或后续 Llama 已启动。
-实际启动 PID、release 和首批 GPU 证据在启动后补充。
+- 2026-09-18 12:32:57 北京时间，在 ml2 通过 `nohup` 启动唯一新控制器，
+  PID `434226`。不可变运行时：`94be7ea1d659309256c8356681925bb9710895c4`。
+- 命令：上述部署目录内的 verl 环境 Python 执行
+  `-u scripts/run_historical17_reeval_llama.py`。控制器日志为新目录内
+  `logs/controller.log`；实时进度以 `queue_state.json` 为准。
+- 启动时再次确认旧 controller/train PID 均不存在，四张 GPU 均为0%/4MiB。
+  12:33 的状态为 `preflight`，部署文件哈希检查已完成，正在核验保护输入。
+  此时尚不能宣称评测生成或后续 Llama 已开始。
+- 评测顺序：Token50、Block3-50、Token100、Block3-100、Token200、Block3-200。
+  六项全量验收通过后，才进入 Llama 实际 GPU 提示检查、初始学生评测、
+  Token 训练与评测、Block3 训练与评测。
+- 12:39:43 首项 `qwen17/evaluations/token_opd_step50` 已启动，eval PID
+  `435131`，状态 `running`。12:41 四个 worker 均已加载正确权重、进入
+  编译/预热，四张 GPU 各占3919MiB；没有提前调度 Llama。
+- 实际 `outputs/eval_config.json` 已确认完整四任务、n8、seed21-28、温度1、
+  top-p0.9、16384上限、external grader、`enable_thinking=false` 和
+  `retain_rollouts=true`。这仅证明任务按配置启动，不是全量评测完成或得分。
+
+## 验证记录
+
+- 本地最终完整测试复跑：657 passed、2 skipped，用时19.51秒。独立代码
+  审查发现的 ModelScope revision 选择问题已修复并回归。
+- ml2 不可变部署没有 `.git`。第一次全套测试中641项通过，15项失败均来自
+  依赖 Git 工作树的旧队列测试文件；另一个依赖历史 `git show` 的测试被排除。
+  这些 Git 相关测试已在本地有仓库的环境通过，不属于生成/训练运行时故障。
+- 排除该 Git 依赖文件和上述一项历史 Git 测试后，ml2 验证结果为
+  **611 passed、2 skipped、1 deselected**，用时20.43秒，无 pytest 磁盘缓存。
+- ml2 原始 Llama 1B/3B tokenizer 的 CPU 提示检查均生成了
+  `analyses/20260918_historical17_cpu_preflight/94be7ea/{student,teacher}/input_contract.json`。
+  训练标记为 `enable_thinking: null`，评测为 false，明确记录输入不同。
+  CPU 检查不能代替 GPU 检查；GPU 检查仍按队列在六权重重评之后执行。
+- TOS 上的逐条轨迹持久化所需目录 fsync 已实测可用。存档按实际返回的
+  generation batch 增量写入；尚未生成完成的 batch 不能承诺断电可恢复。
+- 启动后六个历史权重的实际输入检查全部通过，各覆盖643题，输入哈希均为
+  `af456ee536c0c0f75eb23311ec94e33020c384074993a13ae302e6a11f57dac9`。
+  `protected_inputs.json` 已登记615个文件。
