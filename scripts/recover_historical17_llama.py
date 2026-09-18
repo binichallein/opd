@@ -2,6 +2,7 @@
 """Reviewed recovery of the pre-training Ray socket-path failure on ml2."""
 
 import argparse
+from contextlib import contextmanager
 import fcntl
 import json
 import os
@@ -16,7 +17,7 @@ llama = historical.llama
 base, jobs, shared = historical.base, historical.jobs, historical.shared
 OLD_COMMIT = '94be7ea1d659309256c8356681925bb9710895c4'
 SOURCE = historical.RUN_ROOT
-RUN_ROOT = llama.ROOT / 'runs/20260918v3_llama32_historical17_recovery_seed21_ml2'
+RUN_ROOT = llama.ROOT / 'runs/20260918v4_llama32_historical17_recovery_seed21_ml2'
 TRAIN_RUNTIME = llama.ROOT / 'deployments' / OLD_COMMIT
 CACHE = Path('/limx_embap/tos/lh/r1')
 
@@ -117,6 +118,15 @@ def execute_remaining(initial, evaluate, train):
     return llama.execute_ordered(lambda name: initial if name == 'student_base' else evaluate(name), train)
 
 
+@contextmanager
+def attempt_locks(source, root):
+    # NFS requires a writable descriptor for exclusive flock; append does not truncate.
+    with (source / 'queue.lock').open('a') as old_lock, (root / 'queue.lock').open('a') as lock:
+        for handle in (old_lock, lock):
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        yield
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--ray-gate', action='store_true')
@@ -136,9 +146,7 @@ def main():
     signal.signal(signal.SIGINT, interrupted)
     RUN_ROOT.mkdir(exist_ok=True)
     state = RUN_ROOT / 'queue_state.json'
-    with (SOURCE / 'queue.lock').open('r') as old_lock, (RUN_ROOT / 'queue.lock').open('a') as lock:
-        for handle in (old_lock, lock):
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    with attempt_locks(SOURCE, RUN_ROOT):
         if (RUN_ROOT / 'queue_manifest.json').exists():
             raise FileExistsError('Existing recovery attempt; no automatic retry')
         jobs.write_json(RUN_ROOT / 'queue_manifest.json', {'controller_commit': commit,

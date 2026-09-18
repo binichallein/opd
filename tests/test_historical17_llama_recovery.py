@@ -74,3 +74,21 @@ def test_recovery_retains_original_eval_and_training_runtime_identity():
     assert m.TRAIN_RUNTIME == m.llama.ROOT / 'deployments' / m.OLD_COMMIT
     assert m.RUN_ROOT != m.SOURCE
     assert m.SOURCE == m.historical.RUN_ROOT
+
+
+def test_exclusive_locks_are_writable_for_nfs_without_overwriting(tmp_path, monkeypatch):
+    m = module()
+    folders = [tmp_path / 'source', tmp_path / 'recovery']
+    for folder in folders:
+        folder.mkdir()
+        (folder / 'queue.lock').write_text('retained-lock-content')
+    checked = []
+    def nfs_flock(handle, flags):
+        assert handle.writable(), 'NFS requires writable descriptor for LOCK_EX'
+        assert flags == m.fcntl.LOCK_EX | m.fcntl.LOCK_NB
+        checked.append(handle)
+    monkeypatch.setattr(m.fcntl, 'flock', nfs_flock)
+    with m.attempt_locks(*folders):
+        assert len(checked) == 2 and all(not f.closed for f in checked)
+    assert all(f.closed for f in checked)
+    assert all((folder / 'queue.lock').read_text() == 'retained-lock-content' for folder in folders)

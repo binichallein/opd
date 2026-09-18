@@ -10,10 +10,12 @@ reproducibility, data safety, and clear experiment lineage.
   training because its Ray AF_UNIX socket path exceeded107 bytes. No Llama training
   checkpoint/rollout was produced. Preserve the failed attempt; do not rerun six evals.
 - Read `docs/results/2026-09-18-llama-historical17-recovery.md`. Reviewed recovery
-  controller `recover_historical17_llama.py` targets a distinct v3 run, short cache
+  controller `recover_historical17_llama.py` targets a distinct v4 run, short cache
   `/limx_embap/tos/lh/r1`, and unchanged frozen94be7ea training/eval runtime. It reuses
   verified initial evaluation, then executes the original matched Token/Block3 plan.
-  Check live v3 state before any launch; do not duplicate it or auto-retry failures.
+  v3 bootstrap failed before manifest/Ray due to NFS exclusive flock on a read-only
+  descriptor; logs retained, corrected with non-truncating writable locks in v4.
+  Check live v4 state before any launch; do not duplicate it or auto-retry failures.
 - Latest user explicitly stopped the active Llama queue and confirmed reproducing
   the OLD 1.7B train/eval instruction difference: training requests think tags,
   evaluation does not. This narrowly overrides the non-thinking policy for the

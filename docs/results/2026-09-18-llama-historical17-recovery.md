@@ -31,7 +31,7 @@ Step200结果如下，均为百分比，差值为Block3减Token的百分点。
 
 1. 保留v2完整失败现场和所有评测，不重启/覆盖旧队列。
 2. 新控制器`recover_historical17_llama.py`，新目录
-   `runs/20260918v3_llama32_historical17_recovery_seed21_ml2`。
+   `runs/20260918v4_llama32_historical17_recovery_seed21_ml2`。
 3. 缓存缩短为`/limx_embap/tos/lh/r1`，实际训练TMPDIR为其`train/tmp`。
    为Ray时间戳和最大Linux PID保留长度预算，并在ml2真实启动CPU Ray worker。
 4. 训练/评测仍调用冻结运行时`94be7ea1d659309256c8356681925bb9710895c4`。
@@ -48,4 +48,10 @@ Step200结果如下，均为百分比，差值为Block3减Token的百分点。
 - 服务器Ray原生路径校验已复现旧路径失败、短路径通过。
 - 本地完整测试662 passed、2 skipped，用时20.96秒；新增测试覆盖路径预算、
   仅允许已定位的启动故障恢复、拒绝已有训练产物、复用初始评测和固定训练运行时。
-- 新恢复队列尚未启动；实际Ray gate和启动PID在验证后补充。
+- v3恢复入口在23:39:13启动(PID621354)，但共享文件系统拒绝对只读描述符
+  执行独占flock，报`EBADF`。失败发生在创建manifest/Ray启动前，无GPU任务。
+  v3启动日志完整保留，不能将其当作已开始的训练。
+- 已在ml2实测同一锁文件：`open('r')`失败、`open('a')`成功，文件内容保持
+  不变。v4改用非截断的可写描述符，增加NFS语义回归测试。
+- 锁修正后的完整测试663 passed、2 skipped，用时20.29秒；独立审查无P1/P2。
+- v4恢复队列尚未启动；实际Ray gate和启动PID在验证后补充。
