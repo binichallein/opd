@@ -54,4 +54,10 @@ Step200结果如下，均为百分比，差值为Block3减Token的百分点。
 - 已在ml2实测同一锁文件：`open('r')`失败、`open('a')`成功，文件内容保持
   不变。v4改用非截断的可写描述符，增加NFS语义回归测试。
 - 锁修正后的完整测试663 passed、2 skipped，用时20.29秒；独立审查无P1/P2。
-- v4恢复队列尚未启动；实际Ray gate和启动PID在验证后补充。
+- 短路径真实CPU Ray gate已在ml2通过：成功启动本地Ray实例并执行remote
+  worker，返回`passed=true`，最大PID的socket路径预算102字节。
+- v4于23:43:15北京时间启动，controller PID623151，控制器部署
+  `b00ad93385ef367cc88c499d3c89d9feaa515327`；训练/评测运行时仍为94be7ea。
+  两份部署哈希检查均通过，23:43:23进入队列内Ray gate(PID623328)。
+- 最终ml2针对性回归21项通过。此时正式训练尚未开始；读取v4的
+  `queue_state.json`和`logs/controller.log`确认后续状态，不重复启动。

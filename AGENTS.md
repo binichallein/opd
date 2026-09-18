@@ -16,6 +16,11 @@ reproducibility, data safety, and clear experiment lineage.
   v3 bootstrap failed before manifest/Ray due to NFS exclusive flock on a read-only
   descriptor; logs retained, corrected with non-truncating writable locks in v4.
   Check live v4 state before any launch; do not duplicate it or auto-retry failures.
+- v4 launched23:43:15 Beijing, controller623151, controller release
+  `b00ad93385ef367cc88c499d3c89d9feaa515327`, frozen training/eval94be7ea.
+  Runtime hashes passed and queue Ray gate started; a separate actual CPU Ray
+  worker test already passed with102-byte socket budget. Do not replace runtime
+  with later documentation commits. Formal training was not yet started at launch.
 - Latest user explicitly stopped the active Llama queue and confirmed reproducing
   the OLD 1.7B train/eval instruction difference: training requests think tags,
   evaluation does not. This narrowly overrides the non-thinking policy for the
