@@ -3,6 +3,35 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## User-Directed Historical Re-evaluation (2026-09-18)
+
+- Latest user explicitly stopped the active Llama queue and confirmed reproducing
+  the OLD 1.7B train/eval instruction difference: training requests think tags,
+  evaluation does not. This narrowly overrides the non-thinking policy for the
+  new Llama attempt; it does not authorize modifying historical experiments.
+- Old Llama run `20260918v1_llama32_1b_3b_nonthinking_seed21_ml2` was deliberately
+  stopped at Step146, controller297837 SIGTERM, state error143. Full checkpoints
+  50/100 and all146 rollout archives remain. Block3 never started. Do not resume
+  this attempt or label the user stop a spontaneous failure.
+- Read `docs/plans/2026-09-18-historical17-reeval-llama.md`. New controller:
+  `scripts/run_historical17_reeval_llama.py`, run identity
+  `20260918v2_historical17_reeval_llama_seed21_ml2`. Check live state before launch.
+- First re-evaluate original Qwen3-1.7B Token and Block3 checkpoints50/100/200,
+  six complete evaluations, exact old prompts/decoding/seeds and the historical
+  external grader used for the accepted comparison. Add lossless eval archives
+  without changing generation inputs/RNG. Preserve original results and weights.
+- Only after six complete accepted evaluations: initial Llama1B-Instruct eval,
+  Token resume gate/formal200/eval200/100/50, Block3 equivalents, paired report.
+  Both start from original ModelScope student, not the interrupted/probe weights.
+- Llama legacy protocol `llama32_historical17_v1` uses exact old math user
+  instructions with native Llama chat template/date/EOS; never inject Qwen control
+  tokens. Eval remains `llama32_nonthinking_v1`. Explicitly document this intended
+  train/eval difference. Generated think tags are measured, not forbidden here.
+- Preserve original data/seed21/hyperparameters/objectives/full n8 four-task
+  grading, all training and evaluation rollouts, diagnostics/heatmaps, and complete
+  checkpoints. New immutable deployment only; failure stops queue, no auto retry,
+  extra seeds, private models, pruning, or access to train.
+
 ## Authorized Llama 3.2 Pair (2026-09-18)
 
 - User selected Llama-3.2-1B-Instruct student / Llama-3.2-3B-Instruct teacher,

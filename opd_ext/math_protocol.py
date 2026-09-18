@@ -11,6 +11,7 @@ DISABLED_SUFFIX = '<|im_start|>assistant\n<think>\n\n</think>\n\n'
 ANSWER_INSTRUCTION = 'Please reason step by step, and put your final answer within \\boxed{}.'
 STOP_TOKEN_IDS = [151643, 151645]
 LLAMA_PROTOCOL = 'llama32_nonthinking_v1'
+LLAMA_HISTORICAL_PROTOCOL = 'llama32_historical17_v1'
 LLAMA_SUFFIX = '<|start_header_id|>assistant<|end_header_id|>\n\n'
 LLAMA_STOP_IDS = [128001, 128008, 128009]
 LLAMA_DATE = '18 Sep 2026'
@@ -30,6 +31,8 @@ def tokenizer_protocol(tokenizer):
 def valid_control_prefix(text, tokenizer, expected_protocol):
     actual = tokenizer_protocol(tokenizer)
     suffix = LLAMA_SUFFIX if actual == LLAMA_PROTOCOL else DISABLED_SUFFIX
+    if expected_protocol == LLAMA_HISTORICAL_PROTOCOL:
+        return actual == LLAMA_PROTOCOL and text.endswith(LLAMA_SUFFIX)
     return actual == expected_protocol and text.endswith(suffix)
 
 
@@ -80,8 +83,60 @@ def render_nonthinking(tokenizer, content):
     )
 
 
-def generated_think_tags(ids):
-    return any(token in (151667, 151668) for token in ids)
+def historical_math_prompt(question):
+    """The historical 1.7B training instruction, without normalizing the question."""
+    return (f'Math problem: {question}\n\n'
+            'Please carefully reason through the math problem step by step and derive the correct answer. '
+            'You must conduct reasoning inside <think> and </think> and give the final answer within \\boxed{}.\n')
+
+
+def render_historical_training(tokenizer, content):
+    """Render already-formatted historical user content; thinking remains unspecified."""
+    if tokenizer_protocol(tokenizer) != LLAMA_PROTOCOL:
+        raise ValueError('Historical Llama training requires a native Llama tokenizer')
+    return tokenizer.apply_chat_template(
+        [{'role': 'user', 'content': content}], tokenize=False,
+        add_generation_prompt=True, date_string=LLAMA_DATE,
+    )
+
+
+def validate_historical_training_prompt(tokenizer, question, prompt_ids, *, max_prompt_length=None,
+                                        truncation='error'):
+    """Check actual (unpadded) training IDs against the legacy instruction/native template."""
+    text = render_historical_training(tokenizer, historical_math_prompt(question))
+    if (not valid_control_prefix(text, tokenizer, LLAMA_HISTORICAL_PROTOCOL)
+            or '<|im_start|>' in text or '<|im_end|>' in text):
+        raise ValueError('Historical training prompt lacks native Llama control tokens')
+    expected = tokenizer.encode(text, add_special_tokens=False)
+    if max_prompt_length is not None:
+        if max_prompt_length < 2:
+            raise ValueError('Invalid maximum prompt length')
+        if len(expected) > max_prompt_length:
+            if truncation == 'middle':
+                half = max_prompt_length // 2
+                expected = expected[:half] + expected[-(max_prompt_length - half):]
+            elif truncation == 'left':
+                expected = expected[-max_prompt_length:]
+            elif truncation == 'right':
+                expected = expected[:max_prompt_length]
+            else:
+                raise ValueError('Historical training prompt exceeds maximum length')
+    actual = list(prompt_ids)
+    if actual != expected:
+        raise ValueError('Actual historical training prompt IDs differ from the reference')
+    if not actual or actual[0] != 128000 or actual.count(128000) != 1 or 128009 not in actual:
+        raise ValueError('Historical training prompt requires one native BOS and native EOT')
+    return {'protocol': LLAMA_HISTORICAL_PROTOCOL, 'enable_thinking': None,
+            'prompt_text': text, 'prompt_token_ids': actual,
+            'date_string': LLAMA_DATE, 'stop_token_ids': list(LLAMA_STOP_IDS)}
+
+
+def generated_think_tags(ids, *, tokenizer=None, text=None):
+    is_qwen = tokenizer is None or tokenizer_protocol(tokenizer) == PROTOCOL
+    if text is None and tokenizer is not None:
+        text = tokenizer.decode(ids, skip_special_tokens=False, clean_up_tokenization_spaces=False)
+    return ((is_qwen and any(token in (151667, 151668) for token in ids))
+            or '<think>' in (text or '') or '</think>' in (text or ''))
 
 
 def generation_record(prompt_ids, sample, sampling, eos_token_id):
@@ -111,8 +166,12 @@ def _json_default(value):
     raise TypeError(f'Unsupported archive value: {type(value)}')
 
 
-def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, source_commit):
-    protocol = tokenizer_protocol(tokenizer)
+def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, source_commit, protocol=None):
+    native_protocol = tokenizer_protocol(tokenizer)
+    protocol = native_protocol if protocol is None else protocol
+    expected_native = LLAMA_PROTOCOL if protocol == LLAMA_HISTORICAL_PROTOCOL else protocol
+    if native_protocol != expected_native:
+        raise ValueError('Archive protocol does not match the tokenizer')
     if not attempt_id or Path(attempt_id).name != attempt_id or attempt_id in ('.', '..'):
         raise ValueError('A simple explicit attempt ID is required')
     folder = Path(directory) / attempt_id
@@ -144,12 +203,13 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
                 if mask != [1] * count + [0] * (len(mask) - count):
                     raise ValueError('Training mask differs from actual generation length')
                 text = tokenizer.decode(response_ids, skip_special_tokens=False, clean_up_tokenization_spaces=False)
-                has_think = generated_think_tags(response_ids) or '<think>' in text or '</think>' in text
+                has_think = generated_think_tags(response_ids, tokenizer=tokenizer, text=text)
                 thinking += int(has_think)
                 stopped += int(record['finish_reason'] == 'length')
                 record.update({
                     'run_id': run_id, 'attempt_id': attempt_id, 'step': step, 'sample_index': i,
-                    'source_commit': source_commit, 'protocol': protocol, 'enable_thinking': False,
+                    'source_commit': source_commit, 'protocol': protocol,
+                    'enable_thinking': None if protocol == LLAMA_HISTORICAL_PROTOCOL else False,
                     'uid': str(batch.non_tensor_batch['uid'][i]),
                     'traj_uid': str(batch.non_tensor_batch['traj_uid'][i]),
                     'source_extra_info': batch.non_tensor_batch['source_extra_info'][i],

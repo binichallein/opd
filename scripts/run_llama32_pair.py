@@ -49,15 +49,16 @@ def predecessor_ready(root):
     return True
 
 
-def training_env(runtime, commit, root, variant, probe_step=None):
+def training_env(runtime, commit, root, variant, probe_step=None, *,
+                 training_protocol=LLAMA_PROTOCOL, cache=CACHE):
     env = base.launcher_env(runtime, commit, root, variant, probe_step)
     env.update({'PROJECT_NAME': 'opd_llama32_pair', 'EXP_NAME': f'llama32-{variant}' + ('-probe' if probe_step else ''),
                 'STUDENT_MODEL': str(assets.STUDENT), 'MATH_TEACHER': str(assets.TEACHER),
                 'STUDENT_MODEL_REVISION': assets.SPECS['student']['revision'],
                 'TEACHER_MODEL_REVISION': assets.SPECS['teacher']['revision'],
-                'OPD_PROMPT_PROTOCOL': LLAMA_PROTOCOL, 'LOSSLESS_ROLLOUT_DIR': str(root / variant / 'rollouts'),
+                'OPD_PROMPT_PROTOCOL': training_protocol, 'LOSSLESS_ROLLOUT_DIR': str(root / variant / 'rollouts'),
                 'ROLLOUT_ATTEMPT_ID': f'probe{probe_step}' if probe_step else 'formal',
-                'LOCAL_CACHE_ROOT': str(CACHE / 'train'),
+                'LOCAL_CACHE_ROOT': str(cache / 'train'),
                 'BASELINE_ALIGNMENT': 'Matched Llama32 Instruct pair; ModelScope original BF16; seed21 original data and algorithm'})
     return env
 
@@ -71,7 +72,7 @@ def audit_command(runtime, run, commit, probe_step=None):
     return command + ['--expected-teacher-model-revision', assets.SPECS['teacher']['revision']]
 
 
-def validate_pair(cards, commit):
+def validate_pair(cards, commit, *, training_protocol=LLAMA_PROTOCOL):
     if set(cards) != set(VARIANTS):
         raise ValueError('Unapproved training arms')
     left, right = (cards[v] for v in VARIANTS)
@@ -84,7 +85,7 @@ def validate_pair(cards, commit):
               'student_model': str(assets.STUDENT), 'teacher_model': str(assets.TEACHER),
               'student_model_revision': assets.SPECS['student']['revision'],
               'teacher_model_revision': assets.SPECS['teacher']['revision'],
-              'opd_prompt_protocol': LLAMA_PROTOCOL, 'opd_window_mode': 'fixed', 'ppo_epochs': 1,
+              'opd_prompt_protocol': training_protocol, 'opd_window_mode': 'fixed', 'ppo_epochs': 1,
               'resume_mode': 'disable', 'resume_from_path': '', 'rollout_attempt_id': 'formal',
               'expected_train_sha256': jobs.TRAIN_SHA}
     for variant, size, mode in (('token_opd', 1, 'sum'), ('block3_mean', 3, 'mean')):
@@ -168,52 +169,58 @@ def preflight():
     return protected
 
 
-def prepare_pair(runtime, commit, runner):
+def prepare_pair(runtime, commit, runner, *, run_root=RUN_ROOT,
+                 training_protocol=LLAMA_PROTOCOL, cache=CACHE):
     for variant in VARIANTS:
         runner(['bash', runtime / 'scripts/launch_revisiting_block_opd_formal_train.sh'],
-               RUN_ROOT / f'queue_jobs/prepare_{variant}',
-               job_env=training_env(runtime, commit, RUN_ROOT, variant))
-    cards = {v: base.read_json(RUN_ROOT / v / 'run_card.json') for v in VARIANTS}
-    validate_pair(cards, commit)
-    manifests = [base.paired.load_sha256_manifest(RUN_ROOT / v / 'artifact_hashes.sha256') for v in VARIANTS]
+               run_root / f'queue_jobs/prepare_{variant}',
+               job_env=training_env(runtime, commit, run_root, variant,
+                                    training_protocol=training_protocol, cache=cache))
+    cards = {v: base.read_json(run_root / v / 'run_card.json') for v in VARIANTS}
+    validate_pair(cards, commit, training_protocol=training_protocol)
+    manifests = [base.paired.load_sha256_manifest(run_root / v / 'artifact_hashes.sha256') for v in VARIANTS]
     if set(manifests[0]) != set(manifests[1]):
         raise ValueError('Paired data/model hash manifests differ')
-    jobs.write_json(RUN_ROOT / 'paired_preflight.json', {'passed': True, 'cards': cards})
+    jobs.write_json(run_root / 'paired_preflight.json', {'passed': True, 'cards': cards})
 
 
-def audit_rollouts(run, steps):
+def audit_rollouts(run, steps, *, training_protocol=LLAMA_PROTOCOL):
     return shared.nonthinking.audit_rollouts(run, steps, student=assets.STUDENT,
-                                            protocol=LLAMA_PROTOCOL, stop_ids=LLAMA_STOP_IDS)
+                                            protocol=training_protocol, stop_ids=LLAMA_STOP_IDS)
 
 
-def train_model(variant, runtime, commit, runner, protected):
+def train_model(variant, runtime, commit, runner, protected, *, run_root=RUN_ROOT,
+                training_protocol=LLAMA_PROTOCOL, cache=CACHE):
     shared.verify_hashes(protected)
-    probe = RUN_ROOT / 'probes' / variant
+    probe = run_root / 'probes' / variant
     for step in (1, 2):
         runner(['bash', runtime / 'scripts/launch_revisiting_block_opd_formal_train.sh'],
-               RUN_ROOT / f'queue_jobs/prepare_{variant}_probe{step}',
-               job_env=training_env(runtime, commit, RUN_ROOT / 'probes', variant, step))
-        job = RUN_ROOT / f'queue_jobs/{variant}_probe{step}'
+               run_root / f'queue_jobs/prepare_{variant}_probe{step}',
+               job_env=training_env(runtime, commit, run_root / 'probes', variant, step,
+                                    training_protocol=training_protocol, cache=cache))
+        job = run_root / f'queue_jobs/{variant}_probe{step}'
         runner(['bash', probe / 'command.sh'], job, gpu=True)
         shutil.copyfile(job / 'logs/job.log', probe / 'logs/nohup.log')
-        runner(audit_command(runtime, probe, commit, step), RUN_ROOT / f'queue_jobs/audit_{variant}_probe{step}')
+        runner(audit_command(runtime, probe, commit, step), run_root / f'queue_jobs/audit_{variant}_probe{step}')
     base.audit_resume(probe)
-    evidence = audit_rollouts(probe, [1, 2])
-    if any(item['generated_think_tags'] for item in evidence):
+    evidence = audit_rollouts(probe, [1, 2], training_protocol=training_protocol)
+    if training_protocol == LLAMA_PROTOCOL and any(item['generated_think_tags'] for item in evidence):
         raise ValueError('Llama training probe generated think tags; manual review required')
     jobs.write_json(probe / 'rollout_acceptance.json', {'passed': True, 'evidence': evidence})
-    validate_pair({v: base.read_json(RUN_ROOT / v / 'run_card.json') for v in VARIANTS}, commit)
-    run = RUN_ROOT / variant
+    validate_pair({v: base.read_json(run_root / v / 'run_card.json') for v in VARIANTS}, commit,
+                  training_protocol=training_protocol)
+    run = run_root / variant
     runner(['bash', run / 'command.sh'], run, gpu=True, pid_name='train.pid', log_name='nohup.log')
-    runner(audit_command(runtime, run, commit), RUN_ROOT / f'queue_jobs/{variant}_checkpoints')
-    jobs.write_json(run / 'rollout_acceptance.json', {'passed': True, 'evidence': audit_rollouts(run, range(1, 201))})
+    runner(audit_command(runtime, run, commit), run_root / f'queue_jobs/{variant}_checkpoints')
+    jobs.write_json(run / 'rollout_acceptance.json', {
+        'passed': True, 'evidence': audit_rollouts(run, range(1, 201), training_protocol=training_protocol)})
     runner([base.PLOT_PYTHON, runtime / 'scripts/analyze_single_opd_diagnostics.py', '--run-dir', run,
             '--output-dir', run / 'figures', '--label', f'Llama32 {variant} seed21'],
-           RUN_ROOT / f'queue_jobs/{variant}_figures')
+           run_root / f'queue_jobs/{variant}_figures')
 
 
-def evaluate_model(name, runtime, commit, runner):
-    folder = RUN_ROOT / 'evaluations' / name
+def evaluate_model(name, runtime, commit, runner, *, run_root=RUN_ROOT, retain_rollouts=False):
+    folder = run_root / 'evaluations' / name
     folder.mkdir(parents=True, exist_ok=False)
     if name == 'student_base':
         model = assets.STUDENT
@@ -221,13 +228,13 @@ def evaluate_model(name, runtime, commit, runner):
         variant, step = name.rsplit('_step', 1)
         if variant not in VARIANTS or int(step) not in STEPS:
             raise ValueError('Unapproved model evaluation')
-        actor = RUN_ROOT / variant / f'checkpoints/global_step_{step}/actor'
-        model = RUN_ROOT / 'merged' / name
+        actor = run_root / variant / f'checkpoints/global_step_{step}/actor'
+        model = run_root / 'merged' / name
         if model.exists():
             raise FileExistsError(model)
         runner([base.PYTHON, runtime / 'external/revisiting_opd/scripts/model_merger.py', 'merge',
                 '--backend', 'fsdp', '--local_dir', actor, '--target_dir', model],
-               RUN_ROOT / f'queue_jobs/merge_{name}')
+               run_root / f'queue_jobs/merge_{name}')
     if not list(model.glob('*.safetensors')):
         raise ValueError('No model weights')
     hashes = {str(path): assets.sha256(path) for path in model.iterdir() if path.is_file()}
@@ -239,6 +246,8 @@ def evaluate_model(name, runtime, commit, runner):
     grading.validate_grader_hash(base.GRADER, grading.HISTORICAL_GRADER_SHA256)
     command = jobs.eval_command(runtime, base.PYTHON, model, base.DATA / 'eval_jsonl', folder / 'outputs', assets.STUDENT)
     command[command.index('--grader') + 1] = 'external'
+    if retain_rollouts:
+        command.append('--retain-rollouts')
     runner(command, folder, gpu=True, pid_name='eval.pid', log_name='eval.log')
     shared.verify_hashes(hashes)
     grading.validate_grader_hash(base.GRADER, grading.HISTORICAL_GRADER_SHA256)
@@ -281,10 +290,16 @@ def compare_prompt_order(root):
     jobs.write_json(root / 'prompt_order_acceptance.json', {'passed': True, 'steps': 200, 'trajectories_per_arm': 6400})
 
 
-def write_comparison(root, results):
+def write_comparison(root, results, *, training_protocol=LLAMA_PROTOCOL):
     lines = ['# Llama 3.2 1B-Instruct <- 3B-Instruct', '',
              '完整 n8、历史 grader，各 benchmark 独立计分。Base为零步Instruct学生。数值为百分比。', '']
-    report = {'protocol': LLAMA_PROTOCOL, 'per_benchmark': {}}
+    report = {'protocol': LLAMA_PROTOCOL, 'training_protocol': training_protocol,
+              'eval_protocol': LLAMA_PROTOCOL,
+              'intentional_train_eval_instruction_difference': training_protocol != LLAMA_PROTOCOL,
+              'per_benchmark': {}}
+    if training_protocol != LLAMA_PROTOCOL:
+        lines += ['本次按用户要求复刻历史提示差异：训练要求 think 标签，评测不要求；'
+                  '不是训推提示一致的非 thinking 实验。', '']
     for task in shared.TASK_COUNTS:
         report['per_benchmark'][task] = {}
         lines += [f'## {task}', '', '| Model | Avg@8 | Pass@8 | 缺boxed (%) | 实际截断 (%) |', '|---|---:|---:|---:|---:|']

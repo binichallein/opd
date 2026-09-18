@@ -37,9 +37,11 @@ def training_env(runtime, commit, root, probe_step=None):
 
 def audit_rollouts(run, steps, *, student=None, protocol=PROTOCOL, stop_ids=None):
     from transformers import AutoTokenizer
-    from opd_ext.math_protocol import math_prompt, render_nonthinking
+    from opd_ext.math_protocol import (math_prompt, render_nonthinking, LLAMA_HISTORICAL_PROTOCOL,
+                                       LLAMA_STOP_IDS, validate_historical_training_prompt)
     tokenizer=AutoTokenizer.from_pretrained(str(student or base.assets.STUDENT),local_files_only=True)
-    stop_ids = [151643,151645] if stop_ids is None else stop_ids
+    historical = protocol == LLAMA_HISTORICAL_PROTOCOL
+    stop_ids = (LLAMA_STOP_IDS if historical else [151643,151645]) if stop_ids is None else stop_ids
     evidence=[]
     for step in steps:
         files=list((run/'rollouts').glob(f'*/step_{step:06d}/raw.jsonl.gz'))
@@ -54,12 +56,19 @@ def audit_rollouts(run, steps, *, student=None, protocol=PROTOCOL, stop_ids=None
         if len(rows)!=32 or len({r['traj_uid'] for r in rows})!=32:
             raise ValueError('Missing or duplicated training trajectories')
         for row in rows:
-            text=render_nonthinking(tokenizer,math_prompt(row['source_extra_info']['question']))
-            ids=tokenizer.encode(text,add_special_tokens=False)
-            if len(ids)>2048:
-                ids=ids[:1024]+ids[-1024:]
-            if ids!=row['prompt_token_ids'] or row['enable_thinking'] is not False or row['protocol'] != protocol:
-                raise ValueError('Actual training prompt does not match evaluation protocol')
+            if historical:
+                reference = validate_historical_training_prompt(
+                    tokenizer, row['source_extra_info']['question'], row['prompt_token_ids'],
+                    max_prompt_length=2048, truncation='middle')
+                ids = reference['prompt_token_ids']
+            else:
+                text=render_nonthinking(tokenizer,math_prompt(row['source_extra_info']['question']))
+                ids=tokenizer.encode(text,add_special_tokens=False)
+                if len(ids)>2048:
+                    ids=ids[:1024]+ids[-1024:]
+            expected_thinking = None if historical else False
+            if ids!=row['prompt_token_ids'] or row['enable_thinking'] is not expected_thinking or row['protocol'] != protocol:
+                raise ValueError('Actual training prompt does not match the selected protocol')
             if row['sampling']['stop_token_ids'] != stop_ids:
                 raise ValueError('Train/eval stopping protocol differs')
             if row['finish_reason'] not in ('length','stop'):

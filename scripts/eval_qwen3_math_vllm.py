@@ -16,6 +16,7 @@ import json
 import multiprocessing
 import os
 from collections import defaultdict
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
@@ -73,7 +74,9 @@ def split_round_robin(items: list[int], n: int) -> list[list[int]]:
     return chunks
 
 
-def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
+def worker_generate(
+    args_tuple: tuple[Any, ...], *, rollout_archive_dir: str | Path | None = None,
+) -> list[dict[str, Any]]:
     (
         model_path,
         task_name,
@@ -108,6 +111,9 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
 
         prompts = [apply_template(tokenizer, row["prompt"], enable_thinking) for row in rows]
         generation_inputs = evaluation_inputs(tokenizer, prompts)
+        if rollout_archive_dir is not None:
+            from opd_ext.eval_rollout_archive import eval_rollout_record, open_rollout_archive
+
         for rollout_id in rollout_ids:
             sampling = SamplingParams(
                 temperature=temperature,
@@ -116,11 +122,30 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
                 stop_token_ids=stop_token_ids or None,
                 seed=eval_seed + rollout_id,
             )
-            outputs = llm.generate(generation_inputs, sampling, use_tqdm=False)
-            for row, output, input_value in zip(rows, outputs, generation_inputs):
-                extra = native_eval_record(output, input_value['prompt_token_ids']) if isinstance(input_value, dict) else {}
-                results.append(
-                    {
+            archive_context = (
+                open_rollout_archive(rollout_archive_dir, task_name, rollout_id)
+                if rollout_archive_dir is not None else nullcontext()
+            )
+            with archive_context as archive:
+                outputs = llm.generate(generation_inputs, sampling, use_tqdm=False)
+                if archive is not None and len(outputs) != len(rows):
+                    raise ValueError("Incomplete engine evaluation output coverage")
+                for row, output, input_value, rendered in zip(
+                    rows, outputs, generation_inputs, prompts,
+                ):
+                    if archive is not None:
+                        extra = eval_rollout_record(
+                            output, tokenizer, sampling, rendered_prompt=rendered,
+                            expected_prompt_ids=(input_value['prompt_token_ids']
+                                                 if isinstance(input_value, dict) else None),
+                        )
+                        extra.update(model_path=model_path, enable_thinking=enable_thinking)
+                    else:
+                        extra = (
+                            native_eval_record(output, input_value['prompt_token_ids'])
+                            if isinstance(input_value, dict) else {}
+                        )
+                    record = {
                         "task": task_name,
                         "example_id": row["id"],
                         "source": row.get("source", task_name),
@@ -132,7 +157,11 @@ def worker_generate(args_tuple: tuple[Any, ...]) -> list[dict[str, Any]]:
                         "response": output.outputs[0].text,
                         **extra,
                     }
-                )
+                    if archive is not None:
+                        archive.write(
+                            json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n"
+                        )
+                    results.append(record)
     finally:
         if llm is not None:
             del llm
@@ -274,6 +303,10 @@ def main() -> None:
     parser.add_argument("--grader", choices=("verl", "external"), default="verl")
     parser.add_argument("--enable-thinking", action="store_true")
     parser.add_argument("--replace", action="store_true")
+    parser.add_argument(
+        "--retain-rollouts", action="store_true",
+        help="Retain native tokens and raw decodes in a new exclusive rollout_archive directory",
+    )
     parser.add_argument("--length-tokenizer-path", default=None)
     args = parser.parse_args()
 
@@ -283,6 +316,17 @@ def main() -> None:
     gpu_ids = [gpu.strip() for gpu in args.gpus.split(",") if gpu.strip()]
     if not gpu_ids:
         raise ValueError("--gpus must include at least one GPU id")
+
+    rollout_archive_dir = None
+    if args.retain_rollouts:
+        for task in args.tasks:
+            existing = out_dir / (
+                f"{task}_t{args.temperature}_p{args.top_p}_n{args.n}-MNT{args.max_tokens}.jsonl"
+            )
+            if existing.exists():
+                raise FileExistsError(existing)
+        rollout_archive_dir = out_dir / "rollout_archive"
+        rollout_archive_dir.mkdir(exist_ok=False)
 
     metadata = {
         "model_path": args.model_path,
@@ -298,6 +342,8 @@ def main() -> None:
         "grader": args.grader,
         "enable_thinking": args.enable_thinking,
     }
+    if args.retain_rollouts:
+        metadata.update(retain_rollouts=True, rollout_archive_dir=str(rollout_archive_dir))
     (out_dir / "eval_config.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 
     output_files: list[Path] = []
@@ -334,11 +380,14 @@ def main() -> None:
         all_rows: list[dict[str, Any]] = []
         ctx = multiprocessing.get_context("spawn")
         with concurrent.futures.ProcessPoolExecutor(max_workers=len(work), mp_context=ctx) as ex:
-            futures = [ex.submit(worker_generate, item) for item in work]
+            worker_kwargs = (
+                {"rollout_archive_dir": str(rollout_archive_dir)} if args.retain_rollouts else {}
+            )
+            futures = [ex.submit(worker_generate, item, **worker_kwargs) for item in work]
             for fut in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc=task):
                 all_rows.extend(fut.result())
         all_rows.sort(key=lambda row: (str(row["example_id"]), int(row["seed"])))
-        with out_path.open("w", encoding="utf-8") as f:
+        with out_path.open("x" if args.retain_rollouts else "w", encoding="utf-8") as f:
             for row in all_rows:
                 f.write(json.dumps(row, ensure_ascii=False) + "\n")
         print(f"wrote {len(all_rows)} generations to {out_path}", flush=True)
