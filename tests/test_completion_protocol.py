@@ -80,3 +80,67 @@ def test_diagnostic_candidate_uses_shared_prompt():
     assert ids == list(text.encode())
     assert prompt_variant(row, tokenizer, 'plain')[0] == '2+2?\n\nSolution:\n'
     assert prompt_variant(row, tokenizer, 'historical')[1] == row['prompt_token_ids']
+
+
+def test_completion_eval_and_training_reference_token_ids_match():
+    fn = getattr(protocol, 'completion_input_ids', None)
+    assert callable(fn), 'Missing shared completion tokenization'
+    tokenizer = SimpleNamespace(bos_token_id=None, eos_token_id=151643,
+                                encode=lambda text, **kwargs: list(text.encode()))
+    full = list(protocol.completion_math_prompt('Question').encode())
+    assert fn(tokenizer, 'Question') == full
+    assert fn(tokenizer, 'Question', max_prompt_length=12) == full[:6] + full[-6:]
+
+
+def test_training_and_eval_wire_versioned_completion_and_per_request_seeds():
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    sources = {
+        'env': 'external/revisiting_opd/agent_system/environments/env_manager.py',
+        'loop': 'external/revisiting_opd/agent_system/multi_turn_rollout/rollout_loop.py',
+        'trainer': 'external/revisiting_opd/verl/trainer/ppo/ray_trainer_multitask.py',
+        'worker': 'external/revisiting_opd/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py',
+        'eval': 'scripts/eval_qwen3_math_vllm.py',
+    }
+    text = {key: (root/path).read_text() for key, path in sources.items()}
+    assert 'qwen3_completion_boxed_v1' in text['env']
+    assert 'completion_math_prompt(obs_content)' in text['loop']
+    assert 'request_identities(' in text['loop']
+    assert "gen_batch.meta_info['request_seed_step'] = self.global_steps" in text['trainer']
+    assert 'per_request_sampling(' in text['worker']
+    assert "request_identity" in text['worker']
+    assert 'completion_input_ids(tokenizer, row["problem"])' in text['eval']
+    assert 'and not is_validate' in text['worker']
+    launch = (root/'scripts/launch_revisiting_block_opd_formal_train.sh').read_text()
+    command = (root/'scripts/run_revisiting_sampled_block_opd_math.sh').read_text()
+    assert 'OPD_REQUEST_SEED_RULE' in launch and 'request_seed_rule' in launch
+    assert 'qwen3_completion_boxed_v1' in command
+    assert '+actor_rollout_ref.rollout.request_seed_rule=' in command
+
+
+def test_completion_archive_preserves_mask_and_request_identity(tmp_path):
+    import gzip
+    import json
+    import numpy as np
+    import torch
+    identity = seed_module().request_identities([{'index': 1, 'question': 'q'}],
+                                               group_size=1, global_seed=21, step=1)[0]
+    seed = seed_module().request_seed(identity, turn=0)
+    record = {'prompt_token_ids': [3, 4], 'response_token_ids': [7, 151643],
+              'finish_reason': 'stop', 'stop_reason': 151643, 'sampling': {'max_tokens': 4, 'seed': seed},
+              'request_identity': identity, 'request_turn': 0}
+    batch = SimpleNamespace(batch={
+        'prompts': torch.tensor([[0, 3, 4]]), 'responses': torch.tensor([[7, 151643, 151643, 151643]]),
+        'attention_mask': torch.tensor([[0, 1, 1, 1, 1, 1, 1]]),
+        'rollout_log_probs': torch.tensor([[-1., -2., -1., -1.]])}, non_tensor_batch={
+            'generation_record': np.array([record], dtype=object), 'uid': np.array(['g']),
+            'traj_uid': np.array(['t']), 'source_extra_info': np.array([{'index': 1, 'question': 'q'}], dtype=object)})
+    tokenizer = SimpleNamespace(decode=lambda ids, **kw: str(ids))
+    protocol.save_rollouts(batch, tokenizer, tmp_path, step=1, run_id='r', attempt_id='p1',
+                           source_commit='abc', protocol=protocol.QWEN_COMPLETION_PROTOCOL)
+    with gzip.open(tmp_path/'p1/step_000001/raw.jsonl.gz', 'rt') as stream:
+        saved = json.loads(stream.readline())
+    assert saved['training_response_mask'] == [1]*4
+    assert saved['request_identity'] == identity
+    assert saved['sampling']['seed'] == seed
+    assert saved['enable_thinking'] is False

@@ -76,6 +76,7 @@ def split_round_robin(items: list[int], n: int) -> list[list[int]]:
 
 def worker_generate(
     args_tuple: tuple[Any, ...], *, rollout_archive_dir: str | Path | None = None,
+    prompt_protocol: str = 'legacy',
 ) -> list[dict[str, Any]]:
     (
         model_path,
@@ -109,8 +110,18 @@ def worker_generate(
         from opd_ext.math_protocol import evaluation_stop_ids, evaluation_inputs, native_eval_record
         stop_token_ids = evaluation_stop_ids(tokenizer)
 
-        prompts = [apply_template(tokenizer, row["prompt"], enable_thinking) for row in rows]
-        generation_inputs = evaluation_inputs(tokenizer, prompts)
+        if prompt_protocol == 'qwen3_completion_boxed_v1':
+            from opd_ext.math_protocol import completion_math_prompt, completion_input_ids
+            if enable_thinking:
+                raise ValueError('Completion evaluation cannot enable thinking')
+            prompts = [completion_math_prompt(row['problem']) for row in rows]
+            generation_inputs = [{'prompt_token_ids': completion_input_ids(tokenizer, row["problem"])} for row in rows]
+            stop_token_ids = []  # Same model EOS151643 as completion training; no added ChatML stop.
+        elif prompt_protocol == 'legacy':
+            prompts = [apply_template(tokenizer, row["prompt"], enable_thinking) for row in rows]
+            generation_inputs = evaluation_inputs(tokenizer, prompts)
+        else:
+            raise ValueError('Unknown evaluation prompt protocol')
         if rollout_archive_dir is not None:
             from opd_ext.eval_rollout_archive import eval_rollout_record, open_rollout_archive
 
@@ -157,6 +168,8 @@ def worker_generate(
                         "response": output.outputs[0].text,
                         **extra,
                     }
+                    if prompt_protocol != 'legacy':
+                        record['prompt_protocol'] = prompt_protocol
                     if archive is not None:
                         archive.write(
                             json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n"
@@ -302,6 +315,7 @@ def main() -> None:
     parser.add_argument("--eval-seed", type=int, default=21)
     parser.add_argument("--grader", choices=("verl", "external"), default="verl")
     parser.add_argument("--enable-thinking", action="store_true")
+    parser.add_argument('--prompt-protocol', choices=['legacy', 'qwen3_completion_boxed_v1'], default='legacy')
     parser.add_argument("--replace", action="store_true")
     parser.add_argument(
         "--retain-rollouts", action="store_true",
@@ -341,6 +355,7 @@ def main() -> None:
         "rollout_seeds": [args.eval_seed + rollout_id for rollout_id in range(args.n)],
         "grader": args.grader,
         "enable_thinking": args.enable_thinking,
+        "prompt_protocol": args.prompt_protocol,
     }
     if args.retain_rollouts:
         metadata.update(retain_rollouts=True, rollout_archive_dir=str(rollout_archive_dir))
@@ -383,6 +398,8 @@ def main() -> None:
             worker_kwargs = (
                 {"rollout_archive_dir": str(rollout_archive_dir)} if args.retain_rollouts else {}
             )
+            if args.prompt_protocol != 'legacy':
+                worker_kwargs['prompt_protocol'] = args.prompt_protocol
             futures = [ex.submit(worker_generate, item, **worker_kwargs) for item in work]
             for fut in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc=task):
                 all_rows.extend(fut.result())

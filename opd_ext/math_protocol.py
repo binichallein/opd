@@ -86,6 +86,18 @@ def completion_math_prompt(question):
             'the final answer in \\boxed{}.\n\nSolution:\n')
 
 
+def completion_input_ids(tokenizer, question, *, max_prompt_length=2048):
+    if tokenizer.bos_token_id is not None or tokenizer.eos_token_id != 151643:
+        raise ValueError('Completion protocol requires the pinned Qwen Base tokenizer')
+    if max_prompt_length < 2:
+        raise ValueError('Invalid maximum prompt length')
+    ids = tokenizer.encode(completion_math_prompt(question), add_special_tokens=False)
+    if len(ids) > max_prompt_length:
+        half = max_prompt_length // 2
+        ids = ids[:half] + ids[-(max_prompt_length - half):]
+    return ids
+
+
 def render_nonthinking(tokenizer, content):
     kwargs = {'date_string': LLAMA_DATE} if tokenizer_protocol(tokenizer) == LLAMA_PROTOCOL else {}
     return tokenizer.apply_chat_template(
@@ -209,7 +221,8 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
     native_protocol = tokenizer_protocol(tokenizer)
     protocol = native_protocol if protocol is None else protocol
     expected_native = {LLAMA_HISTORICAL_PROTOCOL: LLAMA_PROTOCOL,
-                       QWEN_HISTORICAL_PROTOCOL: PROTOCOL}.get(protocol, protocol)
+                       QWEN_HISTORICAL_PROTOCOL: PROTOCOL,
+                       QWEN_COMPLETION_PROTOCOL: PROTOCOL}.get(protocol, protocol)
     if native_protocol != expected_native:
         raise ValueError('Archive protocol does not match the tokenizer')
     if not attempt_id or Path(attempt_id).name != attempt_id or attempt_id in ('.', '..'):
@@ -240,7 +253,7 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
                 mask = attention[prompt_width:].tolist()
                 if actual_prompt != prompt_ids or actual_response != response_ids:
                     raise ValueError('Archive token IDs differ from the actual training batch')
-                historical_qwen = protocol == QWEN_HISTORICAL_PROTOCOL
+                historical_qwen = protocol in (QWEN_HISTORICAL_PROTOCOL, QWEN_COMPLETION_PROTOCOL)
                 if not historical_qwen and mask != [1] * count + [0] * (len(mask) - count):
                     raise ValueError('Training mask differs from actual generation length')
                 text = tokenizer.decode(response_ids, skip_special_tokens=False, clean_up_tokenization_spaces=False)

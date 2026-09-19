@@ -12,6 +12,7 @@ SOURCE_COMMIT="${SOURCE_COMMIT:-unknown}"
 SUBMODULE_BASE_COMMIT="${SUBMODULE_BASE_COMMIT:-f32f284f25bae5b16d2d44ee336b52851dccc736}"
 PREPARE_ONLY="${PREPARE_ONLY:-false}"
 OPD_PROMPT_PROTOCOL="${OPD_PROMPT_PROTOCOL:-legacy}"
+OPD_REQUEST_SEED_RULE="${OPD_REQUEST_SEED_RULE:-legacy}"
 LOSSLESS_ROLLOUT_DIR="${LOSSLESS_ROLLOUT_DIR:-}"
 ROLLOUT_ATTEMPT_ID="${ROLLOUT_ATTEMPT_ID:-}"
 case "${PREPARE_ONLY}" in
@@ -109,7 +110,7 @@ test -d '${STUDENT_MODEL}'
 test -d '${MATH_TEACHER}'
 if [[ -n '${STUDENT_MODEL_REVISION}' ]]; then
   revision_file='${STUDENT_MODEL}/HF_REVISION'
-  if [[ '${OPD_PROMPT_PROTOCOL}' == llama32_nonthinking_v1 || '${OPD_PROMPT_PROTOCOL}' == llama32_historical17_v1 || '${OPD_PROMPT_PROTOCOL}' == qwen3_historical17_v1 ]]; then revision_file='${STUDENT_MODEL}/SOURCE_REVISION'; fi
+  if [[ '${OPD_PROMPT_PROTOCOL}' == llama32_nonthinking_v1 || '${OPD_PROMPT_PROTOCOL}' == llama32_historical17_v1 || '${OPD_PROMPT_PROTOCOL}' == qwen3_historical17_v1 || '${OPD_PROMPT_PROTOCOL}' == qwen3_completion_boxed_v1 ]]; then revision_file='${STUDENT_MODEL}/SOURCE_REVISION'; fi
   test \"\$(cat \"\${revision_file}\")\" = '${STUDENT_MODEL_REVISION}'
 fi
 if [[ -n '${TEACHER_MODEL_REVISION}' ]]; then
@@ -174,6 +175,7 @@ sha256sum \
   '${REMOTE_ROOT}/opd_ext/diagnostics.py' \
   '${REMOTE_ROOT}/opd_ext/window_supervision.py' \
   '${REMOTE_ROOT}/opd_ext/math_protocol.py' \
+  '${REMOTE_ROOT}/opd_ext/request_seeds.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/agent_system/environments/env_manager.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/agent_system/multi_turn_rollout/rollout_loop.py' \
   '${REMOTE_ROOT}/external/revisiting_opd/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py' \
@@ -260,6 +262,7 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"resume_from_path\": \"${RESUME_FROM_PATH}\",
   \"diagnostic_output_dir\": \"${OPD_DIAG_OUTPUT_DIR}\",
   \"opd_prompt_protocol\": \"${OPD_PROMPT_PROTOCOL}\",
+  \"request_seed_rule\": \"${OPD_REQUEST_SEED_RULE}\",
   \"lossless_rollout_dir\": \"${LOSSLESS_ROLLOUT_DIR}\",
   \"rollout_attempt_id\": \"${ROLLOUT_ATTEMPT_ID}\",
   \"checkpoint_policy\": \"preserve all milestone checkpoints; no automatic deletion\",
@@ -297,6 +300,7 @@ export PYTHONUNBUFFERED=1
 cd '${REMOTE_ROOT}'
 VARIANT='${VARIANT}' \
 OPD_PROMPT_PROTOCOL='${OPD_PROMPT_PROTOCOL}' \
+OPD_REQUEST_SEED_RULE='${OPD_REQUEST_SEED_RULE}' \
 LOSSLESS_ROLLOUT_DIR='${LOSSLESS_ROLLOUT_DIR}' \
 ROLLOUT_ATTEMPT_ID='${ROLLOUT_ATTEMPT_ID}' \
 SOURCE_COMMIT='${SOURCE_COMMIT}' \

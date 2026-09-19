@@ -1,15 +1,17 @@
 diff --git a/agent_system/environments/env_manager.py b/agent_system/environments/env_manager.py
-index 8939229..194cb8f 100644
+index 8939229..390597b 100644
 --- a/agent_system/environments/env_manager.py
 +++ b/agent_system/environments/env_manager.py
-@@ -645,9 +645,14 @@ class MathEnvironmentManager(EnvironmentManagerBase):
+@@ -645,9 +645,16 @@ class MathEnvironmentManager(EnvironmentManagerBase):
          postprocess_text_obs: List[str] = []
  
          for i in range(len(text_obs)):
 -            obs_i = MATH_TEMPLATE.format(
 -                task_description=self.tasks[i]
 -            )
-+            if self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
++            if self.config.data.get('opd_prompt_protocol', 'legacy') == 'qwen3_completion_boxed_v1':
++                obs_i = self.tasks[i]
++            elif self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
 +                from opd_ext.math_protocol import math_prompt
 +                obs_i = math_prompt(self.tasks[i])
 +            elif self.config.data.get('opd_prompt_protocol', 'legacy') == 'llama32_historical17_v1':
@@ -20,7 +22,7 @@ index 8939229..194cb8f 100644
              postprocess_text_obs.append(obs_i)
  
          return postprocess_text_obs
-@@ -896,4 +901,4 @@ def make_multitask_envs(config):
+@@ -896,4 +903,4 @@ def make_multitask_envs(config):
      
      print(f"[MultiTask] Created environment managers for tasks: {list(train_env_managers.keys())}")
      
@@ -28,10 +30,10 @@ index 8939229..194cb8f 100644
 \ No newline at end of file
 +    return train_multi_env, val_multi_env
 diff --git a/agent_system/multi_turn_rollout/rollout_loop.py b/agent_system/multi_turn_rollout/rollout_loop.py
-index fd53aff..9b0292f 100644
+index fd53aff..a031872 100644
 --- a/agent_system/multi_turn_rollout/rollout_loop.py
 +++ b/agent_system/multi_turn_rollout/rollout_loop.py
-@@ -105,12 +105,29 @@ class TrajectoryCollector:
+@@ -105,12 +105,36 @@ class TrajectoryCollector:
          }])
          
          # Apply chat template
@@ -41,7 +43,14 @@ index fd53aff..9b0292f 100644
 -            tokenize=False,
 -            **apply_chat_template_kwargs
 -        )
-+        if self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
++        if self.config.data.get('opd_prompt_protocol', 'legacy') == 'qwen3_completion_boxed_v1':
++            from opd_ext.math_protocol import completion_math_prompt
++            if apply_chat_template_kwargs.get('enable_thinking') is not False:
++                raise ValueError('Completion training requires explicit thinking disable')
++            if self.tokenizer.bos_token_id is not None or self.tokenizer.eos_token_id != 151643:
++                raise ValueError('Unexpected completion tokenizer BOS/EOS')
++            prompt_with_chat_template = completion_math_prompt(obs_content)
++        elif self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
 +            from opd_ext.math_protocol import render_nonthinking, valid_control_prefix
 +            if apply_chat_template_kwargs.get('enable_thinking') is not False:
 +                raise ValueError('Non-thinking training requires explicit enable_thinking=False')
@@ -67,7 +76,17 @@ index fd53aff..9b0292f 100644
          
          # Initialize return dict
          row_dict = {}
-@@ -382,6 +399,8 @@ class TrajectoryCollector:
+@@ -363,6 +387,9 @@ class TrajectoryCollector:
+             )
+ 
+             batch_input.meta_info = gen_batch.meta_info.copy() if gen_batch.meta_info else {}
++            if 'request_identity' in gen_batch.non_tensor_batch:
++                batch_input.non_tensor_batch['request_identity'] = gen_batch.non_tensor_batch['request_identity'].copy()
++                batch_input.meta_info['request_seed_turn'] = _step
+             
+             # Set per-task response length if configured
+             if self._task_response_lengths and "task_type" in batch_input.non_tensor_batch:
+@@ -382,6 +409,8 @@ class TrajectoryCollector:
  
              batch.non_tensor_batch['uid'] = uid_batch
              batch.non_tensor_batch['traj_uid'] = traj_uid
@@ -76,6 +95,27 @@ index fd53aff..9b0292f 100644
  
              batch = batch.union(batch_output)
              
+@@ -530,7 +559,20 @@ class TrajectoryCollector:
+             DataProto: Final collected trajectory data with metadata.
+         """
+         if is_train:
++            identities = None
++            seed_rule = self.config.actor_rollout_ref.rollout.get('request_seed_rule', 'legacy')
++            if seed_rule != 'legacy':
++                from opd_ext.request_seeds import SEED_RULE, request_identities
++                if seed_rule != SEED_RULE or self.config.algorithm.filter_groups.enable:
++                    raise ValueError('Unsupported request seed rule or dynamic filtering')
++                identities = request_identities(
++                    gen_batch.non_tensor_batch['source_extra_info'], group_size=self.config.env.rollout.n,
++                    global_seed=self.config.actor_rollout_ref.rollout.seed,
++                    step=gen_batch.meta_info['request_seed_step'],
++                )
+             gen_batch = gen_batch.repeat(repeat_times=self.config.env.rollout.n, interleave=True)
++            if identities is not None:
++                gen_batch.non_tensor_batch['request_identity'] = np.array(identities, dtype=object)
+             
+         # Initial observations from the environment
+         if self.config.algorithm.filter_groups.enable and is_train:
 diff --git a/verl/trainer/config/ppo_trainer.yaml b/verl/trainer/config/ppo_trainer.yaml
 index dcff326..5b1d392 100644
 --- a/verl/trainer/config/ppo_trainer.yaml
@@ -271,7 +311,7 @@ index f754f25..fbec0cb 100644
      return L1, L2, not_in_topk_ratio
 -
 diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
-index cbf1a4f..ba4a736 100644
+index cbf1a4f..7368101 100644
 --- a/verl/trainer/ppo/ray_trainer_multitask.py
 +++ b/verl/trainer/ppo/ray_trainer_multitask.py
 @@ -21,8 +21,10 @@ FSDP PPO Trainer with Ray-based single controller.
@@ -583,16 +623,20 @@ index cbf1a4f..ba4a736 100644
  
                  # pop those keys for generation
                  batch_keys_to_pop = ["input_ids", "attention_mask", "position_ids"]
-@@ -1291,6 +1530,8 @@ class RayPPOTrainer:
+@@ -1291,6 +1530,12 @@ class RayPPOTrainer:
                  )
  
                  is_last_step = self.global_steps >= self.total_training_steps
 +                if self.config.trainer.get('lossless_rollout_dir', None):
 +                    gen_batch.non_tensor_batch['source_extra_info'] = batch.non_tensor_batch['extra_info'].copy()
++                if self.config.actor_rollout_ref.rollout.get('request_seed_rule', 'legacy') != 'legacy':
++                    if 'source_extra_info' not in gen_batch.non_tensor_batch:
++                        raise ValueError('Independent request seeds require retained source identities')
++                    gen_batch.meta_info['request_seed_step'] = self.global_steps
  
                  with _timer("step", timing_raw):
                      # generate a batch
-@@ -1331,6 +1572,16 @@ class RayPPOTrainer:
+@@ -1331,6 +1576,16 @@ class RayPPOTrainer:
                      # batch = batch.union(gen_batch_output)
                      del batch
                      batch = gen_batch_output
@@ -609,7 +653,7 @@ index cbf1a4f..ba4a736 100644
  
                      if self.config.algorithm.adv_estimator == AdvantageEstimator.GiGPO:
                          step_rewards_tensor = core_gigpo.compute_step_discounted_returns(
-@@ -1342,6 +1593,10 @@ class RayPPOTrainer:
+@@ -1342,6 +1597,10 @@ class RayPPOTrainer:
                      batch = adjust_batch(self.config, batch)
  
                      batch.batch["response_mask"] = compute_response_mask(batch)
@@ -620,7 +664,7 @@ index cbf1a4f..ba4a736 100644
                      # balance the number of valid tokens on each dp rank.
                      # Note that this breaks the order of data inside the batch.
                      # Please take care when you implement group based adv computation such as GRPO and rloo
-@@ -1481,6 +1736,27 @@ class RayPPOTrainer:
+@@ -1481,6 +1740,27 @@ class RayPPOTrainer:
                                      else:
                                          ref_log_prob = self.actor_rollout_wg.compute_ref_log_prob(batch)
                              batch = batch.union(ref_log_prob)
@@ -648,7 +692,7 @@ index cbf1a4f..ba4a736 100644
                          
                          # Compute student's log probs for teacher's top-k indices if using OPD topk
                          if use_opd_topk and "teacher_topk_indices" in batch.batch:
-@@ -1606,6 +1882,19 @@ class RayPPOTrainer:
+@@ -1606,6 +1886,19 @@ class RayPPOTrainer:
                                  clip_log_ratio=self.config.actor_rollout_ref.actor.get("clip_log_ratio", False), # this config is not that naturally related to OPD, but we keep it here for compatibility
                              )
  
@@ -668,7 +712,7 @@ index cbf1a4f..ba4a736 100644
                          if self.config.trainer.get("rollout_data_dir", None):
                              self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
  
-@@ -1625,6 +1914,123 @@ class RayPPOTrainer:
+@@ -1625,6 +1918,123 @@ class RayPPOTrainer:
                          actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                          metrics.update(actor_output_metrics)
  
@@ -792,7 +836,7 @@ index cbf1a4f..ba4a736 100644
                      # Log rollout generations if enabled
                      rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
                      if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
-@@ -1638,10 +2044,6 @@ class RayPPOTrainer:
+@@ -1638,10 +2048,6 @@ class RayPPOTrainer:
                                  last_val_metrics = val_metrics
                          metrics.update(val_metrics)
  
@@ -803,7 +847,7 @@ index cbf1a4f..ba4a736 100644
                  # training metrics
                  metrics.update(
                      {
-@@ -1656,10 +2058,96 @@ class RayPPOTrainer:
+@@ -1656,10 +2062,96 @@ class RayPPOTrainer:
                  n_gpus = self.resource_pool_manager.get_n_gpus()
                  metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
  
@@ -1300,7 +1344,7 @@ index 0874078..547d505 100644
  
          output = output.to("cpu")
 diff --git a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
-index 8546325..4bdc3d8 100644
+index 8546325..285f2ff 100644
 --- a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
 +++ b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
 @@ -222,6 +222,8 @@ class vLLMRollout(BaseRollout):
@@ -1312,7 +1356,31 @@ index 8546325..4bdc3d8 100644
  
          print(f"kwargs: {kwargs}")
          self.sampling_params = SamplingParams(**kwargs)
-@@ -338,10 +340,18 @@ class vLLMRollout(BaseRollout):
+@@ -326,9 +328,22 @@ class vLLMRollout(BaseRollout):
+ 
+         # users can customize different sampling_params at different run
+         with self.update_sampling_params(**kwargs):
++            request_params = None
++            identities = non_tensor_batch.get('request_identity')
++            if identities is not None:
++                from opd_ext.request_seeds import SEED_RULE, request_seed, per_request_sampling
++                if self.config.get('request_seed_rule', 'legacy') != SEED_RULE:
++                    raise ValueError('Unexpected request-local seed metadata')
++                if len(identities) != len(vllm_inputs):
++                    raise ValueError('Missing per-request seed identity')
++                turn = prompts.meta_info['request_seed_turn']
++                request_params = per_request_sampling(
++                    self.sampling_params, [request_seed(item, turn=turn) for item in identities])
++            elif self.config.get('request_seed_rule', 'legacy') != 'legacy' and not is_validate:
++                raise ValueError('Training request-local seeds were not supplied')
+             outputs = self.inference_engine.generate(
+                 prompts=vllm_inputs,  # because we have already convert it to prompt token id
+-                sampling_params=self.sampling_params,
++                sampling_params=request_params if request_params is not None else self.sampling_params,
+                 lora_request=lora_requests,
+                 use_tqdm=False,
+             )
+@@ -338,10 +353,24 @@ class vLLMRollout(BaseRollout):
  
              response = []
              rollout_log_probs = []
@@ -1327,12 +1395,18 @@ index 8546325..4bdc3d8 100644
 +                        from opd_ext.math_protocol import generation_record
 +                        generation_records.append(generation_record(
 +                            vllm_inputs[output_index]['prompt_token_ids'], output.outputs[sample_id],
-+                            self.sampling_params, eos_token_id,
++                            request_params[output_index] if request_params is not None else self.sampling_params,
++                            eos_token_id,
 +                        ))
++                        if request_params is not None:
++                            if list(output.prompt_token_ids) != vllm_inputs[output_index]['prompt_token_ids']:
++                                raise ValueError('vLLM request ordering/input IDs changed')
++                            generation_records[-1].update(request_identity=dict(identities[output_index]),
++                                                          request_turn=turn)
                      curr_log_prob = []
                      for i, logprob in enumerate(output.outputs[sample_id].logprobs):
                          curr_log_prob.append(logprob[response_ids[i]].logprob)
-@@ -377,6 +387,14 @@ class vLLMRollout(BaseRollout):
+@@ -377,6 +406,14 @@ class vLLMRollout(BaseRollout):
          response_position_ids = position_ids[..., -1:] + delta_position_id
          position_ids = torch.cat([position_ids, response_position_ids], dim=-1)
          response_attention_mask = get_response_mask(response_id=response, eos_token=eos_token_id, dtype=attention_mask.dtype)
