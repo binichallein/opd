@@ -5,6 +5,21 @@ reproducibility, data safety, and clear experiment lineage.
 
 ## User-Directed Historical Re-evaluation (2026-09-18)
 
+- Sep19 morning update supersedes the early Token-only snapshot below: Token200
+  and all50/100/200 full evaluations passed. Block3 formal PID815640 completed200
+  at11:01:44 Beijing, exit0; checkpoint/41diagnostics/6400raw audits passed. Four
+  rank optimizer/scheduler200, LR2e-6, RNG and sampler800 inspected. Step200 full
+  evaluation PID961434 started11:03:39;100/50 queued. Read live state and
+  `docs/results/2026-09-19-llama-block3-quality-diagnosis.md`. Block3 raw output
+  degenerates by at leastStep28; student entropy9.24atStep35, before maxpreclipgrad
+  161.621atStep75. Finite gradients/lower truncation do NOT mean healthy output.
+  All200steps actual prompt/order/sampling/protocol matched; firstrollouts equal.
+  No runtime or parameters changed. Keep original queue and full milestone evals;
+  do not silently repair scientific failure by changing one comparison arm.
+  Current Block3 objective also uses joint PPO ratios and block reduction; it is
+  NOT only advantage broadcasting with token-normalized PPO. CPU toy verifies3x
+  logprob-input gradient for equal advantages (not3x Adam update). Preserve the
+  historical objective; any normalization-only control is a new experiment.
 - User explicitly requested active training supervision and repair on Sep19.
   Read `docs/results/2026-09-19-llama-historical17-supervision.md` and live v4 state.
   Both Token probes completed; four-rank model/optim/extra_state loading and
