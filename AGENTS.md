@@ -16,7 +16,13 @@ reproducibility, data safety, and clear experiment lineage.
   difference and original fixed Block3 joint ratio/reduction. No silent loss/mask/seed changes.
 - Historical Llama v4 finished all evaluations at13:42 Beijing Sep19; fresh state
   and GPU-idle verification required before launching new queue. Do not restart old queues.
-- This entry is authorization/design, not evidence that new training has started.
+- New queue launched via server nohup at20:28 Beijing, PID1047903; immutable
+  runtime `57ae7dfec10e206dd441a4c70571308c09f64a03`, run
+  `20260919v1_qwen4_blockfirst_seed21_ml2`. ModelScope student download verified;
+  paired preflight passed20:31. Read live state and startup note before action,
+  never duplicate or replace the frozen runtime with later documentation commits.
+  Block3 probe1 PID1049174 started20:31:58; Ray init passed20:32:36. Formal training
+  was not yet started at this snapshot; probes must pass first.
 
 ## User-Directed Historical Re-evaluation (2026-09-18)
 
