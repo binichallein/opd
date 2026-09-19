@@ -13,6 +13,7 @@ STOP_TOKEN_IDS = [151643, 151645]
 LLAMA_PROTOCOL = 'llama32_nonthinking_v1'
 LLAMA_HISTORICAL_PROTOCOL = 'llama32_historical17_v1'
 QWEN_HISTORICAL_PROTOCOL = 'qwen3_historical17_v1'
+QWEN_COMPLETION_PROTOCOL = 'qwen3_completion_boxed_v1'
 LLAMA_SUFFIX = '<|start_header_id|>assistant<|end_header_id|>\n\n'
 LLAMA_STOP_IDS = [128001, 128008, 128009]
 LLAMA_DATE = '18 Sep 2026'
@@ -74,6 +75,15 @@ def math_prompt(question):
     if 'put your final answer' not in prompt:
         prompt += '\n\n' + ANSWER_INSTRUCTION
     return prompt
+
+
+def completion_math_prompt(question):
+    """Shared Base train/eval content; deliberately bypasses all chat templates."""
+    question = question.strip()
+    if not question or any(t in question for t in ('<|im_start|>', '<|im_end|>', '<think>', '</think>')):
+        raise ValueError('Empty question or chat/thinking controls in completion input')
+    return (question + '\n\nPlease solve the problem step by step and put '
+            'the final answer in \\boxed{}.\n\nSolution:\n')
 
 
 def render_nonthinking(tokenizer, content):
