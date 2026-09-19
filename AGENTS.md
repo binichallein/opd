@@ -3,6 +3,21 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Qwen4 Block3-First Pair (2026-09-19)
+
+- Latest user approved Qwen3-4B-Base student with the unchanged historical public
+  Qwen3-4B-Base-GRPO teacher. Models from ModelScope; no private weights or train access.
+- New order supersedes earlier Token-first defaults for THIS pair: Block3 formal
+  training/full eval, original zero-step student eval, then Token formal training/full eval.
+  Both start independently from the SAME original student, never from each other.
+- Save and fully evaluate50/100/150/200 for BOTH arms, retaining all state and raw
+  training/evaluation rollouts; four benchmarks separately, exact historical grader.
+- Read `docs/plans/2026-09-19-qwen4-blockfirst.md`. Preserve historical1.7B prompt
+  difference and original fixed Block3 joint ratio/reduction. No silent loss/mask/seed changes.
+- Historical Llama v4 finished all evaluations at13:42 Beijing Sep19; fresh state
+  and GPU-idle verification required before launching new queue. Do not restart old queues.
+- This entry is authorization/design, not evidence that new training has started.
+
 ## User-Directed Historical Re-evaluation (2026-09-18)
 
 - Sep19 morning update supersedes the early Token-only snapshot below: Token200

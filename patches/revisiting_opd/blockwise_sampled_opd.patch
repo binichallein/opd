@@ -28,10 +28,10 @@ index 8939229..194cb8f 100644
 \ No newline at end of file
 +    return train_multi_env, val_multi_env
 diff --git a/agent_system/multi_turn_rollout/rollout_loop.py b/agent_system/multi_turn_rollout/rollout_loop.py
-index fd53aff..c77dbb6 100644
+index fd53aff..9b0292f 100644
 --- a/agent_system/multi_turn_rollout/rollout_loop.py
 +++ b/agent_system/multi_turn_rollout/rollout_loop.py
-@@ -105,12 +105,24 @@ class TrajectoryCollector:
+@@ -105,12 +105,29 @@ class TrajectoryCollector:
          }])
          
          # Apply chat template
@@ -55,6 +55,11 @@ index fd53aff..c77dbb6 100644
 +            prompt_with_chat_template = render_historical_training(self.tokenizer, obs_content)
 +            if not valid_control_prefix(prompt_with_chat_template, self.tokenizer, self.config.data.opd_prompt_protocol):
 +                raise ValueError('Native historical Llama control prefix is missing')
++        elif self.config.data.get('opd_prompt_protocol', 'legacy') == 'qwen3_historical17_v1':
++            from opd_ext.math_protocol import render_qwen_historical
++            if 'enable_thinking' in apply_chat_template_kwargs:
++                raise ValueError('Historical Qwen thinking must remain unspecified')
++            prompt_with_chat_template = render_qwen_historical(self.tokenizer, obs_content)
 +        else:
 +            prompt_with_chat_template = self.tokenizer.apply_chat_template(
 +                chat, add_generation_prompt=True, tokenize=False, **apply_chat_template_kwargs
@@ -62,7 +67,7 @@ index fd53aff..c77dbb6 100644
          
          # Initialize return dict
          row_dict = {}
-@@ -382,6 +394,8 @@ class TrajectoryCollector:
+@@ -382,6 +399,8 @@ class TrajectoryCollector:
  
              batch.non_tensor_batch['uid'] = uid_batch
              batch.non_tensor_batch['traj_uid'] = traj_uid
@@ -1295,7 +1300,7 @@ index 0874078..547d505 100644
  
          output = output.to("cpu")
 diff --git a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
-index 8546325..7b4b72f 100644
+index 8546325..4bdc3d8 100644
 --- a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
 +++ b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
 @@ -222,6 +222,8 @@ class vLLMRollout(BaseRollout):
@@ -1327,13 +1332,15 @@ index 8546325..7b4b72f 100644
                      curr_log_prob = []
                      for i, logprob in enumerate(output.outputs[sample_id].logprobs):
                          curr_log_prob.append(logprob[response_ids[i]].logprob)
-@@ -377,6 +387,12 @@ class vLLMRollout(BaseRollout):
+@@ -377,6 +387,14 @@ class vLLMRollout(BaseRollout):
          response_position_ids = position_ids[..., -1:] + delta_position_id
          position_ids = torch.cat([position_ids, response_position_ids], dim=-1)
          response_attention_mask = get_response_mask(response_id=response, eos_token=eos_token_id, dtype=attention_mask.dtype)
 +        if retain_generation_metadata:
-+            from opd_ext.math_protocol import length_mask
-+            response_attention_mask = length_mask(response, [len(r['response_token_ids']) for r in generation_records]).to(attention_mask.dtype)
++            from opd_ext.math_protocol import select_response_mask
++            response_attention_mask = select_response_mask(
++                response, [len(r['response_token_ids']) for r in generation_records], response_attention_mask,
++                preserve_legacy=self.config.get('preserve_legacy_response_mask', False))
 +            records_array = np.empty(len(generation_records), dtype=object)
 +            records_array[:] = generation_records
 +            non_tensor_batch['generation_record'] = records_array

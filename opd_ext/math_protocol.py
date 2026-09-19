@@ -12,6 +12,7 @@ ANSWER_INSTRUCTION = 'Please reason step by step, and put your final answer with
 STOP_TOKEN_IDS = [151643, 151645]
 LLAMA_PROTOCOL = 'llama32_nonthinking_v1'
 LLAMA_HISTORICAL_PROTOCOL = 'llama32_historical17_v1'
+QWEN_HISTORICAL_PROTOCOL = 'qwen3_historical17_v1'
 LLAMA_SUFFIX = '<|start_header_id|>assistant<|end_header_id|>\n\n'
 LLAMA_STOP_IDS = [128001, 128008, 128009]
 LLAMA_DATE = '18 Sep 2026'
@@ -90,6 +91,27 @@ def historical_math_prompt(question):
             'You must conduct reasoning inside <think> and </think> and give the final answer within \\boxed{}.\n')
 
 
+def render_qwen_historical(tokenizer, content):
+    if tokenizer_protocol(tokenizer) != PROTOCOL:
+        raise ValueError('Historical Qwen training requires a Qwen tokenizer')
+    return tokenizer.apply_chat_template(
+        [{'role': 'user', 'content': content}], tokenize=False, add_generation_prompt=True)
+
+
+def validate_qwen_historical_prompt(tokenizer, question, prompt_ids, *, max_prompt_length=None):
+    text = render_qwen_historical(tokenizer, historical_math_prompt(question))
+    expected = tokenizer.encode(text, add_special_tokens=False)
+    if max_prompt_length is not None and len(expected) > max_prompt_length:
+        if max_prompt_length < 2:
+            raise ValueError('Invalid maximum prompt length')
+        half = max_prompt_length // 2
+        expected = expected[:half] + expected[-(max_prompt_length - half):]
+    if list(prompt_ids) != expected:
+        raise ValueError('Actual historical Qwen prompt IDs differ from reference')
+    return {'protocol': QWEN_HISTORICAL_PROTOCOL, 'enable_thinking': None,
+            'prompt_text': text, 'prompt_token_ids': expected, 'stop_token_ids': []}
+
+
 def render_historical_training(tokenizer, content):
     """Render already-formatted historical user content; thinking remains unspecified."""
     if tokenizer_protocol(tokenizer) != LLAMA_PROTOCOL:
@@ -160,6 +182,13 @@ def length_mask(response, lengths):
     return (torch.arange(response.shape[1], device=response.device)[None, :] < counts[:, None]).long()
 
 
+def select_response_mask(response, lengths, legacy_mask, *, preserve_legacy=False):
+    # Archiving the historical Qwen run must not silently change its EOS-mask semantics.
+    if preserve_legacy:
+        return legacy_mask
+    return length_mask(response, lengths).to(legacy_mask.dtype)
+
+
 def _json_default(value):
     if hasattr(value, 'tolist'):
         return value.tolist()
@@ -169,7 +198,8 @@ def _json_default(value):
 def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, source_commit, protocol=None):
     native_protocol = tokenizer_protocol(tokenizer)
     protocol = native_protocol if protocol is None else protocol
-    expected_native = LLAMA_PROTOCOL if protocol == LLAMA_HISTORICAL_PROTOCOL else protocol
+    expected_native = {LLAMA_HISTORICAL_PROTOCOL: LLAMA_PROTOCOL,
+                       QWEN_HISTORICAL_PROTOCOL: PROTOCOL}.get(protocol, protocol)
     if native_protocol != expected_native:
         raise ValueError('Archive protocol does not match the tokenizer')
     if not attempt_id or Path(attempt_id).name != attempt_id or attempt_id in ('.', '..'):
@@ -200,7 +230,8 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
                 mask = attention[prompt_width:].tolist()
                 if actual_prompt != prompt_ids or actual_response != response_ids:
                     raise ValueError('Archive token IDs differ from the actual training batch')
-                if mask != [1] * count + [0] * (len(mask) - count):
+                historical_qwen = protocol == QWEN_HISTORICAL_PROTOCOL
+                if not historical_qwen and mask != [1] * count + [0] * (len(mask) - count):
                     raise ValueError('Training mask differs from actual generation length')
                 text = tokenizer.decode(response_ids, skip_special_tokens=False, clean_up_tokenization_spaces=False)
                 has_think = generated_think_tags(response_ids, tokenizer=tokenizer, text=text)
@@ -209,7 +240,7 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
                 record.update({
                     'run_id': run_id, 'attempt_id': attempt_id, 'step': step, 'sample_index': i,
                     'source_commit': source_commit, 'protocol': protocol,
-                    'enable_thinking': None if protocol == LLAMA_HISTORICAL_PROTOCOL else False,
+                    'enable_thinking': None if protocol in (LLAMA_HISTORICAL_PROTOCOL, QWEN_HISTORICAL_PROTOCOL) else False,
                     'uid': str(batch.non_tensor_batch['uid'][i]),
                     'traj_uid': str(batch.non_tensor_batch['traj_uid'][i]),
                     'source_extra_info': batch.non_tensor_batch['source_extra_info'][i],
@@ -220,6 +251,10 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
                     'generated_think_tags': bool(has_think),
                     'rollout_log_probs': batch.batch['rollout_log_probs'][i, :count].detach().cpu().tolist(),
                 })
+                if historical_qwen:
+                    record.update(mask_policy='historical_eos_mask', training_response_mask=mask,
+                                  training_response_token_ids=batch.batch['responses'][i].detach().cpu().tolist(),
+                                  training_rollout_log_probs=batch.batch['rollout_log_probs'][i].detach().cpu().tolist())
                 compressed.write((json.dumps(record, ensure_ascii=False, allow_nan=False,
                                              default=_json_default) + '\n').encode('utf-8'))
         raw.flush()

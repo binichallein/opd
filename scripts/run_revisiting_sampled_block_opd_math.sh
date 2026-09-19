@@ -59,13 +59,15 @@ resume_from_path="${RESUME_FROM_PATH:-}"
 window_mode=fixed
 window_seed="${OPD_WINDOW_SEED:-$((910000 + ${ENV_SEED:-21}))}"
 protocol_args=()
-if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_historical17_v1 ]]; then
+if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_historical17_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_historical17_v1 ]]; then
     : "${LOSSLESS_ROLLOUT_DIR:?Complete rollout retention is required}"
     : "${ROLLOUT_ATTEMPT_ID:?An explicit attempt identity is required}"
     : "${SOURCE_COMMIT:?Source identity is required}"
     stop_ids='[151643,151645]'
     if [[ "${OPD_PROMPT_PROTOCOL}" == llama32_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL}" == llama32_historical17_v1 ]]; then
         stop_ids='[128001,128008,128009]'
+    elif [[ "${OPD_PROMPT_PROTOCOL}" == qwen3_historical17_v1 ]]; then
+        stop_ids='[]'
     fi
     protocol_args=(
         "+data.opd_prompt_protocol=${OPD_PROMPT_PROTOCOL}"
@@ -75,7 +77,9 @@ if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PRO
         "+trainer.rollout_attempt_id=${ROLLOUT_ATTEMPT_ID}"
         "+trainer.source_commit=${SOURCE_COMMIT}"
     )
-    if [[ "${OPD_PROMPT_PROTOCOL}" != llama32_historical17_v1 ]]; then
+    if [[ "${OPD_PROMPT_PROTOCOL}" == qwen3_historical17_v1 ]]; then
+        protocol_args+=(+actor_rollout_ref.rollout.preserve_legacy_response_mask=true)
+    elif [[ "${OPD_PROMPT_PROTOCOL}" != llama32_historical17_v1 ]]; then
         protocol_args+=(+data.apply_chat_template_kwargs.enable_thinking=false)
     fi
 elif [[ "${OPD_PROMPT_PROTOCOL:-legacy}" != legacy ]]; then
