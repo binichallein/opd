@@ -14,13 +14,13 @@ reproducibility, data safety, and clear experiment lineage.
 - Inference diagnostic:16 archived Qwen v1 training questions, n2 seeds21/22,
   historical/plain/candidate prompts, both models,192 outputs. Immutable inference
   code `analysis_deployments/048f0f8acfaa74e9679e41c1d1c4acfdedf8a471`;
-  outputs `diagnostics/20260920_qwen_completion_acceptance`. Read live state.
+  outputs `diagnostics/20260920_qwen_completion_acceptance`. Both jobs completed.
 - Training code `0f9161f02f08287fb07f0375ad0a6bda81133ff0` is deployed separately.
   Controller `scripts/run_qwen_completion_gate.py` targets ONLY
   `runs/20260920v1_qwen4_completion_gate_seed21_ml2`, short cache `/limx_embap/tos/q4/c1`.
-  Controller1128081 launched23:45 Beijing Sep19. Block3 probe1 PID1128438
-  exited after saving Step1 and passed audit00:00 Sep20. Probe2 PID1140852
-  started00:01:07 from that full checkpoint. Inspect live state; never duplicate.
+  Controller1128081 completed00:43:19 Beijing Sep20. Both arms passed actual
+  Step1-save-exit-resume-Step2, all4 training processes exited0. Do not relaunch
+  this gate or old v1 queue; no formal200/full-eval was started.
 - New protocol `qwen3_completion_boxed_v1` bypasses ChatML, uses the shared boxed
   completion function for train/eval. New request seed rule uses stable global21,
   step/source index/question hash/sample index/turn, with per-request SamplingParams.
@@ -36,8 +36,21 @@ reproducibility, data safety, and clear experiment lineage.
   no periodic tails,1 missing boxed; original seed21 data order and exact eval
   input IDs verified. Preclipgrad5.42485, entropy student0.20898/teacher0.17316,
   top16overlap0.91432, signflip0.16348. No nonfinite diagnostics. Probe only,
-  not formal method validation. Rank0 optimizer37states allstep1,LR2e-6,
-  scheduler1 and sampler4 directly inspected; full two-step audit still pending.
+  not formal method validation. Block3 Step2 cap2/32, periodic1/32, grad1.25157;
+  Token Step1 cap0/32, grad4.42339; Token Step2 cap4/32, periodic4/32, grad1.28878.
+  All128 rollouts audited, each batch32 unique seeds and8 different outputs per
+  question. Both arms/all4 ranks' Adam37states, scheduler, RNG and sampler
+  directly inspected at BOTH steps: optimizer1->2, sampler4->8. No nonfinite
+  diagnostics; residual repetition remains, not proof of long-run safety/gains.
+- First pre-update rollout: same32 input IDs, sources, seed identities, sampling,
+  output token IDs and masks across arms. Only28/32 logprob arrays bitwise equal;
+  six positions differ, max0.0142758. No bitwise floating/replay guarantee.
+  Read curated gate JSON beside the result MD. Standard and min-count1 position
+  PNGs retained; low-count tails are NOT population trends. Old plot HTML has a
+  hard-coded Block3 intro even for Token; use correctly titled PNGs, not that intro.
+  DataLoader worker-exit warnings remain in shutdown logs; all jobs returned0
+  and resume audits passed. Kernel logs were inaccessible; don't claim their
+  root cause was proven. Fresh relevant local tests:101 passed.
 
 ## Approved Base Protocol Revision and Llama Diagnosis (2026-09-19)
 
@@ -48,8 +61,8 @@ reproducibility, data safety, and clear experiment lineage.
   start independently from original weights. Preserve the old run and checkpoints.
 - This supersedes the historical prompt difference for the NEXT Base experiment,
   not for already completed or stopped attempts. Do not restart the stopped v1
-  queue. The candidate boxed-answer completion prompt still needs student AND
-  teacher GPU acceptance; earlier plain-Solution probes did not test it exactly.
+  queue. The candidate boxed-answer completion prompt subsequently received
+  student AND teacher GPU checks; see Sep20 section above for results/limits.
 - User also requested checking whether old Llama shared the prompt problem.
   Llama is 1B-Instruct/3B-Instruct with native Llama chat, not Qwen ChatML or Base.
   Diagnose original models with archived questions and native EOS; do not strip

@@ -1,0 +1,695 @@
+{
+  "supplementary_figures": {
+    "source_commit": "0f9161f02f08287fb07f0375ad0a6bda81133ff0",
+    "script": "scripts/analyze_single_opd_diagnostics.py",
+    "created_at": "2026-09-19T16:47:40.434638+00:00",
+    "min_count": 1,
+    "position_bin": 128,
+    "scope": "Low-count supplementary diagnostics; inspect NPZ valid_count, not population evidence",
+    "variants": {
+      "block3_mean": {
+        "label": "Qwen4 Block3 (min N=1)",
+        "output_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_gate_seed21_ml2/block3_mean/figures_min1",
+        "heatmap_sha256": "66c97de42521bae2859e7873a7f5791560a7eeb75648f290d6623805f11a0545"
+      },
+      "token_opd": {
+        "label": "Qwen4 Token (min N=1)",
+        "output_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_gate_seed21_ml2/token_opd/figures_min1",
+        "heatmap_sha256": "a2134fc7995d0a615ac3ac68e69f53de2392f362d4030df71c2026c8f46172a8"
+      }
+    }
+  },
+  "scope": "Bounded two-update engineering acceptance, not benchmark or method-effectiveness evidence",
+  "remote_run": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_gate_seed21_ml2",
+  "source_commit": "0f9161f02f08287fb07f0375ad0a6bda81133ff0",
+  "queue_state": {
+    "status": "complete",
+    "updated_at": "2026-09-19T16:43:19.035752+00:00",
+    "formal_training_started": false
+  },
+  "acceptance": {
+    "passed": true,
+    "arms": {
+      "block3_mean": [
+        {
+          "step": 1,
+          "n": 32,
+          "sha256": "d4a5ce19e7a8d0f1ee3ff333243dba38e543bd4906bda4e4352cc6c742a33152",
+          "independent_seeds": 32,
+          "unique_responses_per_question": [
+            8,
+            8,
+            8,
+            8
+          ],
+          "length_stops": 0,
+          "periodic_tails": 0,
+          "format_errors": 1,
+          "think_tags": 0,
+          "historical_data_order_matched": true,
+          "eval_prompt_ids_matched": true
+        },
+        {
+          "step": 2,
+          "n": 32,
+          "sha256": "3319a3c85fe1c05fa3e2aafdf464b744c6c5eb8df8de1628fcd93202c95c43e0",
+          "independent_seeds": 32,
+          "unique_responses_per_question": [
+            8,
+            8,
+            8,
+            8
+          ],
+          "length_stops": 2,
+          "periodic_tails": 1,
+          "format_errors": 2,
+          "think_tags": 0,
+          "historical_data_order_matched": true,
+          "eval_prompt_ids_matched": true
+        }
+      ],
+      "token_opd": [
+        {
+          "step": 1,
+          "n": 32,
+          "sha256": "864b2a37ef9325fee9fe676cfe386ac11d4abdaae460787dfe27dee1122e3a38",
+          "independent_seeds": 32,
+          "unique_responses_per_question": [
+            8,
+            8,
+            8,
+            8
+          ],
+          "length_stops": 0,
+          "periodic_tails": 0,
+          "format_errors": 1,
+          "think_tags": 0,
+          "historical_data_order_matched": true,
+          "eval_prompt_ids_matched": true
+        },
+        {
+          "step": 2,
+          "n": 32,
+          "sha256": "ba00ac4493a65a18fb10dbb91b601332246ae4d6f36fe64aaa15999742c3adfa",
+          "independent_seeds": 32,
+          "unique_responses_per_question": [
+            8,
+            8,
+            8,
+            8
+          ],
+          "length_stops": 4,
+          "periodic_tails": 4,
+          "format_errors": 3,
+          "think_tags": 0,
+          "historical_data_order_matched": true,
+          "eval_prompt_ids_matched": true
+        }
+      ]
+    },
+    "formal_training_started": false,
+    "limitation": "Two updates do not establish long-run quality or gains"
+  },
+  "input_contract": {
+    "passed": true,
+    "actual_collector_exercised": true,
+    "eval_questions_checked": {
+      "math500": 500,
+      "aime24": 30,
+      "aime25": 30,
+      "amc23": 83
+    },
+    "protocol": "qwen3_completion_boxed_v1",
+    "chat_template_used": false
+  },
+  "first_rollout_pair_audit": {
+    "passed": true,
+    "step": 1,
+    "n": 32,
+    "matching_rows": {
+      "prompt_token_ids": 32,
+      "source_extra_info": 32,
+      "request_identity": 32,
+      "sampling": 32,
+      "response_token_ids": 32,
+      "training_response_mask": 32,
+      "training_rollout_log_probs": 28
+    },
+    "created_at": "2026-09-19T16:25:20.819074+00:00",
+    "scope": "Same original weights: first rollout comparison before any update; not a bitwise resume guarantee"
+  },
+  "first_rollout_logprob_differences": {
+    "step": 1,
+    "exact_sequences": 32,
+    "exact_logprob_arrays": 28,
+    "differences": [
+      {
+        "source_index": 1742959,
+        "sample_index": 2,
+        "nonidentical_token_logprobs": 1,
+        "max_abs_difference": 8.493661880493164e-7,
+        "response_length": 166
+      },
+      {
+        "source_index": 1742959,
+        "sample_index": 3,
+        "nonidentical_token_logprobs": 2,
+        "max_abs_difference": 0.014275789260864258,
+        "response_length": 4894
+      },
+      {
+        "source_index": 1742959,
+        "sample_index": 4,
+        "nonidentical_token_logprobs": 2,
+        "max_abs_difference": 0.0000014300458133220673,
+        "response_length": 283
+      },
+      {
+        "source_index": 1742959,
+        "sample_index": 6,
+        "nonidentical_token_logprobs": 1,
+        "max_abs_difference": 1.1175870895385742e-7,
+        "response_length": 78
+      }
+    ],
+    "interpretation": "Token IDs are identical but logprob floats are not bitwise identical. Do not claim bitwise numerical determinism."
+  },
+  "variants": {
+    "block3_mean": {
+      "resume_gate": {
+        "passed": true,
+        "states": [
+          {
+            "step": 1,
+            "rank": 0,
+            "scheduler_step": 1
+          },
+          {
+            "step": 1,
+            "rank": 1,
+            "scheduler_step": 1
+          },
+          {
+            "step": 1,
+            "rank": 2,
+            "scheduler_step": 1
+          },
+          {
+            "step": 1,
+            "rank": 3,
+            "scheduler_step": 1
+          },
+          {
+            "step": 2,
+            "rank": 0,
+            "scheduler_step": 2
+          },
+          {
+            "step": 2,
+            "rank": 1,
+            "scheduler_step": 2
+          },
+          {
+            "step": 2,
+            "rank": 2,
+            "scheduler_step": 2
+          },
+          {
+            "step": 2,
+            "rank": 3,
+            "scheduler_step": 2
+          }
+        ],
+        "limitation": "Checks saved rank RNG and restored training state, not bitwise vLLM replay"
+      },
+      "optimizer_inspections": [
+        {
+          "passed": true,
+          "variant": "block3_mean",
+          "step": 1,
+          "samples_yielded": 4,
+          "ranks": [
+            {
+              "rank": 0,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 1,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 2,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 3,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            }
+          ]
+        },
+        {
+          "passed": true,
+          "variant": "block3_mean",
+          "step": 2,
+          "samples_yielded": 8,
+          "ranks": [
+            {
+              "rank": 0,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 1,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 2,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 3,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            }
+          ]
+        }
+      ],
+      "scalars": [
+        {
+          "step": 1,
+          "actor/grad_norm": 5.42485237121582,
+          "actor/pg_loss": 0.05683943518670276,
+          "diagnostics/student_entropy": 0.20897571742534637,
+          "diagnostics/teacher_entropy": 0.17315621674060822,
+          "diagnostics/topk_overlap_ratio": 0.9143230319023132,
+          "diagnostics/sign_flip_rate": 0.1634775698184967,
+          "diagnostics/weighted_sign_flip_rate": 0.08052825927734375,
+          "diagnostics/leakage_magnitude": 0.04885076731443405,
+          "response_length/mean": 1001.71875,
+          "response_length/max": 5899,
+          "rollout_archive/length_stop_rate": 0
+        },
+        {
+          "step": 2,
+          "actor/grad_norm": 1.2515740394592285,
+          "actor/pg_loss": -0.0008166268162312917,
+          "diagnostics/student_entropy": 0.1491093933582306,
+          "diagnostics/teacher_entropy": 0.12028346210718155,
+          "diagnostics/topk_overlap_ratio": 0.8896925449371338,
+          "diagnostics/sign_flip_rate": 0.09409864991903305,
+          "diagnostics/weighted_sign_flip_rate": 0.09005589038133621,
+          "diagnostics/leakage_magnitude": 0.028608011081814766,
+          "response_length/mean": 2408.75,
+          "response_length/max": 16384,
+          "rollout_archive/length_stop_rate": 0.0625
+        }
+      ],
+      "nonfinite_values": false,
+      "jobs": [
+        {
+          "step": 1,
+          "exit_code": 0,
+          "started_at": "2026-09-19T15:47:12.142619+00:00",
+          "finished_at": "2026-09-19T16:00:29.609152+00:00",
+          "dataloader_worker_exit_warning": true
+        },
+        {
+          "step": 2,
+          "exit_code": 0,
+          "started_at": "2026-09-19T16:01:07.005267+00:00",
+          "finished_at": "2026-09-19T16:15:20.802927+00:00",
+          "dataloader_worker_exit_warning": true
+        }
+      ],
+      "position_heatmap_sha256": "09563a22cb0bf383a05e1774c52a17846b2541df60418778559ba088c2bf0959"
+    },
+    "token_opd": {
+      "resume_gate": {
+        "passed": true,
+        "states": [
+          {
+            "step": 1,
+            "rank": 0,
+            "scheduler_step": 1
+          },
+          {
+            "step": 1,
+            "rank": 1,
+            "scheduler_step": 1
+          },
+          {
+            "step": 1,
+            "rank": 2,
+            "scheduler_step": 1
+          },
+          {
+            "step": 1,
+            "rank": 3,
+            "scheduler_step": 1
+          },
+          {
+            "step": 2,
+            "rank": 0,
+            "scheduler_step": 2
+          },
+          {
+            "step": 2,
+            "rank": 1,
+            "scheduler_step": 2
+          },
+          {
+            "step": 2,
+            "rank": 2,
+            "scheduler_step": 2
+          },
+          {
+            "step": 2,
+            "rank": 3,
+            "scheduler_step": 2
+          }
+        ],
+        "limitation": "Checks saved rank RNG and restored training state, not bitwise vLLM replay"
+      },
+      "optimizer_inspections": [
+        {
+          "passed": true,
+          "variant": "token_opd",
+          "step": 1,
+          "samples_yielded": 4,
+          "ranks": [
+            {
+              "rank": 0,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 1,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 2,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 3,
+              "optimizer_states": 37,
+              "steps": [
+                1
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 1,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            }
+          ]
+        },
+        {
+          "passed": true,
+          "variant": "token_opd",
+          "step": 2,
+          "samples_yielded": 8,
+          "ranks": [
+            {
+              "rank": 0,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 1,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 2,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            },
+            {
+              "rank": 3,
+              "optimizer_states": 37,
+              "steps": [
+                2
+              ],
+              "lr": [
+                0.000002
+              ],
+              "scheduler_step": 2,
+              "rng_keys": [
+                "cpu",
+                "cuda",
+                "numpy",
+                "random"
+              ],
+              "optimizer_bytes": 8044969551
+            }
+          ]
+        }
+      ],
+      "scalars": [
+        {
+          "step": 1,
+          "actor/grad_norm": 4.4233880043029785,
+          "actor/pg_loss": 0.05855329488986172,
+          "diagnostics/student_entropy": 0.20897571742534637,
+          "diagnostics/teacher_entropy": 0.17315621674060822,
+          "diagnostics/topk_overlap_ratio": 0.9143230319023132,
+          "diagnostics/sign_flip_rate": 0,
+          "diagnostics/weighted_sign_flip_rate": 0,
+          "diagnostics/leakage_magnitude": 0,
+          "response_length/mean": 1001.71875,
+          "response_length/max": 5899,
+          "rollout_archive/length_stop_rate": 0
+        },
+        {
+          "step": 2,
+          "actor/grad_norm": 1.2887814044952393,
+          "actor/pg_loss": 0.006762331307982095,
+          "diagnostics/student_entropy": 0.1083177849650383,
+          "diagnostics/teacher_entropy": 0.08863424509763718,
+          "diagnostics/topk_overlap_ratio": 0.9097378849983215,
+          "diagnostics/sign_flip_rate": 0,
+          "diagnostics/weighted_sign_flip_rate": 0,
+          "diagnostics/leakage_magnitude": 0,
+          "response_length/mean": 2975.96875,
+          "response_length/max": 16384,
+          "rollout_archive/length_stop_rate": 0.125
+        }
+      ],
+      "nonfinite_values": false,
+      "jobs": [
+        {
+          "step": 1,
+          "exit_code": 0,
+          "started_at": "2026-09-19T16:15:43.517959+00:00",
+          "finished_at": "2026-09-19T16:27:39.158431+00:00",
+          "dataloader_worker_exit_warning": true
+        },
+        {
+          "step": 2,
+          "exit_code": 0,
+          "started_at": "2026-09-19T16:28:17.740308+00:00",
+          "finished_at": "2026-09-19T16:42:41.661129+00:00",
+          "dataloader_worker_exit_warning": true
+        }
+      ],
+      "position_heatmap_sha256": "1ed1c5e0e2c62c4f881cea4ac95ac70f5792e258e8ad9c98a35603fa059ee862"
+    }
+  }
+}
