@@ -40,6 +40,15 @@ reproducibility, data safety, and clear experiment lineage.
   startup_acceptance.json. First real update crossed v2's failure boundary with
   tmpfs; this is not a long-run stability or benchmark gain claim. Local48 tests
   passed. Freshly check progress before reporting; training intentionally continues.
+- Read `docs/results/2026-09-20-qwen4-completion-supervision-step11.md` for the
+  subsequent603-second live watch (01:45-01:55 Beijing,11 samples,Step6->11).
+  All352 Step1-11 raw trajectories and11 NPZ/scalars passed integrity/protocol
+  checks. Caps11/352, strict periodic4/352, missing-boxed21/352, think0. All scalars
+  finite, no nonzero numerical counters; no claim of zero repetition or gains.
+  Watch finished; training continues unchanged. Figures and immutable CPU
+  snapshot under run/supervision/snapshot_step_000011. No new GPU job launched.
+  Final live check advanced to12: grad0.979,cap2/32,all scalars finite,no fatal
+  log errors. Step12 is not included in the Step1-11 raw audit/figures.
 
 ## Qwen Completion Acceptance (2026-09-20)
 

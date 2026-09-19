@@ -1,0 +1,124 @@
+{
+  "observed_at": "2026-09-19T17:54:54.820358+00:00",
+  "run_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v3_qwen4_completion_blockfirst_seed21_ml2",
+  "snapshot_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v3_qwen4_completion_blockfirst_seed21_ml2/supervision/snapshot_step_000011",
+  "source_commit": "0f9161f02f08287fb07f0375ad0a6bda81133ff0",
+  "step_range": [
+    1,
+    11
+  ],
+  "metric_ranges": {
+    "actor/grad_norm": {
+      "min": 0.5642975568771362,
+      "max": 5.4241533279418945,
+      "last": 0.5642975568771362
+    },
+    "actor/pg_loss": {
+      "min": 0.0032550252053624718,
+      "max": 0.05683943518670276,
+      "last": 0.0036337711280793883
+    },
+    "actor/pg_clipfrac": {
+      "min": 0.0021494356042239815,
+      "max": 0.018915058812126517,
+      "last": 0.0032122517586685717
+    },
+    "diagnostics/student_entropy": {
+      "min": 0.06256849318742752,
+      "max": 0.3656124770641327,
+      "last": 0.11805421113967896
+    },
+    "diagnostics/teacher_entropy": {
+      "min": 0.05347667261958122,
+      "max": 0.311693400144577,
+      "last": 0.10705921798944473
+    },
+    "diagnostics/entropy_gap_signed": {
+      "min": -0.053919099271297455,
+      "max": -0.009091815911233425,
+      "last": -0.010994991287589073
+    },
+    "diagnostics/entropy_gap_absolute": {
+      "min": 0.013111782260239124,
+      "max": 0.06207555532455444,
+      "last": 0.019267814233899117
+    },
+    "diagnostics/topk_overlap_ratio": {
+      "min": 0.9115596413612366,
+      "max": 0.9355478286743164,
+      "last": 0.9355478286743164
+    },
+    "diagnostics/student_overlap_mass": {
+      "min": 0.9908577799797058,
+      "max": 0.9997999668121338,
+      "last": 0.9997581839561462
+    },
+    "diagnostics/teacher_overlap_mass": {
+      "min": 0.9924740195274353,
+      "max": 0.9998663067817688,
+      "last": 0.9998102188110352
+    },
+    "diagnostics/overlap_token_advantage": {
+      "min": -0.0015470316866412759,
+      "max": -0.0002803481766022742,
+      "last": -0.0004485205572564155
+    },
+    "diagnostics/sign_flip_rate": {
+      "min": 0.07697435468435287,
+      "max": 0.18216872215270996,
+      "last": 0.1569834202528
+    },
+    "diagnostics/weighted_sign_flip_rate": {
+      "min": 0.062036942690610886,
+      "max": 0.09476412087678909,
+      "last": 0.07087500393390656
+    },
+    "diagnostics/leakage_magnitude": {
+      "min": 0.012675130739808083,
+      "max": 0.062360845506191254,
+      "last": 0.024964435026049614
+    },
+    "diagnostics/normalized_leakage": {
+      "min": 1.0527399778366089,
+      "max": 1.1321699619293213,
+      "last": 1.1321699619293213
+    },
+    "diagnostics/post_update_block_ratio_max": {
+      "min": 1.4621132612228394,
+      "max": 3.431056261062622,
+      "last": 1.9409202337265015
+    },
+    "diagnostics/post_update_block_ratio_outside_clip_fraction": {
+      "min": 0.004594180732965469,
+      "max": 0.04615742340683937,
+      "last": 0.016644993796944618
+    },
+    "response_length/mean": {
+      "min": 583.21875,
+      "max": 3488.15625,
+      "last": 1440.6875
+    }
+  },
+  "all_scalar_values_finite": true,
+  "nonzero_numerical_counters": [],
+  "total_rollouts": 352,
+  "truncated": 11,
+  "periodic": 4,
+  "missing_boxed": 21,
+  "think_tags": 0,
+  "protocol_seed_mask_logprobs_checks_passed": true,
+  "definitions": {
+    "periodic": "last <=2048 tokens, lag1..128 agreement >=99%, at least256 tail tokens; strict detector, not all repetition",
+    "missing_boxed": "literal backslash-boxed absent; not a complete format or correctness grader",
+    "entropy": "token-weighted entropy on student-visited prefixes; all positions equally weighted, long trajectories can dominate",
+    "position_coverage": "max number of trajectories reaching any position in that segment; small tails are not population trends"
+  },
+  "scope": "Training diagnostics, not benchmark evaluation. No training state or settings changed.",
+  "watch_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v3_qwen4_completion_blockfirst_seed21_ml2/supervision/watch_20260919T174506Z.jsonl",
+  "watch_start_utc": "2026-09-19T17:45:06.918159+00:00",
+  "watch_end_utc": "2026-09-19T17:55:09.734895+00:00",
+  "watch_samples": 11,
+  "watch_duration_seconds": 603.3,
+  "interpretation": "No observed numerical failure requiring an immediate stop; residual long/repetitive outputs and missing boxed markers remain. No causal attribution, full-run stability or benchmark gain claim.",
+  "local_report": "outputs/qwen4-completion-supervision/snapshot_step_000011/figures/diagnostics.html"
+}
