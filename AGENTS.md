@@ -27,6 +27,19 @@ reproducibility, data safety, and clear experiment lineage.
   A 4-process/16-compilation test passed on BOTH NFS and executable tmpfs; exact
   intermittent NFS trigger not reproduced. v3 changes cache location and scoped
   failure cleanup only; same TRAIN_COMMIT and four milestones. Read live progress.
+- v3 controller1185643 launched01:19:02 Beijing, train1185912 started01:20:04;
+  control commit02ab842bcb9bf0930837ddc1abe25c7d0ee7bfbf. Preflight passed and
+  actual driver1185921 uses /dev/shm/opd-q4-c3/train for all temporary/compiler
+  caches, also verified in GPU workers. By01:36:47 Beijing formal Steps1-3 completed;
+  preclipgrad5.42415/1.30626/3.24619, cap0/32,4/32,0/32. All recorded scalars finite.
+  First32 raw trajectories passed exact eval-input/seed21 data-order/mask/logprob
+  audit:32 independent request seeds,8 distinct outputs per question,0 periodic
+  tails,1 missing boxed,0 think tags. Step1 position NPZ exists; actual Hydra
+  confirms all4 save milestones, no pruning, model/optimizer/extra checkpoint
+  contents. No milestone checkpoint exists yet. See launch-v3 JSON and remote
+  startup_acceptance.json. First real update crossed v2's failure boundary with
+  tmpfs; this is not a long-run stability or benchmark gain claim. Local48 tests
+  passed. Freshly check progress before reporting; training intentionally continues.
 
 ## Qwen Completion Acceptance (2026-09-20)
 
