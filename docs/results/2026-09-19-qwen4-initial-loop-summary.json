@@ -1,0 +1,1410 @@
+{
+  "scope": "inference-only diagnosis, not benchmark scores; fixed requests not independent",
+  "created_at": "2026-09-19T14:10:22.107477+00:00",
+  "runs": {
+    "q4_screen": {
+      "historical_fixed": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 5,
+        "length_stops": 16,
+        "periodic_tails": 0,
+        "mean_length": 726.34375,
+        "finish_reasons": {
+          "stop": 16,
+          "length": 16
+        },
+        "raw_sha256": "1302c179cb0396e5a0b94ddbb38d4dbaab8812ccde00be3c9c7e1f026a282a3d",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 8
+      },
+      "historical_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 16,
+        "periodic_tails": 3,
+        "mean_length": 797.53125,
+        "finish_reasons": {
+          "stop": 16,
+          "length": 16
+        },
+        "raw_sha256": "59b1cb476139b6fae19e3a9f3ccf5220f2fe38b005d5edffd8e320fa0f2db3ee",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 5
+      },
+      "no_think_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 17,
+        "periodic_tails": 7,
+        "mean_length": 803.59375,
+        "finish_reasons": {
+          "stop": 15,
+          "length": 17
+        },
+        "raw_sha256": "5b32ffffd61fe227280a8bb7d15a5d1595b8f5de546f2d20bad92fcb478e46e4",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 9
+      },
+      "plain_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 5,
+        "periodic_tails": 0,
+        "mean_length": 497.6875,
+        "finish_reasons": {
+          "stop": 27,
+          "length": 5
+        },
+        "raw_sha256": "e70ac1a795fc64ba172607ebdd91af731d9d6044b65fcb8aac7f4f5c27206340",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 0
+      },
+      "historical_greedy": {
+        "responses": 4,
+        "unique_prompt_response_pairs": 4,
+        "length_stops": 2,
+        "periodic_tails": 0,
+        "mean_length": 788.25,
+        "finish_reasons": {
+          "stop": 2,
+          "length": 2
+        },
+        "raw_sha256": "3c009a05de748db2ca35818f62ac9edc0efd06d9e98a90d4812e5568ac9afed9",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 0
+      }
+    },
+    "q17_screen": {
+      "historical_fixed": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 5,
+        "length_stops": 0,
+        "periodic_tails": 0,
+        "mean_length": 315.28125,
+        "finish_reasons": {
+          "stop": 32
+        },
+        "raw_sha256": "48242851018183ca7c89c5646ebdd5c909cd6c135c13ca5de33451361fa59a60",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 0
+      },
+      "historical_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 14,
+        "periodic_tails": 2,
+        "mean_length": 738.53125,
+        "finish_reasons": {
+          "stop": 18,
+          "length": 14
+        },
+        "raw_sha256": "79659089127d8f0b2f1b21818ebfab9d3e5de64326f25373b6f1af7184822a88",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 5
+      },
+      "no_think_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 16,
+        "periodic_tails": 4,
+        "mean_length": 765.65625,
+        "finish_reasons": {
+          "stop": 16,
+          "length": 16
+        },
+        "raw_sha256": "6e8bd9761a609dc776bd48e77e921efa41277ce30e20c53accbbe951d68bf209",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 8
+      },
+      "plain_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 2,
+        "periodic_tails": 0,
+        "mean_length": 402.65625,
+        "finish_reasons": {
+          "stop": 30,
+          "length": 2
+        },
+        "raw_sha256": "471c8d0a080264dd6b394985b14ed3ed7ba3e3326a21e249fa54fae0c85ea8a2",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 0
+      },
+      "historical_greedy": {
+        "responses": 4,
+        "unique_prompt_response_pairs": 4,
+        "length_stops": 4,
+        "periodic_tails": 4,
+        "mean_length": 1024,
+        "finish_reasons": {
+          "length": 4
+        },
+        "raw_sha256": "0a63f6c58391ab6a50c41286c199c56e1de1e89927e4a87f4304e493e3ea561e",
+        "length_cap": 1024,
+        "capped_high_repeat_tails": 4
+      }
+    },
+    "q4_full": {
+      "historical_fixed": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 5,
+        "length_stops": 8,
+        "periodic_tails": 8,
+        "mean_length": 4705.71875,
+        "finish_reasons": {
+          "stop": 24,
+          "length": 8
+        },
+        "raw_sha256": "b5cc8818ee122e310ed9a364dcaa542d81994adde16f532c20577f3232313529",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 8
+      },
+      "historical_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 8,
+        "periodic_tails": 8,
+        "mean_length": 4650.46875,
+        "finish_reasons": {
+          "stop": 24,
+          "length": 8
+        },
+        "raw_sha256": "527b70405d098d602908ac3d53227cf140af31daf65ac180c6194932396cb786",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 8
+      },
+      "no_think_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 13,
+        "periodic_tails": 12,
+        "mean_length": 7114.84375,
+        "finish_reasons": {
+          "stop": 19,
+          "length": 13
+        },
+        "raw_sha256": "35666a45df3fe9b9c92c0900205c068ba88b36b81323761dc19c58500d53e0c7",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 12
+      },
+      "plain_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 2,
+        "periodic_tails": 1,
+        "mean_length": 1562.46875,
+        "finish_reasons": {
+          "stop": 30,
+          "length": 2
+        },
+        "raw_sha256": "c47cf5aae4575aefc576f99b5ce6c3e32b65b226ad27297385dcbae1c84bcf70",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 1
+      },
+      "historical_greedy": {
+        "responses": 4,
+        "unique_prompt_response_pairs": 4,
+        "length_stops": 0,
+        "periodic_tails": 0,
+        "mean_length": 790.5,
+        "finish_reasons": {
+          "stop": 4
+        },
+        "raw_sha256": "dfe76e34f55fab68a59dc67e02e3f490208b439d747c7323a3f057862ad6d0e7",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 0
+      }
+    },
+    "q17_full": {
+      "historical_fixed": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 5,
+        "length_stops": 0,
+        "periodic_tails": 0,
+        "mean_length": 315.28125,
+        "finish_reasons": {
+          "stop": 32
+        },
+        "raw_sha256": "48242851018183ca7c89c5646ebdd5c909cd6c135c13ca5de33451361fa59a60",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 0
+      },
+      "historical_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 8,
+        "periodic_tails": 6,
+        "mean_length": 4966.59375,
+        "finish_reasons": {
+          "stop": 24,
+          "length": 8
+        },
+        "raw_sha256": "45b2cdc20d26372c0aa33183cbe2f8c64c079f7a4442e446fcac39875ee443c3",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 6
+      },
+      "no_think_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 11,
+        "periodic_tails": 8,
+        "mean_length": 6168.78125,
+        "finish_reasons": {
+          "stop": 21,
+          "length": 11
+        },
+        "raw_sha256": "c4dd58c964eaafa86959a0c3066720de4e38f6a9c5905efe5799d5686e7fcc7d",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 9
+      },
+      "plain_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 1,
+        "periodic_tails": 1,
+        "mean_length": 940.90625,
+        "finish_reasons": {
+          "stop": 31,
+          "length": 1
+        },
+        "raw_sha256": "15b2c12fdb17f8f2bb617ddcced9ada886a89b8c9390c8a247b91297b0400128",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 1
+      },
+      "historical_greedy": {
+        "responses": 4,
+        "unique_prompt_response_pairs": 4,
+        "length_stops": 4,
+        "periodic_tails": 4,
+        "mean_length": 16384,
+        "finish_reasons": {
+          "length": 4
+        },
+        "raw_sha256": "86a2f6c50f1a5a6d49efd8017e93c48f500d1840c1ccde10bcd67d4c375783fa",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 4
+      }
+    },
+    "q4_markers": {
+      "no_markers_fixed": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 5,
+        "length_stops": 8,
+        "periodic_tails": 0,
+        "mean_length": 4925.84375,
+        "finish_reasons": {
+          "stop": 24,
+          "length": 8
+        },
+        "raw_sha256": "94307992073746bf921a3e0a916ac5bdcc5ba292784fdea35c9c27c5e11b7b3d",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 8
+      },
+      "no_markers_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 4,
+        "periodic_tails": 1,
+        "mean_length": 2839.84375,
+        "finish_reasons": {
+          "stop": 28,
+          "length": 4
+        },
+        "raw_sha256": "82a066e0a7910fe6f5971f99e596056d27691066764616d2556c2d3aab5d650a",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 2
+      },
+      "no_markers_greedy": {
+        "responses": 4,
+        "unique_prompt_response_pairs": 4,
+        "length_stops": 0,
+        "periodic_tails": 0,
+        "mean_length": 758.75,
+        "finish_reasons": {
+          "stop": 4
+        },
+        "raw_sha256": "079db6769c710689ae1b34b4ea4d8375ac171d440c7df10880dc37609abb93ab",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 0
+      }
+    },
+    "q17_markers": {
+      "no_markers_fixed": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 5,
+        "length_stops": 0,
+        "periodic_tails": 0,
+        "mean_length": 727.75,
+        "finish_reasons": {
+          "stop": 32
+        },
+        "raw_sha256": "4d8a08472d1de58a017fb0266aa45f5ae18f5be93e46076f60180d28c62546d5",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 0
+      },
+      "no_markers_independent": {
+        "responses": 32,
+        "unique_prompt_response_pairs": 32,
+        "length_stops": 2,
+        "periodic_tails": 1,
+        "mean_length": 1727.78125,
+        "finish_reasons": {
+          "stop": 30,
+          "length": 2
+        },
+        "raw_sha256": "3fb5977e70663cb716daa10a1be95b7b9818c188bac8e9955c53231a153ef98a",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 2
+      },
+      "no_markers_greedy": {
+        "responses": 4,
+        "unique_prompt_response_pairs": 4,
+        "length_stops": 1,
+        "periodic_tails": 1,
+        "mean_length": 4426.25,
+        "finish_reasons": {
+          "stop": 3,
+          "length": 1
+        },
+        "raw_sha256": "5a159d61cef9a9b34394a327c6c7a087d576e28477ae1366dd946ad1995c56e5",
+        "length_cap": 16384,
+        "capped_high_repeat_tails": 1
+      }
+    }
+  },
+  "verified_inputs": {
+    "screen": "all paired prompt IDs and request seeds match between model sizes",
+    "full": "all paired prompt IDs and request seeds match between model sizes",
+    "markers": "all paired prompt IDs and request seeds match between model sizes"
+  },
+  "cpu_first_token": {
+    "q4_alias": {
+      "alias_counts": {
+        "exact_alias_count": 296,
+        "near_alias_count": 2227,
+        "tolerance_max_abs": 0.0001
+      },
+      "positions": [
+        {
+          "index": 1434553,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.04566093906760216,
+          "alias_nucleus_mass": 0.050733648240566254,
+          "entropy": 7.295556545257568,
+          "nucleus_size": 7751,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.11598461866378784
+            },
+            {
+              "id": 71703,
+              "text": "Assistant",
+              "prob": 0.04008321464061737
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.03765469044446945
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.020155103877186775
+            },
+            {
+              "id": 77091,
+              "text": "assistant",
+              "prob": 0.014745790511369705
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 2.0503341147559695e-05
+        },
+        {
+          "index": 1434553,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 9.842889170386115e-09,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.429870367050171,
+          "nucleus_size": 65,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.37206849455833435
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.07326462864875793
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.05705855414271355
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.050353992730379105
+            },
+            {
+              "id": 5338,
+              "text": "First",
+              "prob": 0.039215728640556335
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 4.41979699367101e-12
+        },
+        {
+          "index": 1434553,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 8.284200547770126e-10,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.396760940551758,
+          "nucleus_size": 44,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.2663253843784332
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.08646319061517715
+            },
+            {
+              "id": 16,
+              "text": "1",
+              "prob": 0.07630350440740585
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.06733760237693787
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.06733760237693787
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 3.7198925038374464e-13
+        },
+        {
+          "index": 1742959,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.03837178274989128,
+          "alias_nucleus_mass": 0.042634546756744385,
+          "entropy": 7.693964004516602,
+          "nucleus_size": 8863,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.07710452377796173
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.02836517058312893
+            },
+            {
+              "id": 5338,
+              "text": "First",
+              "prob": 0.02836517058312893
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.02836517058312893
+            },
+            {
+              "id": 71703,
+              "text": "Assistant",
+              "prob": 0.018313929438591003
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 1.72302607097663e-05
+        },
+        {
+          "index": 1742959,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 9.95791449298622e-09,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.6145668029785156,
+          "nucleus_size": 81,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.31206032633781433
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.07890120893716812
+            },
+            {
+              "id": 5338,
+              "text": "First",
+              "prob": 0.07890120893716812
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.054227955639362335
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.03727029263973236
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 4.47144838516822e-12
+        },
+        {
+          "index": 1742959,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 1.0129808103442883e-09,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 2.8615808486938477,
+          "nucleus_size": 14,
+          "top5": [
+            {
+              "id": 5338,
+              "text": "First",
+              "prob": 0.17705774307250977
+            },
+            {
+              "id": 12549,
+              "text": "Since",
+              "prob": 0.17705774307250977
+            },
+            {
+              "id": 3,
+              "text": "$",
+              "prob": 0.1378927081823349
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.08363615721464157
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.07380864769220352
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 4.548633605189201e-13
+        },
+        {
+          "index": 69824,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.028640765696763992,
+          "alias_nucleus_mass": 0.018590688705444336,
+          "entropy": 7.105130195617676,
+          "nucleus_size": 7656,
+          "top5": [
+            {
+              "id": 18493,
+              "text": "在",
+              "prob": 0.06728387624025345
+            },
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.05240073427557945
+            },
+            {
+              "id": 100012,
+              "text": "为了",
+              "prob": 0.046243488788604736
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.03178265318274498
+            },
+            {
+              "id": 101140,
+              "text": "首先",
+              "prob": 0.01927715353667736
+            }
+          ],
+          "original_first_token_id": 131178,
+          "original_first_token_probability": 0.0008209201623685658
+        },
+        {
+          "index": 69824,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 2.2950111144837138e-08,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 4.663242340087891,
+          "nucleus_size": 245,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.1762496531009674
+            },
+            {
+              "id": 641,
+              "text": "In",
+              "prob": 0.05049637332558632
+            },
+            {
+              "id": 59,
+              "text": "\\",
+              "prob": 0.044562891125679016
+            },
+            {
+              "id": 18493,
+              "text": "在",
+              "prob": 0.03932661563158035
+            },
+            {
+              "id": 198,
+              "text": "\n",
+              "prob": 0.03932661563158035
+            }
+          ],
+          "original_first_token_id": 131178,
+          "original_first_token_probability": 1.514366410049206e-10
+        },
+        {
+          "index": 69824,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 9.137048451179908e-09,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.951702117919922,
+          "nucleus_size": 71,
+          "top5": [
+            {
+              "id": 59,
+              "text": "\\",
+              "prob": 0.16314935684204102
+            },
+            {
+              "id": 22043,
+              "text": "Given",
+              "prob": 0.09895508736371994
+            },
+            {
+              "id": 29635,
+              "text": "设",
+              "prob": 0.07706629484891891
+            },
+            {
+              "id": 100345,
+              "text": "根据",
+              "prob": 0.04674307629466057
+            },
+            {
+              "id": 16,
+              "text": "1",
+              "prob": 0.04674307629466057
+            }
+          ],
+          "original_first_token_id": 131178,
+          "original_first_token_probability": 2.593081131763153e-11
+        },
+        {
+          "index": 1225498,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.014409284107387066,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 6.482729434967041,
+          "nucleus_size": 6043,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.14704108238220215
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.054093390703201294
+            },
+            {
+              "id": 71703,
+              "text": "Assistant",
+              "prob": 0.04484499990940094
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.039575569331645966
+            },
+            {
+              "id": 2610,
+              "text": "You",
+              "prob": 0.037177808582782745
+            }
+          ],
+          "original_first_token_id": 1249,
+          "original_first_token_probability": 0.14704108238220215
+        },
+        {
+          "index": 1225498,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 8.744016177786307e-09,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.7814221382141113,
+          "nucleus_size": 101,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.23807208240032196
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.16362439095973969
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.060194049030542374
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.053121063858270645
+            },
+            {
+              "id": 59,
+              "text": "\\",
+              "prob": 0.04687917232513428
+            }
+          ],
+          "original_first_token_id": 1249,
+          "original_first_token_probability": 0.23807208240032196
+        },
+        {
+          "index": 1225498,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 2.2992978632174754e-09,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.31128191947937,
+          "nucleus_size": 46,
+          "top5": [
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.259480744600296
+            },
+            {
+              "id": 16,
+              "text": "1",
+              "prob": 0.13889004290103912
+            },
+            {
+              "id": 59,
+              "text": "\\",
+              "prob": 0.08424106240272522
+            },
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.06560700386762619
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.05789798125624657
+            }
+          ],
+          "original_first_token_id": 1249,
+          "original_first_token_probability": 0.06560700386762619
+        }
+      ]
+    },
+    "q17_alias": {
+      "alias_counts": {
+        "exact_alias_count": 94,
+        "near_alias_count": 297,
+        "tolerance_max_abs": 0.0001
+      },
+      "positions": [
+        {
+          "index": 1434553,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.0019454220309853554,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 7.962283134460449,
+          "nucleus_size": 6552,
+          "top5": [
+            {
+              "id": 39366,
+              "text": "��态",
+              "prob": 0.01952599734067917
+            },
+            {
+              "id": 53422,
+              "text": "paque",
+              "prob": 0.01834297738969326
+            },
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.014285525307059288
+            },
+            {
+              "id": 76666,
+              "text": ".fillText",
+              "prob": 0.014285525307059288
+            },
+            {
+              "id": 74951,
+              "text": "umably",
+              "prob": 0.010451513342559338
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 6.550242233060999e-06
+        },
+        {
+          "index": 1434553,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 8.77560282219747e-08,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 2.222160577774048,
+          "nucleus_size": 17,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.6035434007644653
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.08168071508407593
+            },
+            {
+              "id": 95456,
+              "text": "Certainly",
+              "prob": 0.043720539659261703
+            },
+            {
+              "id": 39814,
+              "text": "Sure",
+              "prob": 0.030048655346035957
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.026517847552895546
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 2.954748667960416e-10
+        },
+        {
+          "index": 1434553,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 6.595622485672248e-12,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.3181052207946777,
+          "nucleus_size": 35,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.20299029350280762
+            },
+            {
+              "id": 12,
+              "text": "-",
+              "prob": 0.15808899700641632
+            },
+            {
+              "id": 16,
+              "text": "1",
+              "prob": 0.09588582068681717
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.07467595487833023
+            },
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.05815769359469414
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 2.2207482706058934e-14
+        },
+        {
+          "index": 1742959,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.0019735214300453663,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 8.069046020507812,
+          "nucleus_size": 7331,
+          "top5": [
+            {
+              "id": 53422,
+              "text": "paque",
+              "prob": 0.02244543842971325
+            },
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.01449186448007822
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.011286275461316109
+            },
+            {
+              "id": 76666,
+              "text": ".fillText",
+              "prob": 0.011286275461316109
+            },
+            {
+              "id": 74951,
+              "text": "umably",
+              "prob": 0.010602474212646484
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 6.6448533289076295e-06
+        },
+        {
+          "index": 1742959,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 7.616770290042041e-07,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 2.5036935806274414,
+          "nucleus_size": 17,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.5186761617660522
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.09013240039348602
+            },
+            {
+              "id": 95456,
+              "text": "Certainly",
+              "prob": 0.054668065160512924
+            },
+            {
+              "id": 5338,
+              "text": "First",
+              "prob": 0.04257553070783615
+            },
+            {
+              "id": 39814,
+              "text": "Sure",
+              "prob": 0.04257553070783615
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 2.5645687795616823e-09
+        },
+        {
+          "index": 1742959,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 7.994930672355904e-13,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 2.733738660812378,
+          "nucleus_size": 13,
+          "top5": [
+            {
+              "id": 785,
+              "text": "The",
+              "prob": 0.18181225657463074
+            },
+            {
+              "id": 5338,
+              "text": "First",
+              "prob": 0.18181225657463074
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.1415955275297165
+            },
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.11027470976114273
+            },
+            {
+              "id": 12549,
+              "text": "Since",
+              "prob": 0.0858820304274559
+            }
+          ],
+          "original_first_token_id": 125576,
+          "original_first_token_probability": 2.6918956938461105e-15
+        },
+        {
+          "index": 69824,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.0018515619449317455,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 7.948249340057373,
+          "nucleus_size": 7021,
+          "top5": [
+            {
+              "id": 53422,
+              "text": "paque",
+              "prob": 0.04187954217195511
+            },
+            {
+              "id": 72910,
+              "text": ".debugLine",
+              "prob": 0.014473183080554008
+            },
+            {
+              "id": 139681,
+              "text": "مسأل",
+              "prob": 0.012772539630532265
+            },
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.012772539630532265
+            },
+            {
+              "id": 39366,
+              "text": "��态",
+              "prob": 0.011998689733445644
+            }
+          ],
+          "original_first_token_id": 131178,
+          "original_first_token_probability": 5.556495671044104e-05
+        },
+        {
+          "index": 69824,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 5.07795732573868e-07,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 4.404541969299316,
+          "nucleus_size": 177,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.19702613353729248
+            },
+            {
+              "id": 18493,
+              "text": "在",
+              "prob": 0.06396502256393433
+            },
+            {
+              "id": 14374,
+              "text": "###",
+              "prob": 0.043962474912405014
+            },
+            {
+              "id": 22043,
+              "text": "Given",
+              "prob": 0.043962474912405014
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.038796745240688324
+            }
+          ],
+          "original_first_token_id": 131178,
+          "original_first_token_probability": 2.6744984893412038e-08
+        },
+        {
+          "index": 69824,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 5.080754150732503e-10,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 3.4367661476135254,
+          "nucleus_size": 51,
+          "top5": [
+            {
+              "id": 29635,
+              "text": "设",
+              "prob": 0.23743215203285217
+            },
+            {
+              "id": 22043,
+              "text": "Given",
+              "prob": 0.14400988817214966
+            },
+            {
+              "id": 59,
+              "text": "\\",
+              "prob": 0.08734641224145889
+            },
+            {
+              "id": 101140,
+              "text": "首先",
+              "prob": 0.0529782772064209
+            },
+            {
+              "id": 18493,
+              "text": "在",
+              "prob": 0.0412595197558403
+            }
+          ],
+          "original_first_token_id": 131178,
+          "original_first_token_probability": 3.977477201766444e-12
+        },
+        {
+          "index": 1225498,
+          "prompt_mode": "historical",
+          "alias_raw_mass": 0.001627629273571074,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 7.758451461791992,
+          "nucleus_size": 7058,
+          "top5": [
+            {
+              "id": 53422,
+              "text": "paque",
+              "prob": 0.07793634384870529
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.017389949411153793
+            },
+            {
+              "id": 72910,
+              "text": ".debugLine",
+              "prob": 0.01534657645970583
+            },
+            {
+              "id": 96154,
+              "text": "orarily",
+              "prob": 0.014416774734854698
+            },
+            {
+              "id": 74951,
+              "text": "umably",
+              "prob": 0.011227795854210854
+            }
+          ],
+          "original_first_token_id": 1249,
+          "original_first_token_probability": 0.009308168664574623
+        },
+        {
+          "index": 1225498,
+          "prompt_mode": "no_markers",
+          "alias_raw_mass": 1.8900429665791307e-07,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 2.917436361312866,
+          "nucleus_size": 28,
+          "top5": [
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.29004234075546265
+            },
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.29004234075546265
+            },
+            {
+              "id": 5338,
+              "text": "First",
+              "prob": 0.050401803106069565
+            },
+            {
+              "id": 95456,
+              "text": "Certainly",
+              "prob": 0.044479433447122574
+            },
+            {
+              "id": 71486,
+              "text": "Alright",
+              "prob": 0.0269781406968832
+            }
+          ],
+          "original_first_token_id": 1249,
+          "original_first_token_probability": 0.29004234075546265
+        },
+        {
+          "index": 1225498,
+          "prompt_mode": "plain",
+          "alias_raw_mass": 1.7332236340594775e-11,
+          "alias_nucleus_mass": 0.0,
+          "entropy": 2.4028353691101074,
+          "nucleus_size": 14,
+          "top5": [
+            {
+              "id": 10061,
+              "text": "Let",
+              "prob": 0.4707466959953308
+            },
+            {
+              "id": 1249,
+              "text": "To",
+              "prob": 0.10503778606653214
+            },
+            {
+              "id": 16,
+              "text": "1",
+              "prob": 0.08180350810289383
+            },
+            {
+              "id": 1654,
+              "text": "We",
+              "prob": 0.08180350810289383
+            },
+            {
+              "id": 3830,
+              "text": "From",
+              "prob": 0.049616336822509766
+            }
+          ],
+          "original_first_token_id": 1249,
+          "original_first_token_probability": 0.10503778606653214
+        }
+      ]
+    }
+  },
+  "hf_tail": [
+    {
+      "check": "historical_tail_hf_greedy",
+      "index": 1742959,
+      "prefix_length": 16456,
+      "original_target_id": 142570,
+      "target_probability": 0.9999756813049316,
+      "eos_probability": 3.769364553818377e-08,
+      "generated_token_ids": [
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987,
+        198,
+        142570,
+        8987
+      ],
+      "generated_text": " יעלperson\n יעלperson\n יעלperson\n יעלperson\n יעלperson\n יעלperson\n יעלperson\n יעלperson\n יעלperson\n יעלperson\n יעלperson"
+    },
+    {
+      "check": "historical_tail_hf_greedy",
+      "index": 69824,
+      "prefix_length": 16526,
+      "original_target_id": 20,
+      "target_probability": 0.9999257326126099,
+      "eos_probability": 4.539655856206082e-05,
+      "generated_token_ids": [
+        20,
+        24,
+        198,
+        144336,
+        16,
+        19,
+        13,
+        18,
+        17,
+        19,
+        20,
+        20,
+        20,
+        18,
+        17,
+        15,
+        18,
+        18,
+        21,
+        22,
+        20,
+        24,
+        198,
+        144336,
+        16,
+        19,
+        13,
+        18,
+        17,
+        19,
+        20,
+        20
+      ],
+      "generated_text": "59\n√14.324555320336759\n√14.32455"
+    }
+  ],
+  "total_vllm_records": 664,
+  "sha256": {
+    "q4_screen/historical_fixed/raw.jsonl": "1302c179cb0396e5a0b94ddbb38d4dbaab8812ccde00be3c9c7e1f026a282a3d",
+    "q4_screen/historical_independent/raw.jsonl": "59b1cb476139b6fae19e3a9f3ccf5220f2fe38b005d5edffd8e320fa0f2db3ee",
+    "q4_screen/no_think_independent/raw.jsonl": "5b32ffffd61fe227280a8bb7d15a5d1595b8f5de546f2d20bad92fcb478e46e4",
+    "q4_screen/plain_independent/raw.jsonl": "e70ac1a795fc64ba172607ebdd91af731d9d6044b65fcb8aac7f4f5c27206340",
+    "q4_screen/historical_greedy/raw.jsonl": "3c009a05de748db2ca35818f62ac9edc0efd06d9e98a90d4812e5568ac9afed9",
+    "q17_screen/historical_fixed/raw.jsonl": "48242851018183ca7c89c5646ebdd5c909cd6c135c13ca5de33451361fa59a60",
+    "q17_screen/historical_independent/raw.jsonl": "79659089127d8f0b2f1b21818ebfab9d3e5de64326f25373b6f1af7184822a88",
+    "q17_screen/no_think_independent/raw.jsonl": "6e8bd9761a609dc776bd48e77e921efa41277ce30e20c53accbbe951d68bf209",
+    "q17_screen/plain_independent/raw.jsonl": "471c8d0a080264dd6b394985b14ed3ed7ba3e3326a21e249fa54fae0c85ea8a2",
+    "q17_screen/historical_greedy/raw.jsonl": "0a63f6c58391ab6a50c41286c199c56e1de1e89927e4a87f4304e493e3ea561e",
+    "q4_full/historical_fixed/raw.jsonl": "b5cc8818ee122e310ed9a364dcaa542d81994adde16f532c20577f3232313529",
+    "q4_full/historical_independent/raw.jsonl": "527b70405d098d602908ac3d53227cf140af31daf65ac180c6194932396cb786",
+    "q4_full/no_think_independent/raw.jsonl": "35666a45df3fe9b9c92c0900205c068ba88b36b81323761dc19c58500d53e0c7",
+    "q4_full/plain_independent/raw.jsonl": "c47cf5aae4575aefc576f99b5ce6c3e32b65b226ad27297385dcbae1c84bcf70",
+    "q4_full/historical_greedy/raw.jsonl": "dfe76e34f55fab68a59dc67e02e3f490208b439d747c7323a3f057862ad6d0e7",
+    "q17_full/historical_fixed/raw.jsonl": "48242851018183ca7c89c5646ebdd5c909cd6c135c13ca5de33451361fa59a60",
+    "q17_full/historical_independent/raw.jsonl": "45b2cdc20d26372c0aa33183cbe2f8c64c079f7a4442e446fcac39875ee443c3",
+    "q17_full/no_think_independent/raw.jsonl": "c4dd58c964eaafa86959a0c3066720de4e38f6a9c5905efe5799d5686e7fcc7d",
+    "q17_full/plain_independent/raw.jsonl": "15b2c12fdb17f8f2bb617ddcced9ada886a89b8c9390c8a247b91297b0400128",
+    "q17_full/historical_greedy/raw.jsonl": "86a2f6c50f1a5a6d49efd8017e93c48f500d1840c1ccde10bcd67d4c375783fa",
+    "q4_markers/no_markers_fixed/raw.jsonl": "94307992073746bf921a3e0a916ac5bdcc5ba292784fdea35c9c27c5e11b7b3d",
+    "q4_markers/no_markers_independent/raw.jsonl": "82a066e0a7910fe6f5971f99e596056d27691066764616d2556c2d3aab5d650a",
+    "q4_markers/no_markers_greedy/raw.jsonl": "079db6769c710689ae1b34b4ea4d8375ac171d440c7df10880dc37609abb93ab",
+    "q17_markers/no_markers_fixed/raw.jsonl": "4d8a08472d1de58a017fb0266aa45f5ae18f5be93e46076f60180d28c62546d5",
+    "q17_markers/no_markers_independent/raw.jsonl": "3fb5977e70663cb716daa10a1be95b7b9818c188bac8e9955c53231a153ef98a",
+    "q17_markers/no_markers_greedy/raw.jsonl": "5a159d61cef9a9b34394a327c6c7a087d576e28477ae1366dd946ad1995c56e5",
+    "q4_alias.jsonl": "334493346d150d1eddfae2303c9897caa441b56b329092383261b003392e0b67",
+    "q17_alias.jsonl": "9c372c1ac964c31598d0560a5d67c7b8f4f059bc33e84afe49f28edeffb3fe71",
+    "q4_hf_gpu.jsonl": "9c1c4a92507d4bb2003507726726803aa2c25fe1019f053bd69b308d0bf2c52b"
+  },
+  "gpu_at_completion": "0, 4 MiB, 0 %\n1, 4 MiB, 0 %\n2, 4 MiB, 0 %\n3, 4 MiB, 0 %\n",
+  "passed": true
+}

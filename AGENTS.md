@@ -3,6 +3,32 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Qwen4 User Stop and Initial-Loop Diagnosis (2026-09-19)
+
+- Latest user explicitly STOPPED this pair to investigate pre-update repetition.
+  At21:32 Beijing controller1047903 was SIGTERM'ed;21:33 all4 GPUs idle.
+  Formal completed Step4,4 raw batches preserved; no formal checkpoint before50.
+  Queue failed/error143 is this intentional stop. Do NOT resume or start queued
+  eval/Token jobs. Keep all probes, logs, weights and original frozen runtime.
+- See `docs/results/2026-09-19-qwen4-initial-loop-incident.md`.
+  Inference-only interventions authorized by this diagnosis, separate remote root
+  `diagnostics/20260919_qwen4_initial_loop`: original4B/1.7B, same first4 actual
+  prompts, fixed vs independent request seeds, prompt/marker changes. Preserve
+  raw outputs and code versions; these are NOT benchmark scores or training arms.
+- All diagnostic jobs completed by22:08;22:09 all4 GPUs idle.664 saved vLLM
+  outputs passed SHA/input/seed/logprob/completeness checks. Full16384 independent
+  seeds21..28: historical ChatML cap4B8/32,1.7B8/32; remove think13/32,11/32;
+  remove only3 ChatML markers4/32,2/32; plain+Solution2/32,1/32. These are the
+  same4 training questions, NOT benchmarks, and do not eliminate all math loops.
+- Base/ChatML mismatch is an experimentally supported trigger, not Block3's
+  first update. HF CPU and GPU confirm first-token distribution shift when
+  markers are removed; independent HF GPU continues both original loop tails
+  with selected-token probability>0.9999. EOS was not emitted before truncation.
+  Fixed per-request seed amplifies duplicates but is not the sole cause. Both
+  models have near-identical special-token embedding rows; do not claim knowledge
+  of their initialization/training history from this geometry alone. See full
+  incident note and machine-readable summary for caveats and exact protocols.
+
 ## Authorized Qwen4 Block3-First Pair (2026-09-19)
 
 - Latest user approved Qwen3-4B-Base student with the unchanged historical public
