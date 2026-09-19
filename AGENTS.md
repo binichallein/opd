@@ -3,6 +3,24 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Qwen4 Completion Formal Block3 (2026-09-20)
+
+- Latest user authorized restarting the Qwen4 pair's Block3 Mean with the accepted
+  new configuration and FOUR retained checkpoints:50,100,150,200. This supersedes
+  the earlier no-formal-launch instruction for this NEW run only.
+- Read `docs/plans/2026-09-20-qwen4-completion-block3-formal.md`.
+  New root `runs/20260920v2_qwen4_completion_blockfirst_seed21_ml2`, cache `/limx_embap/tos/q4/c2`.
+  Controller `scripts/run_qwen4_completion_block3.py` uses the exact accepted
+  TRAINING runtime `0f9161f02f08287fb07f0375ad0a6bda81133ff0`; controller code has
+  a separate immutable analysis deployment. Never replace training code mid-run.
+- Only Block3 runs automatically; no Token or benchmark autostart. Start from
+  original public Qwen3-4B-Base, not stopped v1 or accepted probe checkpoints.
+  All checkpoint states retained; every step keeps32 raw rollouts and diagnostics.
+  All common settings match the accepted probe, except200 steps, four save nodes,
+  no probe stop, and names/output paths. New completion prompt and seed rule stay.
+- Before reporting status read live queue_state, train.pid and logs/nohup.log.
+  Never duplicate the new controller or restart either old v1 queue/gate.
+
 ## Qwen Completion Acceptance (2026-09-20)
 
 - User asked to VERIFY the three pending Qwen points: original teacher suitability,
