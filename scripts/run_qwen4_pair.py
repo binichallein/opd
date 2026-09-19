@@ -17,6 +17,9 @@ import prepare_qwen4_assets as assets
 import run_historical17_reeval_llama as historical
 from opd_ext.math_protocol import QWEN_HISTORICAL_PROTOCOL as PROTOCOL
 
+# CPU audits run in this controller too, not only in children with PYTHONPATH set.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'external/revisiting_opd'))
+
 base, jobs, shared = historical.base, historical.jobs, historical.shared
 grading = shared.grading
 ROOT = assets.ROOT
@@ -114,8 +117,8 @@ def preflight():
         if result.get('passed') is not True:
             raise ValueError('Predecessor has an incomplete evaluation')
         shared.verify_hashes(result['sha256'])
-    if shutil.disk_usage(ROOT).free < 400_000_000_000:
-        raise ValueError('Less than 400 GB free; preserve all old checkpoints')
+    if shutil.disk_usage(ROOT).free < 1_000_000_000_000:
+        raise ValueError('Less than 1 TB free; preserve all old checkpoints')
     protected = assets.verify_assets()
     old = base.read_json(PREDECESSOR / 'protected_inputs.json')
     for path in [base.DATA / 'train.parquet', base.DATA / 'test.parquet',
@@ -150,6 +153,40 @@ def prepare_pair(runtime, commit, runner):
     return frozen
 
 
+def validate_rollout_settings(row, *, step, eos_token_id):
+    expected = {'temperature': 1., 'top_p': .9, 'top_k': -1, 'seed': 21, 'max_tokens': 16384,
+                'n': 1, 'ignore_eos': False, 'stop_token_ids': []}
+    if (row['protocol'] != PROTOCOL or row['enable_thinking'] is not None
+            or row['step'] != step or row['mask_policy'] != 'historical_eos_mask'
+            or row['eos_token_id'] != eos_token_id or row['response_tensor_width'] != 16384
+            or row['padding_length'] != 16384 - row['response_length']
+            or not 0 <= row['response_length'] <= 16384
+            or any(row['sampling'].get(key) != value for key, value in expected.items())
+            or row['finish_reason'] not in ('length', 'stop')):
+        raise ValueError('Historical training protocol changed')
+
+
+def storage_requirement(checkpoint_bytes, model_bytes, variant):
+    if variant not in VARIANTS or checkpoint_bytes <= 0 or model_bytes <= 0:
+        raise ValueError('Invalid storage budget inputs')
+    # After the current probe: Block3 still owes eight formal + two Token probe checkpoints.
+    checkpoints, merges = (10, 8) if variant == 'block3_mean' else (4, 4)
+    return math.ceil(1.25 * (checkpoints * checkpoint_bytes + merges * model_bytes + 50_000_000_000))
+
+
+def check_storage(probe, variant):
+    sizes = [sum(p.stat().st_size for p in (probe / f'checkpoints/global_step_{step}').rglob('*') if p.is_file())
+             for step in (1, 2)]
+    model_bytes = sum(p.stat().st_size for p in assets.STUDENT.glob('*.safetensors'))
+    required = storage_requirement(max(sizes), model_bytes, variant)
+    free = shutil.disk_usage(ROOT).free
+    evidence = {'passed': free >= required, 'required_remaining_bytes': required, 'free_bytes': free,
+                'actual_probe_checkpoint_bytes': sizes, 'student_weight_bytes': model_bytes, 'variant': variant}
+    jobs.write_json(probe / 'storage_gate.json', evidence)
+    if not evidence['passed']:
+        raise ValueError('Insufficient space for remaining complete checkpoints; no pruning permitted')
+
+
 def audit_rollouts(run, steps):
     import torch
     from transformers import AutoTokenizer
@@ -172,13 +209,7 @@ def audit_rollouts(run, steps):
         for row in rows:
             validate_qwen_historical_prompt(tokenizer, row['source_extra_info']['question'],
                                            row['prompt_token_ids'], max_prompt_length=2048)
-            expected = {'temperature': 1., 'top_p': .9, 'seed': 21, 'max_tokens': 16384,
-                        'n': 1, 'ignore_eos': False, 'stop_token_ids': []}
-            if (row['protocol'] != PROTOCOL or row['enable_thinking'] is not None
-                    or row['step'] != step or row['mask_policy'] != 'historical_eos_mask'
-                    or any(row['sampling'].get(key) != value for key, value in expected.items())
-                    or row['finish_reason'] not in ('length', 'stop')):
-                raise ValueError('Historical training protocol changed')
+            validate_rollout_settings(row, step=step, eos_token_id=tokenizer.eos_token_id)
             ids = row['training_response_token_ids']
             mask = get_response_mask(torch.tensor([ids]), row['eos_token_id'], dtype=torch.long)[0].tolist()
             count = row['response_length']
@@ -207,6 +238,7 @@ def train_model(variant, runtime, commit, runner, protected):
         runner(audit_command(runtime, probe, commit, step), RUN_ROOT / f'queue_jobs/audit_{variant}_probe{step}')
     base.audit_resume(probe)
     jobs.write_json(probe / 'rollout_acceptance.json', {'passed': True, 'evidence': audit_rollouts(probe, [1, 2])})
+    check_storage(probe, variant)
     shared.verify_hashes(protected)
     validate_pair({v: base.read_json(RUN_ROOT / v / 'run_card.json') for v in VARIANTS}, commit)
     run = RUN_ROOT / variant

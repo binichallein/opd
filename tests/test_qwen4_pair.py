@@ -1,6 +1,7 @@
 import copy
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -113,3 +114,36 @@ def test_report_keeps_step150_and_each_benchmark_separate(tmp_path):
     for values in result['per_benchmark'].values():
         assert 'delta_step150_pp' in values
     assert 'macro' not in result
+
+
+def test_rollout_gate_locks_sampling_eos_and_full_response_width():
+    m = module()
+    row = {'protocol': m.PROTOCOL, 'enable_thinking': None, 'step': 1,
+           'mask_policy': 'historical_eos_mask', 'eos_token_id': 151643,
+           'response_tensor_width': 16384, 'response_length': 2, 'padding_length': 16382,
+           'finish_reason': 'stop', 'sampling': {'temperature': 1., 'top_p': .9, 'top_k': -1,
+               'seed': 21, 'max_tokens': 16384, 'n': 1, 'ignore_eos': False, 'stop_token_ids': []}}
+    m.validate_rollout_settings(row, step=1, eos_token_id=151643)
+    for key, value in [('eos_token_id', 151645), ('response_tensor_width', 4), ('padding_length', 0)]:
+        altered = copy.deepcopy(row)
+        altered[key] = value
+        with pytest.raises(ValueError):
+            m.validate_rollout_settings(altered, step=1, eos_token_id=151643)
+    row['sampling']['top_k'] = 1
+    with pytest.raises(ValueError):
+        m.validate_rollout_settings(row, step=1, eos_token_id=151643)
+
+
+def test_storage_budget_accounts_for_all_future_checkpoints_and_merges():
+    m = module()
+    size, model_size = 48_000_000_000, 8_000_000_000
+    assert m.storage_requirement(size, model_size, 'block3_mean') >= 10 * size + 8 * model_size
+    assert m.storage_requirement(size, model_size, 'token_opd') >= 4 * size + 4 * model_size
+    assert m.storage_requirement(size, model_size, 'block3_mean') > 400_000_000_000
+
+
+def test_controller_audit_imports_the_frozen_external_runtime(monkeypatch):
+    path = str(ROOT / 'external/revisiting_opd')
+    monkeypatch.setattr(sys, 'path', [item for item in sys.path if item != path])
+    module()
+    assert path in sys.path[:3]
