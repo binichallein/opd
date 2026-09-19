@@ -23,6 +23,25 @@ reproducibility, data safety, and clear experiment lineage.
   never duplicate or replace the frozen runtime with later documentation commits.
   Block3 probe1 PID1049174 started20:31:58; Ray init passed20:32:36. Formal training
   was not yet started at this snapshot; probes must pass first.
+- User requested supervision. Read `docs/results/2026-09-19-qwen4-training-supervision.md`.
+  Probe1 completed update/save/audit; probe2 PID1066486 started20:50:19 Beijing.
+  Four-rank optimizer/scheduler1, LR2e-6, full RNG, sampler4 inspected. Raw32
+  archive passed frozen protocol/mask/logprob audit. First PRE-UPDATE generation
+  already had repetition/multilingual noise and16/32 length stops (4 unique
+  responses from4 prompts). Do not attribute this initial quality risk to Block3
+  updates or call finite grad4.98 proof of healthy output. No parameters changed.
+- Resume/raw/storage gates passed21:07; formal Block3 PID1079900 launched21:07:37
+  from original Base, resume disabled. Step2 optimizer/scheduler2, sampler8 and
+  all RNG states inspected. Probe2 grad1.19,24/32 truncated; quality risk persists.
+  Ignored worker-killed exception occurred AFTER probe2 final metrics during
+  teardown, exit0/audits passed; same signature in completed Llama arms. Preserve
+  warning, do not call it a training CUDA OOM or hot-edit frozen runtime. At21:08
+  formal was initializing; inspect live state before claiming actual progress.
+- At21:21:31 formal Step1 completed, Step2 generation ongoing. Grad4.982413,
+  scalar nonfinite checks clean; raw32 protocol audit passed. Actual first input/
+  output IDs, mask, sampling/order match probe1; max logprob difference2.15e-5.
+  Initial16/32 truncation/repetition persists; this is not a benchmark result.
+  No scientific settings changed. Save50/100/150/200 remains mandatory.
 
 ## User-Directed Historical Re-evaluation (2026-09-18)
 
