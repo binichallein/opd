@@ -3,6 +3,31 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Qwen Completion Acceptance (2026-09-20)
+
+- User asked to VERIFY the three pending Qwen points: original teacher suitability,
+  exact boxed completion prompt on BOTH original models, and independently derived
+  per-request seeds wired into actual training with GPU update/resume acceptance.
+- Read `docs/plans/2026-09-20-qwen-completion-acceptance.md`. Old v1 remains stopped.
+  No automatic formal200/full-eval launch. The bounded gate runs Block3 then Token,
+  each original->Step1 save->resumeStep2; keep every checkpoint and rollout.
+- Inference diagnostic:16 archived Qwen v1 training questions, n2 seeds21/22,
+  historical/plain/candidate prompts, both models,192 outputs. Immutable inference
+  code `analysis_deployments/048f0f8acfaa74e9679e41c1d1c4acfdedf8a471`;
+  outputs `diagnostics/20260920_qwen_completion_acceptance`. Read live state.
+- Training code `0f9161f02f08287fb07f0375ad0a6bda81133ff0` is deployed separately.
+  Controller `scripts/run_qwen_completion_gate.py` targets ONLY
+  `runs/20260920v1_qwen4_completion_gate_seed21_ml2`, short cache `/limx_embap/tos/q4/c1`.
+  At this note it has NOT launched; inspect state/PIDs before any launch.
+- New protocol `qwen3_completion_boxed_v1` bypasses ChatML, uses the shared boxed
+  completion function for train/eval. New request seed rule uses stable global21,
+  step/source index/question hash/sample index/turn, with per-request SamplingParams.
+  Neither change alters historical Block3 joint ratio/reduction or Qwen EOS mask.
+- Local164 related tests passed. Actual remote collector/eval input IDs matched
+  all643 benchmark questions; this is a CPU input check, not formal evaluation.
+  Inference teacher candidate already shows3/32 truncation and2/32 periodic tails;
+  do NOT claim completion guarantees no loops. Correctness grading is still pending.
+
 ## Approved Base Protocol Revision and Llama Diagnosis (2026-09-19)
 
 - User accepted completion prompts WITHOUT ChatML for Base models, independent

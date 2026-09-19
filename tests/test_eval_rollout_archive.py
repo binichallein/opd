@@ -210,6 +210,23 @@ def test_default_worker_preserves_positional_contract_and_no_decode(monkeypatch,
                                "answer", "rollout_id", "seed", "response"}
 
 
+def test_completion_worker_bypasses_chat_and_preserves_eval_seed_schedule(monkeypatch, tmp_path):
+    from opd_ext.math_protocol import completion_input_ids
+    module = load_evaluator(monkeypatch)
+    tokenizer, calls = engine(module)
+    tokenizer.bos_token_id = None
+    tokenizer.eos_token_id = 151643
+    tokenizer.encode = lambda text, **kwargs: list(text.encode())
+    records = module.worker_generate(worker_args(range(8)), rollout_archive_dir=tmp_path,
+                                     prompt_protocol='qwen3_completion_boxed_v1')
+    assert not tokenizer.template_calls
+    assert [r['sampling']['seed'] for r in records[::2]] == list(range(21, 29))
+    assert all(r['sampling']['stop_token_ids'] is None for r in records)
+    assert all(r['prompt_protocol'] == 'qwen3_completion_boxed_v1' for r in records)
+    assert calls['generate'][0][0] == [{'prompt_token_ids': completion_input_ids(tokenizer, r['problem'])}
+                                      for r in ROWS]
+
+
 def test_batch_is_flushed_and_fsynced_before_next_generate_fails(monkeypatch, tmp_path):
     module = load_evaluator(monkeypatch)
     fsynced = []
