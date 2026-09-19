@@ -1,0 +1,131 @@
+{
+  "scope": "16 fixed training questions x2; not benchmark scores",
+  "models": {
+    "student": {
+      "model": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base",
+      "cells": {
+        "historical": {
+          "responses": 32,
+          "unique_prompt_response_pairs": 32,
+          "length_stops": 18,
+          "periodic_tails": 17,
+          "mean_length": 9542.75,
+          "finish_reasons": {
+            "stop": 14,
+            "length": 18
+          },
+          "raw_sha256": "3cf33cd97c0836bdcaa42758f69fffa8a000b8c2b69a5b552fa1391664715e56",
+          "high_4gram_repeat_tails": 17,
+          "format_errors": 21,
+          "think_tags": 0,
+          "diagnostic_correct": 1,
+          "grader_errors": 0,
+          "historical_format_errors": 21,
+          "questions_with_any_correct": 1
+        },
+        "plain": {
+          "responses": 32,
+          "unique_prompt_response_pairs": 32,
+          "length_stops": 0,
+          "periodic_tails": 0,
+          "mean_length": 1026.34375,
+          "finish_reasons": {
+            "stop": 32
+          },
+          "raw_sha256": "6cfd7172559fb5520bc9e6a8f5358b97ce65583908660d0188a13410d4130230",
+          "high_4gram_repeat_tails": 0,
+          "format_errors": 9,
+          "think_tags": 0,
+          "diagnostic_correct": 2,
+          "grader_errors": 0,
+          "historical_format_errors": 9,
+          "questions_with_any_correct": 2
+        },
+        "candidate": {
+          "responses": 32,
+          "unique_prompt_response_pairs": 32,
+          "length_stops": 1,
+          "periodic_tails": 1,
+          "mean_length": 1094.90625,
+          "finish_reasons": {
+            "stop": 31,
+            "length": 1
+          },
+          "raw_sha256": "bcdcb15d79823497d48994b49f9bc33c84d8c545f7ed730c7280c111df823f1f",
+          "high_4gram_repeat_tails": 1,
+          "format_errors": 0,
+          "think_tags": 0,
+          "diagnostic_correct": 4,
+          "grader_errors": 0,
+          "historical_format_errors": 0,
+          "questions_with_any_correct": 4
+        }
+      }
+    },
+    "teacher": {
+      "model": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO",
+      "cells": {
+        "historical": {
+          "responses": 32,
+          "unique_prompt_response_pairs": 32,
+          "length_stops": 2,
+          "periodic_tails": 0,
+          "mean_length": 4230.40625,
+          "finish_reasons": {
+            "stop": 30,
+            "length": 2
+          },
+          "raw_sha256": "17b1086bd1b63b5f68e96c81071788e35b3f192b046ca1d68bba9f121595f5ad",
+          "high_4gram_repeat_tails": 1,
+          "format_errors": 2,
+          "think_tags": 0,
+          "diagnostic_correct": 6,
+          "grader_errors": 0,
+          "historical_format_errors": 2,
+          "questions_with_any_correct": 4
+        },
+        "plain": {
+          "responses": 32,
+          "unique_prompt_response_pairs": 32,
+          "length_stops": 0,
+          "periodic_tails": 0,
+          "mean_length": 951.65625,
+          "finish_reasons": {
+            "stop": 32
+          },
+          "raw_sha256": "9140c127e4335e3e5e557b00bbdeec801cb776e02cd1b5d3e6d81f219327a191",
+          "high_4gram_repeat_tails": 0,
+          "format_errors": 0,
+          "think_tags": 0,
+          "diagnostic_correct": 5,
+          "grader_errors": 0,
+          "historical_format_errors": 0,
+          "questions_with_any_correct": 3
+        },
+        "candidate": {
+          "responses": 32,
+          "unique_prompt_response_pairs": 32,
+          "length_stops": 3,
+          "periodic_tails": 2,
+          "mean_length": 2584.53125,
+          "finish_reasons": {
+            "stop": 29,
+            "length": 3
+          },
+          "raw_sha256": "c0a544528d61de1383b0ddc8f33cb3a6a713bb9c8b7e53e81042ed1f64f801ba",
+          "high_4gram_repeat_tails": 3,
+          "format_errors": 2,
+          "think_tags": 0,
+          "diagnostic_correct": 8,
+          "grader_errors": 0,
+          "historical_format_errors": 2,
+          "questions_with_any_correct": 5
+        }
+      }
+    }
+  },
+  "grader_sha256": "04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f",
+  "audit_script_sha256": "7544eeaccf454585891cefdd98905d4df92d9a027509e4f3e12aaa94964a060a",
+  "passed": true,
+  "raw_results_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/diagnostics/20260920_qwen_completion_acceptance/audit_and_grades.json"
+}

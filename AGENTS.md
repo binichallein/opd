@@ -18,15 +18,26 @@ reproducibility, data safety, and clear experiment lineage.
 - Training code `0f9161f02f08287fb07f0375ad0a6bda81133ff0` is deployed separately.
   Controller `scripts/run_qwen_completion_gate.py` targets ONLY
   `runs/20260920v1_qwen4_completion_gate_seed21_ml2`, short cache `/limx_embap/tos/q4/c1`.
-  At this note it has NOT launched; inspect state/PIDs before any launch.
+  Controller1128081 launched23:45 Beijing Sep19. Block3 probe1 PID1128438
+  exited after saving Step1 and passed audit00:00 Sep20. Probe2 PID1140852
+  started00:01:07 from that full checkpoint. Inspect live state; never duplicate.
 - New protocol `qwen3_completion_boxed_v1` bypasses ChatML, uses the shared boxed
   completion function for train/eval. New request seed rule uses stable global21,
   step/source index/question hash/sample index/turn, with per-request SamplingParams.
   Neither change alters historical Block3 joint ratio/reduction or Qwen EOS mask.
 - Local164 related tests passed. Actual remote collector/eval input IDs matched
   all643 benchmark questions; this is a CPU input check, not formal evaluation.
-  Inference teacher candidate already shows3/32 truncation and2/32 periodic tails;
-  do NOT claim completion guarantees no loops. Correctness grading is still pending.
+  All192 inference outputs and pinned historical grading passed; candidate
+  student4/32 correct,1/32 cap,0/32 missing boxed; teacher8/32 correct,3/32 cap,
+  2/32 missing boxed. Only16 training questions; NOT benchmark scores, superiority
+  significance, or proof of teacher reliability on arbitrary student prefixes.
+  See `docs/results/2026-09-20-qwen-completion-acceptance.md`.
+- Actual Block3 Step1:32 seeds,8 distinct outputs for EACH of4 questions,0 cap,
+  no periodic tails,1 missing boxed; original seed21 data order and exact eval
+  input IDs verified. Preclipgrad5.42485, entropy student0.20898/teacher0.17316,
+  top16overlap0.91432, signflip0.16348. No nonfinite diagnostics. Probe only,
+  not formal method validation. Rank0 optimizer37states allstep1,LR2e-6,
+  scheduler1 and sampler4 directly inspected; full two-step audit still pending.
 
 ## Approved Base Protocol Revision and Llama Diagnosis (2026-09-19)
 
