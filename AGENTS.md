@@ -19,6 +19,17 @@ reproducibility, data safety, and clear experiment lineage.
   Diagnose original models with archived questions and native EOS; do not strip
   native chat from Instruct models by assumption. No Llama retraining authorized
   by this diagnosis. Keep all inference outputs and existing training history.
+- Llama inference diagnosis completed23:05 Beijing:16 archived training questions,
+  n2 seeds21/22,4 prompt cells,2 original models,256 outputs; audit/grading passed.
+  See `docs/results/2026-09-19-llama-native-prompt-diagnosis.md`. Student/teacher
+  caps: historical1/32,2/32; remove think1/32,4/32; completion4/32,4/32;
+  native eval1/32,0/32. Do NOT remove native chat from Llama Instruct as a fix.
+  Original-model diagnostic correct counts are only0-1/32 student,1-3/32 teacher;
+  these are fixed training questions, not benchmarks. Request-seed duplication is
+  shared with old Qwen; Llama's later high-entropy Block3 failure is not established
+  to have the same cause as Base/ChatML pre-update noise. No new training launched.
+  Raw/logs/manifests are in `diagnostics/20260919_llama_prompt_check`; both jobs exited,
+  all4 GPUs idle at final check. Recheck live state before using GPUs.
 
 ## Qwen4 User Stop and Initial-Loop Diagnosis (2026-09-19)
 
