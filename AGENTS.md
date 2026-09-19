@@ -3,6 +3,23 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Approved Base Protocol Revision and Llama Diagnosis (2026-09-19)
+
+- User accepted completion prompts WITHOUT ChatML for Base models, independent
+  per-trajectory request seeds derived deterministically from global seed21,
+  step/question/sample identity, and inference validation before formal training.
+  New Token/Block3 runs must share the revised train/eval prompt and seed rule;
+  start independently from original weights. Preserve the old run and checkpoints.
+- This supersedes the historical prompt difference for the NEXT Base experiment,
+  not for already completed or stopped attempts. Do not restart the stopped v1
+  queue. The candidate boxed-answer completion prompt still needs student AND
+  teacher GPU acceptance; earlier plain-Solution probes did not test it exactly.
+- User also requested checking whether old Llama shared the prompt problem.
+  Llama is 1B-Instruct/3B-Instruct with native Llama chat, not Qwen ChatML or Base.
+  Diagnose original models with archived questions and native EOS; do not strip
+  native chat from Instruct models by assumption. No Llama retraining authorized
+  by this diagnosis. Keep all inference outputs and existing training history.
+
 ## Qwen4 User Stop and Initial-Loop Diagnosis (2026-09-19)
 
 - Latest user explicitly STOPPED this pair to investigate pre-update repetition.
