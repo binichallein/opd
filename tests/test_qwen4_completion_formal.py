@@ -67,3 +67,24 @@ def test_gate_precondition_requires_both_successful_resume_arms():
                                   ({'status': 'complete'}, acceptance, 'other')]:
         with pytest.raises(ValueError):
             m.validate_gate(state, report, commit)
+
+
+def test_retry_uses_executable_local_tmpfs_not_nfs():
+    m = controller()
+    assert m.CACHE == Path('/dev/shm/opd-q4-c3')
+    assert '20260920v3_' in str(m.RUN_ROOT)
+    assert m.training_env()['LOCAL_CACHE_ROOT'] == str(m.CACHE / 'train')
+    m.validate_cache_mount('tmpfs', 'rw,relatime', 100_000_000_000)
+    for fstype, options, free in [('nfs4', 'rw', 10**12),
+                                  ('tmpfs', 'rw,noexec', 10**12), ('tmpfs', 'rw', 100)]:
+        with pytest.raises(ValueError):
+            m.validate_cache_mount(fstype, options, free)
+
+
+def test_failure_cleanup_targets_only_recorded_training_group(monkeypatch):
+    m = controller()
+    calls = []
+    monkeypatch.setattr(m.os, 'killpg', lambda pid, sig: calls.append((pid, sig)))
+    monkeypatch.setattr(m.time, 'sleep', lambda seconds: None)
+    m.cleanup_failed_group(12345)
+    assert calls == [(12345, m.signal.SIGTERM), (12345, m.signal.SIGKILL)]

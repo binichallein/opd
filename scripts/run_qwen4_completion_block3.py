@@ -6,14 +6,16 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import subprocess
 import sys
+import time
 
 ROOT = Path('/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd')
 TRAIN_COMMIT = '0f9161f02f08287fb07f0375ad0a6bda81133ff0'
 RUNTIME = ROOT / 'deployments' / TRAIN_COMMIT
-RUN_ROOT = ROOT / 'runs/20260920v2_qwen4_completion_blockfirst_seed21_ml2'
+RUN_ROOT = ROOT / 'runs/20260920v3_qwen4_completion_blockfirst_seed21_ml2'
 RUN = RUN_ROOT / 'block3_mean'
-CACHE = Path('/limx_embap/tos/q4/c2')
+CACHE = Path('/dev/shm/opd-q4-c3')
 SAVE_STEPS = '50,100,150,200'
 
 # On ml2 all helper imports come from the already GPU-accepted runtime.
@@ -59,6 +61,23 @@ def checkpoint_audit_command():
         '--expected-diag-interval', '1', '--expected-diagnostic-steps', ','.join(map(str, range(1, 201)))]
 
 
+def validate_cache_mount(fstype, options, free_bytes):
+    if fstype != 'tmpfs' or 'noexec' in options.split(',') or free_bytes < 20_000_000_000:
+        raise ValueError('Executable local tmpfs with at least 20GB free is required for temporary caches')
+
+
+def cleanup_failed_group(pgid):
+    try:
+        os.killpg(pgid, signal.SIGTERM)
+    except ProcessLookupError:
+        return
+    time.sleep(3)
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+
+
 def main():
     control_root = Path(__file__).resolve().parents[1]
     control_commit = (control_root / 'DEPLOYED_COMMIT').read_text().strip()
@@ -84,6 +103,10 @@ def main():
                    VLLM_WORKER_MULTIPROC_METHOD='spawn', EVAL_GRADE_UTILS_PATH=str(base.GRADER))
         if env.get('RAY_TMPDIR'):
             raise ValueError('Unexpected RAY_TMPDIR')
+        CACHE.mkdir(parents=True, exist_ok=True)
+        mount = subprocess.run(['findmnt', '-T', str(CACHE), '-n', '-o', 'FSTYPE,OPTIONS'],
+                               check=True, capture_output=True, text=True).stdout.strip().split(maxsplit=1)
+        validate_cache_mount(*mount, shutil.disk_usage(CACHE).free)
         from recover_historical17_llama import check_socket_budget
         check_socket_budget(CACHE / 'train/tmp')
         for key, suffix in {'TMPDIR': 'tmp', 'VLLM_CACHE_ROOT': 'vllm', 'TORCHINDUCTOR_CACHE_DIR': 'inductor',
@@ -91,7 +114,13 @@ def main():
             (CACHE / suffix).mkdir(parents=True, exist_ok=True)
             env[key] = str(CACHE / suffix)
         def runner(command, job, job_env=None, **kwargs):
-            jobs.run_job(command, job, RUNTIME, state, {**env, **(job_env or {})}, **kwargs)
+            try:
+                jobs.run_job(command, job, RUNTIME, state, {**env, **(job_env or {})}, **kwargs)
+            except BaseException:
+                # A failed driver can leave Ray workers in its owned process group.
+                if job == RUN and (RUN / 'train.pid').exists():
+                    cleanup_failed_group(int((RUN / 'train.pid').read_text()))
+                raise
         try:
             jobs.wait_for_idle()
             runner(['sha256sum', '-c', '.expected.sha256'], RUN_ROOT / 'queue_jobs/runtime_hashes')
@@ -116,7 +145,9 @@ def main():
                 'variant': 'block3_mean', 'total_training_steps': 200, 'checkpoint_steps': [50, 100, 150, 200],
                 'initialization': str(gate.assets.STUDENT), 'resume_mode': 'disable',
                 'accepted_gate': str(gate.RUN_ROOT), 'retain_all_checkpoints': True,
-                'full_eval_autostart': False, 'token_training_autostart': False, 'free_bytes_at_start': free})
+                'full_eval_autostart': False, 'token_training_autostart': False, 'free_bytes_at_start': free,
+                'cache_root': str(CACHE), 'cache_mount': mount,
+                'previous_failed_attempt': str(ROOT / 'runs/20260920v2_qwen4_completion_blockfirst_seed21_ml2')})
             jobs.write_json(RUN_ROOT / 'protected_inputs.json', protected)
             runner(['bash', RUNTIME / 'scripts/launch_revisiting_block_opd_formal_train.sh'],
                    RUN_ROOT / 'queue_jobs/prepare_block3', job_env=training_env())

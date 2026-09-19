@@ -9,7 +9,7 @@ reproducibility, data safety, and clear experiment lineage.
   new configuration and FOUR retained checkpoints:50,100,150,200. This supersedes
   the earlier no-formal-launch instruction for this NEW run only.
 - Read `docs/plans/2026-09-20-qwen4-completion-block3-formal.md`.
-  New root `runs/20260920v2_qwen4_completion_blockfirst_seed21_ml2`, cache `/limx_embap/tos/q4/c2`.
+  Current retry root `runs/20260920v3_qwen4_completion_blockfirst_seed21_ml2`, cache `/dev/shm/opd-q4-c3`.
   Controller `scripts/run_qwen4_completion_block3.py` uses the exact accepted
   TRAINING runtime `0f9161f02f08287fb07f0375ad0a6bda81133ff0`; controller code has
   a separate immutable analysis deployment. Never replace training code mid-run.
@@ -20,6 +20,13 @@ reproducibility, data safety, and clear experiment lineage.
   no probe stop, and names/output paths. New completion prompt and seed rule stay.
 - Before reporting status read live queue_state, train.pid and logs/nohup.log.
   Never duplicate the new controller or restart either old v1 queue/gate.
+- v2 controller1173330/train1173572 failed01:10:37 Beijing before the FIRST update:
+  Triton TemporaryDirectory cleanup OSError39 on NFS4. First32 rollouts preserved.
+  Only its orphan worker1178906/PGID1173572 was terminated. No GPU OOM in this trace.
+  Control95678957abd0ae56ba9a6f015b13d065b2242d05 and v2 artifacts remain immutable.
+  A 4-process/16-compilation test passed on BOTH NFS and executable tmpfs; exact
+  intermittent NFS trigger not reproduced. v3 changes cache location and scoped
+  failure cleanup only; same TRAIN_COMMIT and four milestones. Read live progress.
 
 ## Qwen Completion Acceptance (2026-09-20)
 
