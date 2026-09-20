@@ -81,3 +81,33 @@ def test_runtime_cache_and_report_never_schedule_training():
     assert set(result) == set(m.shared.TASK_COUNTS)
     assert result['math500']['step200']['avg_at_8'] == .5
     assert all('macro' not in name for name in result)
+
+
+def test_token_evaluation_uses_separate_paths_and_exact_training_contract():
+    m = controller()
+    spec = m.TOKEN_EVAL
+    assert spec.run_root != m.RUN_ROOT and spec.train_root != m.TRAIN_ROOT
+    assert spec.variant == 'token_opd'
+    assert str(spec.cache).startswith('/dev/shm/') and spec.cache != m.CACHE
+    for step in m.STEPS:
+        actor, model = m.model_paths(step, spec)
+        assert actor == spec.train_root / f'token_opd/checkpoints/global_step_{step}/actor'
+        assert model == spec.run_root / f'merged/token_opd_step{step}'
+    state = {'status': 'complete', 'checkpoint_steps': [50, 100, 150, 200]}
+    card = {'source_commit': m.TRAIN_COMMIT, 'opd_prompt_protocol': m.PROTOCOL,
+            'variant': 'token_opd', 'student_model': str(m.assets.STUDENT),
+            'opd_block_size': 1, 'opd_block_advantage_mode': 'sum'}
+    m.validate_training(state, {'passed': True}, card, spec)
+    for key, value in [('variant', 'block3_mean'), ('opd_block_size', 3),
+                       ('opd_block_advantage_mode', 'mean')]:
+        with pytest.raises(ValueError):
+            m.validate_training(state, {'passed': True}, {**card, key: value}, spec)
+
+
+def test_token_requires_complete_paired_rollout_acceptance():
+    m = controller()
+    good = {'passed': True, 'steps': 200, 'trajectories_per_arm': 6400}
+    m.validate_paired_training(good)
+    for key, value in [('passed', False), ('steps', 199), ('trajectories_per_arm', 6399)]:
+        with pytest.raises(ValueError):
+            m.validate_paired_training({**good, key: value})

@@ -5,6 +5,18 @@ reproducibility, data safety, and clear experiment lineage.
 
 ## Authorized Qwen4 Completion Token Control (2026-09-20)
 
+- NEW authorization2026-09-21: Token training completed and passed all four
+  checkpoint audits plus all6400 paired rollout input checks. Launch full Token
+  evaluation NOW, order200,150,100,50, using `run_qwen4_completion_eval.py --variant
+  token_opd`, new root `20260921v1_qwen4_completion_token_eval_seed21_ml2`.
+  Same frozen0f runtime, completion prompt, n8, four separate benchmarks,
+  historical grader and raw rollout archives as the completed Block3 evaluation.
+  No training or initial-student evaluation autostart; never overwrite old runs.
+  After evaluation, prepare English and Chinese ICLR2027 manuscripts using all
+  archived experiments, distinguish controlled evidence, pilots and confounds.
+  Follow official2027 template, nine-page submission main text, anonymity and
+  mandatory AI disclosure; never submit to OpenReview automatically.
+
 - Latest user authorizes preparing Token OPD now and starting after the current
   Block3 four-checkpoint evaluation completes and passes acceptance. This overrides
   earlier no-Token authorization for this NEW queue only. Do not interrupt eval.
