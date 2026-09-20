@@ -54,4 +54,3 @@ Avg@8是每题8次采样正确率的题间平均；Pass@8是8次中至少答对�
 - `evaluations/block3_mean_step200/acceptance.json`：完整验收及产物hash。
 - `evaluations/block3_mean_step200/outputs/rollout_archive/`：原生轨迹。
 - 同名JSON记录本次精选元数据与未四舍五入的分数；原始轨迹、日志、权重不入Git。
-
