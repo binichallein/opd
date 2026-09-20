@@ -5,6 +5,18 @@ reproducibility, data safety, and clear experiment lineage.
 
 ## Authorized Qwen4 Completion Formal Block3 (2026-09-20)
 
+- NEW user authorization: start FULL evaluation now, Step200 first. Read
+  `docs/plans/2026-09-20-qwen4-completion-block3-eval.md`. Evaluation order200,150,100,50,
+  new root `runs/20260920v1_qwen4_completion_block3_eval_seed21_ml2`, controller
+  `scripts/run_qwen4_completion_eval.py`. Do not launch Token training or Base eval.
+  This supersedes no-eval authorization for this new independent queue only.
+  Always pass completion prompt explicitly; legacy evaluator defaults use ChatML.
+- Formal training completed10:44 Beijing; checkpoint audit and figures exited0,
+  queue complete10:45. Four FSDP checkpoints50/100/150/200,200 diagnostics/archives
+  retained. All scalar metrics finite; capped247/6400. Shutdown MathMultiProcessEnv
+  destructor/DataLoader warning was ignored, main exit0 and checkpoint audit passed.
+  This is not benchmark gain evidence. Original run state remains immutable.
+
 - Latest user authorized restarting the Qwen4 pair's Block3 Mean with the accepted
   new configuration and FOUR retained checkpoints:50,100,150,200. This supersedes
   the earlier no-formal-launch instruction for this NEW run only.
