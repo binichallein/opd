@@ -1,0 +1,150 @@
+{
+  "observed_at": "2026-09-20T05:02:51.798399+00:00",
+  "launch": {
+    "pid": 1502108,
+    "argv": [
+      "nohup",
+      "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl/bin/python",
+      "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/analysis_deployments/645a2f391f96311fe3ca3d85d0af44c0e877acbd/scripts/run_qwen4_completion_eval.py"
+    ],
+    "control_commit": "645a2f391f96311fe3ca3d85d0af44c0e877acbd",
+    "runtime_commit": "0f9161f02f08287fb07f0375ad0a6bda81133ff0",
+    "run_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_block3_eval_seed21_ml2",
+    "archive_sha256": "4218509265c65a34ba7b2671966f222ce2bba3596eb975bdb2dd3f8c652aa448",
+    "controller_sha256": "628008246ceaba699d89e47b6a82e6bb47db9344826b5f0ed46d5c073a456149",
+    "created_at": "2026-09-20T03:58:46.575293+00:00"
+  },
+  "queue_state_snapshot": {
+    "status": "running",
+    "job": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_block3_eval_seed21_ml2/evaluations/block3_mean_step150",
+    "pid": 1511019,
+    "updated_at": "2026-09-20T04:42:09.036734+00:00"
+  },
+  "completed_steps": [
+    200
+  ],
+  "remaining_steps": [
+    150,
+    100,
+    50
+  ],
+  "step200": {
+    "passed": true,
+    "acceptance_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_block3_eval_seed21_ml2/evaluations/block3_mean_step200/acceptance.json",
+    "acceptance_sha256": "0e2fe54f0686004c202888cbd556a5d2813eee3823c7956ceac665a985becfc1",
+    "completion_protocol_verified": true,
+    "grader_sha256": "04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f",
+    "per_task": {
+      "math500": {
+        "num_examples": 500,
+        "num_rollouts": 4000,
+        "avg_at_8": 0.754,
+        "pass_at_8": 0.906,
+        "format_error_rollouts": 36,
+        "format_error_rate": 0.009,
+        "engine_length_stop_rollouts": 36,
+        "engine_truncation_ratio": 0.009,
+        "mean_generated_tokens": 864.10325
+      },
+      "aime24": {
+        "num_examples": 30,
+        "num_rollouts": 240,
+        "avg_at_8": 0.13333333333333333,
+        "pass_at_8": 0.3333333333333333,
+        "format_error_rollouts": 29,
+        "format_error_rate": 0.12083333333333333,
+        "engine_length_stop_rollouts": 27,
+        "engine_truncation_ratio": 0.1125,
+        "mean_generated_tokens": 3687.891666666667
+      },
+      "aime25": {
+        "num_examples": 30,
+        "num_rollouts": 240,
+        "avg_at_8": 0.1375,
+        "pass_at_8": 0.3,
+        "format_error_rollouts": 10,
+        "format_error_rate": 0.041666666666666664,
+        "engine_length_stop_rollouts": 8,
+        "engine_truncation_ratio": 0.03333333333333333,
+        "mean_generated_tokens": 2512.45
+      },
+      "amc23": {
+        "num_examples": 83,
+        "num_rollouts": 664,
+        "avg_at_8": 0.4623493975903614,
+        "pass_at_8": 0.7469879518072289,
+        "format_error_rollouts": 30,
+        "format_error_rate": 0.045180722891566265,
+        "engine_length_stop_rollouts": 27,
+        "engine_truncation_ratio": 0.04066265060240964,
+        "mean_generated_tokens": 2176.6701807228915
+      }
+    },
+    "rollout_archive": {
+      "passed": true,
+      "schema_version": 1,
+      "num_examples": 643,
+      "num_rollouts": 5144,
+      "num_archive_files": 32,
+      "per_task": {
+        "math500": {
+          "num_examples": 500,
+          "num_rollouts": 4000,
+          "num_archive_files": 8
+        },
+        "aime24": {
+          "num_examples": 30,
+          "num_rollouts": 240,
+          "num_archive_files": 8
+        },
+        "aime25": {
+          "num_examples": 30,
+          "num_rollouts": 240,
+          "num_archive_files": 8
+        },
+        "amc23": {
+          "num_examples": 83,
+          "num_rollouts": 664,
+          "num_archive_files": 8
+        }
+      }
+    },
+    "eval_config": {
+      "model_path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_block3_eval_seed21_ml2/merged/block3_mean_step200",
+      "eval_jsonl_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl",
+      "tasks": [
+        "math500",
+        "aime24",
+        "aime25",
+        "amc23"
+      ],
+      "n": 8,
+      "temperature": 1,
+      "top_p": 0.9,
+      "max_tokens": 16384,
+      "gpus": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "eval_seed": 21,
+      "rollout_seeds": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "grader": "external",
+      "enable_thinking": false,
+      "prompt_protocol": "qwen3_completion_boxed_v1",
+      "retain_rollouts": true,
+      "rollout_archive_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_block3_eval_seed21_ml2/evaluations/block3_mean_step200/outputs/rollout_archive"
+    }
+  }
+}
+

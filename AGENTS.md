@@ -11,6 +11,13 @@ reproducibility, data safety, and clear experiment lineage.
   `scripts/run_qwen4_completion_eval.py`. Do not launch Token training or Base eval.
   This supersedes no-eval authorization for this new independent queue only.
   Always pass completion prompt explicitly; legacy evaluator defaults use ChatML.
+- Evaluation controller1502108 launched11:58:46 Beijing; immutable control
+  `645a2f391f96311fe3ca3d85d0af44c0e877acbd`, inference runtime remains0f9161f.
+  At13:02 Step200 exited0 and passed all643-question/5144-rollout/32-archive
+  checks; Step150 PID1511019 running, then100,50. Do NOT relaunch this queue.
+  Read `docs/results/2026-09-20-qwen4-completion-evaluation-progress.md` and live
+  queue state. These are absolute scores, not gain evidence without matched
+  initial-student and Token baselines. Later docs commits do not replace runtime.
 - Formal training completed10:44 Beijing; checkpoint audit and figures exited0,
   queue complete10:45. Four FSDP checkpoints50/100/150/200,200 diagnostics/archives
   retained. All scalar metrics finite; capped247/6400. Shutdown MathMultiProcessEnv
