@@ -19,6 +19,11 @@ reproducibility, data safety, and clear experiment lineage.
   Block3. Wait for all4 full eval acceptances plus GPU idle; fail closed otherwise.
   New tmpfs cache `/dev/shm/opd-q4-t1`. No automatic Base/Token benchmark evaluation
   in this training-only controller; it audits full state/rollouts and draws figures.
+- Waiting controller1529721 launched14:34:46 Beijing with control release
+  `7131bc181c0bcddb6f5f95d3c5d379297c361b79`;14:35 state waiting_for_evaluation,
+  PPID1/SID1529721 verified, no train.pid yet. Do NOT launch it again. Read
+  `docs/results/2026-09-20-qwen4-completion-token-startup.md` and live queue state.
+  Later documentation commits must not replace either immutable control/runtime.
 
 ## Authorized Qwen4 Completion Formal Block3 (2026-09-20)
 

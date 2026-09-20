@@ -1,0 +1,35 @@
+{
+  "pid": 1529721,
+  "argv": [
+    "nohup",
+    "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl/bin/python",
+    "-B",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/analysis_deployments/7131bc181c0bcddb6f5f95d3c5d379297c361b79/scripts/run_qwen4_completion_token.py"
+  ],
+  "control_commit": "7131bc181c0bcddb6f5f95d3c5d379297c361b79",
+  "runtime_commit": "0f9161f02f08287fb07f0375ad0a6bda81133ff0",
+  "run_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_token_seed21_ml2",
+  "archive_sha256": "4b644d9b9090e61f2167abc2e12828e47d47e9c49cbe60d6643f0917435d87e0",
+  "controller_sha256": "3a9c16e1b5c1ba93c9e10f15e1f28940e67ed991a8c63315beff301e0492c0a9",
+  "created_at": "2026-09-20T06:34:46.323042+00:00",
+  "predecessor_state_at_launch": {
+    "status": "running",
+    "job": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260920v1_qwen4_completion_block3_eval_seed21_ml2/evaluations/block3_mean_step50",
+    "pid": 1523774,
+    "updated_at": "2026-09-20T06:04:55.168208+00:00"
+  },
+  "verification": {
+    "observed_at": "2026-09-20T06:35:04.510164+00:00",
+    "status": "waiting_for_evaluation",
+    "controller_ppid": 1,
+    "controller_session_id": 1529721,
+    "token_train_pid_exists": false,
+    "predecessor_eval_pid": 1523774,
+    "remote_frozen_imports_verified": true,
+    "probe_and_block3_card_alignment_verified": true,
+    "local_related_tests": 114,
+    "additional_gate_pair_tests": 27,
+    "additional_tests_overlap_with_related_suite": true,
+    "static_review_launch_blockers": 0
+  }
+}
