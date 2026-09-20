@@ -3,6 +3,23 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Qwen4 Completion Token Control (2026-09-20)
+
+- Latest user authorizes preparing Token OPD now and starting after the current
+  Block3 four-checkpoint evaluation completes and passes acceptance. This overrides
+  earlier no-Token authorization for this NEW queue only. Do not interrupt eval.
+- Read `docs/plans/2026-09-20-qwen4-completion-token.md`. New controller
+  `scripts/run_qwen4_completion_token.py`, run `20260920v1_qwen4_completion_token_seed21_ml2`.
+  Always inspect live state before launching; never duplicate or overwrite a queue.
+- Same original Qwen3-4B-Base/public GRPO teacher/data/seed21/completion prompt,
+  independent request seeds, 200steps, all50/100/150/200 full checkpoints and every
+  rollout/diagnostic. Frozen training remains0f9161f02f08287fb07f0375ad0a6bda81133ff0.
+  No warm start or algorithm rewrite. Accepted Token GPU update/resume gate reused.
+- Strictly compare run card, command and model/data/runtime hashes to completed
+  Block3. Wait for all4 full eval acceptances plus GPU idle; fail closed otherwise.
+  New tmpfs cache `/dev/shm/opd-q4-t1`. No automatic Base/Token benchmark evaluation
+  in this training-only controller; it audits full state/rollouts and draws figures.
+
 ## Authorized Qwen4 Completion Formal Block3 (2026-09-20)
 
 - NEW user authorization: start FULL evaluation now, Step200 first. Read
