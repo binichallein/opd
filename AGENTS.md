@@ -15,6 +15,11 @@ reproducibility, data safety, and clear experiment lineage.
   with explicit enable_thinking=False and GPU smoke on each model before main eval.
   Reuse original64 questions, n2,32 student-prefix questions, same sampling/grader;
   keep all768 diagnostic +8 smoke rollouts. No replacement of old runtime/results.
+- New queue STARTED19:39:17 Beijing, controller1872503, PPID1/SID1872503;
+  immutable control ce653fbe5a9aebceadd37d6f8cfd33e46a1bd11d. At19:43 Base1.7
+  assets completed, read-only8B-Base verification running, no model scores yet.
+  Read `docs/results/2026-09-21-qwen8-to17-diagnostics-startup.md` and LIVE state.
+  Do not duplicate launch or redeploy over this release. Actual ml2 CPU tests264pass.
 - Old8B-versus4B queue ENDED17:36 Beijing, capability_not_accepted; gate status
   inconclusive, failures direct_gain/direct_ci, no training. All six cells completed.
   OldGRPO continuation16/64; gate SHA256
