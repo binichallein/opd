@@ -18,6 +18,11 @@
   full n8 evaluation and historical grader. No automatic retries or pruning.
 - New protocol uses native EOS151645, stops[151645,151643], length-derived masks;
   old Base protocols and immutable deployments remain unchanged.
+- Queue STARTED23:38 Beijing, PID1896918, PPID1/SID1896918 verified. Frozen
+  deployment be736b5fac4f26ff59f4e2c21abafc456c2503f6. Read
+  `docs/results/2026-09-21-qwen17-instruct-blockfirst-startup.md` and LIVE state.
+  At launch only runtime preflight started; do not claim formal training yet.
+  Never relaunch or overwrite this queue, deployment, probes or artifacts.
 
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.

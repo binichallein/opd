@@ -20,6 +20,7 @@ reverse-KL 目标。
 - 相同DAPO文件、seed21、采样配置和历史loss；四个benchmark分别计分，保留全部评测输出。
 - 控制器 `scripts/run_qwen17_instruct_pair.py`：恢复门禁失败或任何验收失败即停止，不自动改参重跑。
 - 实际启动情况以新目录 `runs/20260921v1_qwen17_instruct_blockfirst_seed21_ml2/queue_state.json` 为准。
+- 23:38后台队列已启动，先做预检和恢复门禁；[启动证据与验证范围](docs/results/2026-09-21-qwen17-instruct-blockfirst-startup.md)。
 
 ## 已完成：8B对1.7B的两组能力诊断
 
