@@ -36,6 +36,9 @@ tensorboard/
 *.jsonl
 *.log
 
+# Temporary paper preview exports; accepted paper assets live under paper/.
+figures/qwen4_partial_*/
+
 # Keep curated summaries and reports.
 !results/*.json
 !reports/*.html

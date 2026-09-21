@@ -1,0 +1,140 @@
+\section{补充推导}
+\label{app:proofs}
+\paragraph{实际归一化。}
+令$m_t\in\{0,1\}$为最终actor mask，$n_b=\sum_{t\in b}m_t$、$N=\sum_t m_t$、$\eta=10^{-8}$。空块取$\bar a_b=0$。
+代码用分数block mask最小化负的裁剪代理目标：
+\begin{equation}
+ L_{\mathrm{blk}}=-\frac{\sum_b(n_b/k)\mathcal C(R_b,\bar a_b)}{N/k+\eta}
+ =-\frac{\sum_b n_b\mathcal C(R_b,\bar a_b)}{N+k\eta}.
+\end{equation}
+token分母为$N+\eta$。聚合前先将无效位置置零，不删除mask空洞，不把相邻token移动到不同block。
+空块和padding权重均为零。
+actor micro-batch=1时，更新平均各条响应独立归一化的loss；响应长度不同时，它不是整个batch的全局token均值。
+因此仅凭\texttt{token-mean}配置名，不能认定实现了DAPO使用的全局加权\citep{dapo}。
+
+\paragraph{裁剪约定。}
+取ratio下限$d=0.8$、上限$u=1.2$，定义$s(r,a)=\min\{ra,\clip(r,d,u)a\}$，继承目标为
+\begin{equation}
+ \mathcal C(r,a)=\begin{cases}\max\{s(r,a),3a\},&a<0,\\s(r,a),&a\ge0.\end{cases}
+\end{equation}
+这是普通PPO裁剪加负advantage dual-clip。先计算block ratio，再应用此操作。
+梯度范数裁剪到1是另一个独立优化器操作；两者均不保证未来所有policy ratio或teacher KL始终处于指定范围。
+
+\paragraph{一阶导数与合成检查。}
+在梯度生效分支上，对有效$t\in b$，关于当前采样log probability的导数为
+\begin{equation}
+ \frac{\partial L_{\mathrm{blk}}}{\partial\log p_\theta(y_t\mid h_t)}
+ =-\frac{n_b\bar a_bR_b}{N+k\eta},\qquad
+ \frac{\partial L_{\mathrm{tok}}}{\partial\log p_\theta(y_t\mid h_t)}
+ =-\frac{a_tr_t}{N+\eta}.
+\end{equation}
+ratio=1时，在$\eta=0$的理想化下，任意advantage的两种策略loss数值一致，但导数不一定一致。
+5个token均有$a_t=1$时，token导数均为$-1/5$，Block3则为$(-3/5,-3/5,-3/5,-2/5,-2/5)$。
+当$(a_1,a_2,a_3)=(1,-1,1)$时，token导数为$(-1/3,1/3,-1/3)$，block导数为$(-1/3,-1/3,-1/3)$。
+这些是合成导数示例，不是真实参数更新幅度的估计。
+
+\paragraph{受限的信用范围解释。}
+假设固定horizon $T$、确定性连续划分、无mask或截断，学生支撑集局部不依赖参数、固定教师$q$在其上为正，
+从完整当前学生分布$p_\theta$采样，log probability可微且允许交换微分与期望。
+定义$c_t=\log p_\theta(y_t\mid h_t)-\log q(y_t\mid h_t)$和
+$g_t=\nabla\log p_\theta(y_t\mid h_t)$，则
+\begin{align}
+ \nabla\KL(P_\theta\Vert Q)
+ &=\E\left[\left(\sum_t c_t\right)\left(\sum_t g_t\right)\right] \\
+ &=\E\left[\sum_t g_t\sum_{u=t}^{T}c_u\right].
+ \label{eq:fullcredit}
+\end{align}
+log-density本身导数的期望为零。$u<t$时，$c_u$在$h_t$处已知，且$\E[g_t\mid h_t]=0$，所以过去项在期望中消失。
+定义$H_{\mathrm{blk}}=\sum_b(\sum_{u\in b}c_u)(\sum_{t\in b}g_t)$和$H_{\mathrm{seq}}=(\sum_u c_u)(\sum_t g_t)$。
+对旧策略处未裁剪的block估计量应用同一推导，得到
+\begin{equation}
+ \E H_{\mathrm{blk}}=\E\left[\sum_t g_t\sum_{u=t}^{e(t)}c_u\right],\qquad
+ \E(H_{\mathrm{seq}}-H_{\mathrm{blk}})=\E\left[\sum_t g_t\sum_{u>e(t)}c_u\right],
+ \label{eq:horizon}
+\end{equation}
+其中$e(t)$为token $t$所在block的末端。
+相对完全局部的token反馈，block聚合可以恢复块内未来信用，但忽略跨块边界的信用。
+因此不能把全部交叉项都称为有害泄漏。被忽略向量可能互相抵消，增大block不一定单调减小偏差。
+MiniLLM已考虑未来奖励，此解释不是首次提出蒸馏的时间信用分配\citep{minillm}。
+
+上述恒等式不证明实际loss精确优化完整序列KL。top-$p$会使真实采样分布不同于被评分的学生分布；
+masked位置的ratio乘积一般不是block边缘似然比；裁剪和冻结旧策略target会改变远离旧策略后的目标；
+随机响应长度归一化又引入对未来动作的依赖。
+因此这些是有明确假设的解释性理想化，而非对实际实验的保证。
+
+\paragraph{平均误差分解。}
+由$a=\mu+\varepsilon$及$\E\varepsilon=0$，展开$Wa-\mu=(W-I)\mu+W\varepsilon$。
+交叉项期望为零，且$\E\varepsilon^\top W^\top W\varepsilon=\operatorname{tr}(W\Sigma W^\top)$，即得式\ref{eq:mse}。
+独立同方差噪声且$k$个token具有恒定信号时，平均噪声方差为$k\sigma^2/k^2=\sigma^2/k$。
+对无噪声确定性信号$(2,-1,2)$，原始估计误差为零，全部替换为均值1会产生平方误差6。
+它反驳的是无条件的信号估计收益，并不意味着教师每token ratio总是正确的任务信用信号。
+
+\paragraph{滑动分区能消除哪一种随机性。}
+设$X$包含共同参数、已收集batch、mask、冻结target及其他前向随机性。
+令$L_r(X)$为offset $r\in\{0,1,2\}$各自完成裁剪和归一后的loss，$G_r(X)=\nabla_\theta L_r(X)$。
+对条件均匀的随机offset $U$，实现中的phase平均满足
+\begin{equation}
+ G_{\mathrm{slide}}(X)=\frac13\sum_{r=0}^2G_r(X)=\E[G_U(X)\mid X].
+\end{equation}
+在二阶矩有限且$X$分布相同的前提下，全协方差公式给出
+\begin{equation}
+ \Cov(G_U)-\Cov(G_{\mathrm{slide}})=\E_X[\Cov(G_U\mid X)]\succeq0.
+ \label{eq:phasecov}
+\end{equation}
+它消除了共同状态条件下由offset随机选择引入的方差，不是Sliding3与固定Block3的比较。
+PPO裁剪可以处于激活状态，因为它已包含在每个$L_r$内部；之后的梯度范数裁剪和Adam是非线性操作，不在此恒等式内。
+不同训练历史会诱导不同的$X$分布，所以该式不是历史运行的性能保证，也不代表一个固定RNG seed的轨迹精确实现了期望。
+平均各自loss也不等于先平均advantage再裁剪一次。
+
+当$N>0$且phase-zero分区匹配时，含partial tail的旧实现满足$L_{\mathrm{hist}}=N L_0/(N+k\eta)$。
+由于收集到的mask被冻结，梯度也满足相同比例。$\eta=0$时两者归一完全等价。
+前置padding或mask空洞可能使分区匹配前提失效；即便理想表达式相同，浮点操作顺序也可能带来微小数值差别。
+
+\section{配置与数据来源}
+\label{app:config}
+\input{config_zh}
+
+\section{诊断指标定义}
+\label{app:diagnostics}
+\input{diagnostics_zh}
+
+\section{历史证据及协议边界}
+\label{app:history}
+\input{history_notes_zh}
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figures/history_20260921/history_avg_at_8.pdf}
+\caption{历史Avg@8权重曲线。Qwen 1.7B采用审计后的external视图，其他行采用保留的historical external视图。每行保持各自协议；均为单训练seed，不是独立多seed复现。各子图纵轴范围不同。连线仅连接三个实测权重，不代表其间存在评测。}
+\label{fig:historyavg}
+\end{figure}
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figures/history_20260921/history_pass_at_8.pdf}
+\caption{与图\ref{fig:historyavg}相同权重和协议分层的历史Pass@8。一道题的八个评测响应只要至少一个正确，就贡献一；这与八次正确性指示值的平均不同。图中不隐含独立训练seed上的置信区间。}
+\label{fig:historypass}
+\end{figure}
+\clearpage
+\input{generated/history_all_zh}
+
+\section{有限规模的提示诊断}
+\label{app:probes}
+这些是在选定训练题上的推理 probe，不是额外的保留测试集 benchmark 成绩。Qwen3-4B 和 Llama 提示研究每个条件使用固定 16 题、每题两个独立 seed（21、22）响应。Qwen 0.6/1.7 的主要诊断与前 16 题消融保留各自样本数，不把重叠题目相加当作独立观测。表中均为整数计数：长度终止、周期性尾部、缺失字面 boxed 标记和正确判分的响应数；横线表示未记录。周期尾部检测要求至少 256 个尾部 token，在最后 2,048 个 token 内存在不超过 128 的偏移，使 token 一致率至少为 99\%；它是一个检测器，不是完整的语义重复指标。
+
+历史训练 user 消息为：
+\begin{quote}\small
+\texttt{Math problem: [question]}\\
+\texttt{Please carefully reason through the math problem step by step and derive the correct answer. You must conduct reasoning inside <think> and </think> and give the final answer within}\ \verb|\boxed{}.|\
+\end{quote}
+模型原生模板在这段内容外添加聊天边界及 assistant 生成前缀。“No think”只删除 \texttt{conduct reasoning inside <think> and </think> and} 这一短语，并不等于绕过 chat template。历史评测使用题目与 \texttt{Please reason step by step, and put your final answer within} \verb|\boxed{}.|，同时显式关闭 thinking。因此，请求推理标签与关闭原生 thinking 模式是不同的控制。
+
+Qwen3-4B 的“plain”是裸题目、两个换行及 \texttt{Solution:}；“candidate”是第~\ref{sec:protocol} 节最终配对的 completion 协议。Llama 的“completion”保留移除 think 要求后的历史指令与一个原生 BOS，去掉聊天角色边界并追加 \texttt{Solution:}，并不等于 Qwen 的 plain 条件。“eval”使用 Llama 原生的非 thinking 评测模板。在这组 probe 中，去 chat 使 Llama 学生的长度终止从 1/32 升到 4/32；而 Qwen3-4B 从 historical 改为 candidate 后，由 18/32 降至 1/32。这支持按模型进行验证，而不是对指令模型普遍移除聊天格式。
+\input{generated/history_probes}
+
+\section{最新师生对的全部Checkpoint结果}
+\label{app:current}
+\input{current_appendix_zh}
+\FloatBarrier
+
+\section{逐步位置诊断}
+\label{app:positionfigures}
+\input{position_figures_zh}

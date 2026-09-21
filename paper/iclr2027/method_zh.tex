@@ -1,0 +1,75 @@
+\paragraph{采样局部反馈。}
+给定prompt $x$，旧学生$\pi_{\mathrm{old}}$生成$y=(y_1,\ldots,y_T)$。
+在前缀$h_t=(x,y_{<t})$上定义
+\begin{equation}
+ a_t=\log\pi_{\mathrm{T}}(y_t\mid h_t)-\log\pi_{\mathrm{old}}(y_t\mid h_t),
+ \quad r_t(\theta)=\frac{\pi_\theta(y_t\mid h_t)}{\pi_{\mathrm{old}}(y_t\mid h_t)}.
+ \label{eq:token}
+\end{equation}
+对$a_t$和旧概率停止梯度。这里的advantage是蒸馏log ratio，不是经过验证的任务正确性增量。
+教师评分仍然自回归，且可在一次批量前向中评估已生成序列；将token分组不意味着无需计算各自的条件概率。
+
+令$\mathcal C(r,a)$表示PPO裁剪代理目标\citep{ppo}，继承的负advantage dual-clip规则见附录\ref{app:proofs}。
+忽略独立配置的正则项，基线在有效响应token上平均$-\mathcal C(r_t,\sg(a_t))$。
+为便于说明，以下使用含$T$个有效token的单条响应；实现中mask padding，并在每个micro-batch的有效条目上归一化。
+
+\paragraph{实际block干预。}
+将连续响应tensor位置划为不重叠、宽度为$k$的block $B_j$，不跨mask空洞重新打包。
+下式块内求和只选有效位置，$n_j$为其数量，$T=\sum_j n_j$，空块权重为零。
+省略实现中分母的$10^{-8}$稳定项后，理想实数归一化为
+\begin{align}
+ \bar a_j&=\frac{1}{\max(1,n_j)}\sum_{t\in B_j}a_t,
+ &R_j(\theta)&=\exp\left(\sum_{t\in B_j}\log r_t(\theta)\right),\label{eq:block}\\
+ \mathcal L_{\mathrm{block}}&=-\frac1T\sum_{j:n_j>0}n_j\mathcal C(R_j,\sg(\bar a_j)),
+ &\mathcal L_{\mathrm{token}}&=-\frac1T\sum_{t=1}^T\mathcal C(r_t,\sg(a_t)).\label{eq:loss}
+\end{align}
+\method{}取$k=3$。$R_j=\prod_{t\in B_j}r_t$不是token ratio的平均值。
+代码的block mask权重为$n_j/k$，分母为这些分数权重之和；式\ref{eq:loss}是省略稳定项后等价的token计数形式。
+完整等长块退化为按block平均；含2个有效token的尾块权重是$2/3$，不是1。
+该目标作用于采样block，不枚举$|V|^k$联合分布。
+两组均先生成完整轨迹batch再更新，不是每3个token更新一次优化器。
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=.94\linewidth]{credit_assignment_concept.png}
+\caption{反馈共享示例，非实测rollout。$(2,-1,2)$平均后为$(1,1,1)$，中间token的局部信号翻转。
+实际方法还改变ratio和损失归一化。局部符号翻转本身不证明任务层面的信用分配错误。}
+\label{fig:credit}
+\end{figure}
+
+\paragraph{交叉信用项与尺度。}
+考虑等长块、$T=kJ$，并在旧策略处计算，此时所有ratio为1且裁剪不生效。
+记$g_t=\nabla_\theta\log\pi_\theta(y_t\mid h_t)$，策略梯度部分满足
+\begin{align}
+ \nabla\mathcal L_{\mathrm{token}}&=-\frac1T\sum_t a_tg_t,\nonumber\\
+ \nabla\mathcal L_{\mathrm{block}}&=-\frac1T\sum_j\sum_{i\in B_j}\sum_{t\in B_j}a_i g_t
+ =\nabla\mathcal L_{\mathrm{token}}-\frac1T\sum_j\sum_{\substack{i,t\in B_j\\i\ne t}}a_i g_t.
+ \label{eq:cross}
+\end{align}
+额外项将token $i$的信号传给token $t$的score梯度。
+它可能与基线同向，也可能相反；仅凭符号不能判断后续数学推理是否受益。
+
+\begin{proposition}[相同反馈不意味着相同更新]
+在$\theta=\theta_{\mathrm{old}}$、裁剪不生效、完整等长块大小为$k$且所有有效token满足$a_t=a$时，
+两个策略损失均为$-a$，但$\nabla\mathcal L_{\mathrm{block}}=k\nabla\mathcal L_{\mathrm{token}}$。
+\end{proposition}
+将$\bar a_j=a$代入式\ref{eq:loss}即可得到该结论。
+它描述的是策略损失导数，不意味着Adam参数更新、加入其他项后的总梯度或梯度裁剪后的更新也是$k$倍。
+因此仅检查loss数值的单元测试可能漏掉实现差异。
+离开旧策略后，联合ratio还改变裁剪区域：三个token ratio均为1.1时，block ratio为$1.1^3=1.331$。
+token ratio仍可能在常见的0.2裁剪区间内，而block ratio已经越界，单独调整学习率一般无法消除此差异。
+
+\paragraph{平均何时可能有帮助。}
+为了将平均假设与上述具体实现分离，考虑一个假想干预：保持token ratio和token归一化，只将$a$换成$Wa$，
+$W$为确定性矩阵，每行之和为1。仅作为局部信号模型，设$a=\mu+\varepsilon$、$\E\varepsilon=0$、
+$\Cov(\varepsilon)=\Sigma$，则
+\begin{equation}
+ \E\|Wa-\mu\|_2^2=\|(W-I)\mu\|_2^2+\operatorname{tr}(W\Sigma W^\top).
+ \label{eq:mse}
+\end{equation}
+只有偏差代价小于降噪收益时，平均才比原始信号的估计误差更低。
+块内真实信号恒定、噪声独立同方差时，每位置方差变为$\sigma^2/k$。
+真实信号不同或噪声高度相关时，这一优势可能消失。
+式\ref{eq:mse}不是Block3或滑动窗口提升reward的定理：它研究信号估计，假定存在潜在分解，并固定梯度特征。
+它也没有隔离历史方法的ratio及归一化变化。
+附录\ref{app:proofs}给出推导，以及无条件平滑收益的反例。

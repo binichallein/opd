@@ -1,0 +1,14 @@
+当前师生对使用附录~\ref{app:config} 中的配对 completion 协议。分数以百分数而非小数表示；差异为同一权重步、同一 benchmark 上的 Block3 减去 Token。缺失 boxed 标记比例和引擎长度终止比例使用每题全部八条响应；Avg@8 与 Pass@8 定义见式~\ref{eq:metrics}。不同权重的比较描述每种方法的一条训练轨迹，不能解释为独立重复实验。
+\input{\qwenresults/qwen4_results_zh}
+
+配对题目 bootstrap 区间在每个 benchmark 内独立计算，两组共同重采样相同题目身份，并条件化于每题已保留的八条响应及已训练权重。它不重采样训练 seed，不估计教师不确定性，也不提供跨多个权重或 benchmark 的同时覆盖保证。百分位方法使用 10,000 次重采样，seed 为 20260921。置信区间跨过零不证明两种方法等效。
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{\qwenfigures/qwen4_pass.pdf}
+\caption{当前配对实验四个权重的Pass@8。各任务纵轴范围独立，同一子图内两种方法共享范围。每个点使用全部题目、每题八条响应，并非选择部分输出。}
+\end{figure}
+
+\paragraph{事后重叠敏感性分析。}
+剔除附录\ref{app:config}中的四道训练池字符串重叠题后，MATH500剩余496题。Step200的Avg@8差值为$-0.58$个百分点（$[-1.66,0.50]$），完整benchmark为$-0.52$。Step50/100/150的差值符号也未改变。这不能排除语义重叠或上游模型训练污染，不能估计污染的因果作用，也不构成新的留出benchmark。完整500题结果仍为主要报告。
+\input{\overlapresults/qwen4_overlap_sensitivity_zh}

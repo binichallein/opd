@@ -9,6 +9,19 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 最新完成：4B对照与ICLR2027双语论文
+
+2026-09-21，Qwen3-4B-Base Token OPD的Step200、150、100、50完整评测均已验收，
+与已完成的Block3对照逐benchmark比较。没有继续启动其他训练。
+Block3的表现随checkpoint及任务变化，不能概括成稳定涨点。
+
+- [最终分项结果、来源和数据重叠审计](docs/results/2026-09-21-qwen4-evaluation-and-paper-final.md)
+- [中英文论文源码、图表与构建说明](paper/iclr2027/README.md)
+- [全部当前分项指标](paper/iclr2027/generated/qwen4_publication/qwen4_results.csv)
+- [单训练对条件下的配对题目区间](paper/iclr2027/generated/qwen4_publication/qwen4_paired_ci.csv)
+
+以下条目保留各历史时点状态，不代表当前仍有任务运行。论文内部来源索引不得加入匿名投稿包。
+
 ## 新增 Llama 3.2 配对验证
 
 2026-09-18 用户选择 `Llama-3.2-1B-Instruct <- Llama-3.2-3B-Instruct`，两者从

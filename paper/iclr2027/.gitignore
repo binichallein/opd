@@ -1,0 +1,19 @@
+build/
+*.aux
+*.bbl
+*.blg
+*.out
+*.synctex.gz
+*.xdv
+*.fdb_latexmk
+*.fls
+submission_anonymous.zip
+# Large local diagnostic cache and intermediate incomplete previews.
+data/qwen4_diagnostics_all200_*.json
+data/qwen4_partial_*.json
+generated/qwen4_partial_*/
+figures/qwen4_partial_*/
+figures/qwen4_final/
+figures/qwen4_diagnostics_all200_20260921/
+figures/qwen4_coverage_20260921/
+generated/qwen4_final/

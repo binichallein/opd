@@ -1,0 +1,610 @@
+{
+  "bootstrap": [
+    {
+      "avg_at_8": {
+        "delta_pp": -0.525,
+        "lower_95_pp": -1.575,
+        "upper_95_pp": 0.5499999999999999
+      },
+      "num_questions": 500,
+      "pass_at_8": {
+        "delta_pp": -0.4,
+        "lower_95_pp": -2.4,
+        "upper_95_pp": 1.6
+      },
+      "step": 200,
+      "task": "math500"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -2.9166666666666665,
+        "lower_95_pp": -7.083333333333333,
+        "upper_95_pp": 0.8333333333333334
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": 3.3333333333333335,
+        "lower_95_pp": -6.666666666666667,
+        "upper_95_pp": 13.333333333333334
+      },
+      "step": 200,
+      "task": "aime24"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": 0.4166666666666667,
+        "lower_95_pp": -2.9166666666666665,
+        "upper_95_pp": 3.75
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": 0.0,
+        "lower_95_pp": -13.333333333333334,
+        "upper_95_pp": 13.333333333333334
+      },
+      "step": 200,
+      "task": "aime25"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -3.0120481927710845,
+        "lower_95_pp": -6.174698795180722,
+        "upper_95_pp": 0.30120481927710846
+      },
+      "num_questions": 83,
+      "pass_at_8": {
+        "delta_pp": -2.4096385542168677,
+        "lower_95_pp": -10.843373493975903,
+        "upper_95_pp": 6.024096385542169
+      },
+      "step": 200,
+      "task": "amc23"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": 1.8499999999999999,
+        "lower_95_pp": 0.7000000000000001,
+        "upper_95_pp": 3.0
+      },
+      "num_questions": 500,
+      "pass_at_8": {
+        "delta_pp": -0.2,
+        "lower_95_pp": -2.1999999999999997,
+        "upper_95_pp": 1.7999999999999998
+      },
+      "step": 150,
+      "task": "math500"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": 2.9166666666666665,
+        "lower_95_pp": 0.4166666666666667,
+        "upper_95_pp": 5.833333333333333
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": 6.666666666666667,
+        "lower_95_pp": 0.0,
+        "upper_95_pp": 16.666666666666664
+      },
+      "step": 150,
+      "task": "aime24"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -4.166666666666666,
+        "lower_95_pp": -9.583333333333334,
+        "upper_95_pp": 0.8333333333333334
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": -13.333333333333334,
+        "lower_95_pp": -26.666666666666668,
+        "upper_95_pp": -3.3333333333333335
+      },
+      "step": 150,
+      "task": "aime25"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": 0.30120481927710846,
+        "lower_95_pp": -3.0120481927710845,
+        "upper_95_pp": 3.463855421686747
+      },
+      "num_questions": 83,
+      "pass_at_8": {
+        "delta_pp": 0.0,
+        "lower_95_pp": -6.024096385542169,
+        "upper_95_pp": 7.228915662650602
+      },
+      "step": 150,
+      "task": "amc23"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -1.4000000000000001,
+        "lower_95_pp": -2.5749999999999997,
+        "upper_95_pp": -0.25
+      },
+      "num_questions": 500,
+      "pass_at_8": {
+        "delta_pp": 0.4,
+        "lower_95_pp": -1.2,
+        "upper_95_pp": 2.0
+      },
+      "step": 100,
+      "task": "math500"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": 2.083333333333333,
+        "lower_95_pp": -1.6666666666666667,
+        "upper_95_pp": 6.25
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": 3.3333333333333335,
+        "lower_95_pp": -6.666666666666667,
+        "upper_95_pp": 13.333333333333334
+      },
+      "step": 100,
+      "task": "aime24"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": 1.25,
+        "lower_95_pp": -2.083333333333333,
+        "upper_95_pp": 4.166666666666666
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": 10.0,
+        "lower_95_pp": -3.3333333333333335,
+        "upper_95_pp": 23.333333333333332
+      },
+      "step": 100,
+      "task": "aime25"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -1.957831325301205,
+        "lower_95_pp": -5.120481927710843,
+        "upper_95_pp": 1.2048192771084338
+      },
+      "num_questions": 83,
+      "pass_at_8": {
+        "delta_pp": -3.614457831325301,
+        "lower_95_pp": -9.63855421686747,
+        "upper_95_pp": 2.4096385542168677
+      },
+      "step": 100,
+      "task": "amc23"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -0.125,
+        "lower_95_pp": -1.125,
+        "upper_95_pp": 0.8999999999999999
+      },
+      "num_questions": 500,
+      "pass_at_8": {
+        "delta_pp": -0.4,
+        "lower_95_pp": -1.7999999999999998,
+        "upper_95_pp": 1.0
+      },
+      "step": 50,
+      "task": "math500"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -3.75,
+        "lower_95_pp": -8.333333333333332,
+        "upper_95_pp": 0.4166666666666667
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": -6.666666666666667,
+        "lower_95_pp": -16.666666666666664,
+        "upper_95_pp": 0.0
+      },
+      "step": 50,
+      "task": "aime24"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": -1.25,
+        "lower_95_pp": -4.583333333333333,
+        "upper_95_pp": 2.083333333333333
+      },
+      "num_questions": 30,
+      "pass_at_8": {
+        "delta_pp": 0.0,
+        "lower_95_pp": -10.0,
+        "upper_95_pp": 10.0
+      },
+      "step": 50,
+      "task": "aime25"
+    },
+    {
+      "avg_at_8": {
+        "delta_pp": 1.8072289156626504,
+        "lower_95_pp": -1.957831325301205,
+        "upper_95_pp": 5.572289156626506
+      },
+      "num_questions": 83,
+      "pass_at_8": {
+        "delta_pp": -3.614457831325301,
+        "lower_95_pp": -10.843373493975903,
+        "upper_95_pp": 3.614457831325301
+      },
+      "step": 50,
+      "task": "amc23"
+    }
+  ],
+  "bootstrap_replicates": 10000,
+  "bootstrap_seed": 20260921,
+  "bootstrap_unavailable_steps": [],
+  "complete": true,
+  "definitions": {
+    "advantage_scale_ratio": "There is no native field called scale_ratio in these logs. An explicitly derived advantage standard-deviation ratio is R_std=diagnostics/block_advantage_std / diagnostics/raw_token_advantage_std. Both stds use unbiased=False over finite valid response tokens; the shared block mean is repeated over its valid tokens before computing the block_advantage_std. If the denominator is zero, the ratio is undefined (NA), not epsilon-regularized. This is neither normalized_leakage, a parameter-gradient norm ratio, nor a PPO ratio. It alone does not establish reduction of parameter-gradient variance.",
+    "avg_at_8": "Mean fraction correct among eight rollouts per question.",
+    "block_credit": "Let a_it be the actual sampled-token OPD advantage. For fixed block B of size 3 (Token: size 1), Abar_iB=sum_{t in B} m_it*a_it / max(sum_{t in B} m_it,1). The incomplete final block divides by its valid-token count, not always 3. Abar is repeated onto each valid token for the credit diagnostics.",
+    "coverage_figure": "qwen4_coverage uses student_entropy.max_position_count with a shared 0..32 scale. Zero-count/unobserved bins or absent steps are gray; positive counts are never thresholded. Metric heatmaps instead retain a bin when its metric-specific maximum per-position count is >= min_count (default 8); their mean uses all valid observations in that retained bin, not only positions meeting the threshold.",
+    "entropy": "Full-vocabulary Shannon entropy in nats: p_X(v|h)=softmax(z_X(h)/T)_v; H_X(h)=-sum_{v in V} p_X(v|h)*log(p_X(v|h)), X=student or teacher. Not sampled-token surprisal -log p_X(y|h), and not top-16 renormalized entropy.",
+    "entropy_scalar": "diagnostics/student_entropy and diagnostics/teacher_entropy: sum_{i,t} m_it*H_X(h_it) / max(sum_{i,t} m_it,1). Token-weighted over the batch, not an equal-weight mean of trajectory means. The signed gap is teacher minus student; the absolute gap is mean(abs(H_teacher-H_student)), not abs(mean gap).",
+    "entropy_temperature": "Both diagnostic forwards divide logits by rollout temperature T=1.0. Generation top_p=0.9 affects the sampled student prefixes, not the entropy softmax: no nucleus truncation/renormalization is applied to diagnostic logits.",
+    "entropy_timing": "The diagnostic entropy is pre-update, on that step's student rollout batch. Step200 is not a full-epoch average or post-update checkpoint200 validation entropy. The separate post_update_block_* ratio diagnostics are computed after that update.",
+    "eval_truncation": "Rollout fraction whose generation engine finish_reason is length.",
+    "grad_norm": "actor/grad_norm: global parameter gradient norm returned before clipping.",
+    "leakage_formula": "diagnostics/leakage_magnitude; NPZ leakage. LeakageMagnitude=sum m_it*abs(Abar_iB-a_it)/max(sum m_it,1). diagnostics/normalized_leakage=sum m_it*abs(Abar_iB-a_it) / max(sum m_it*abs(a_it),1e-4). This is a credit-sharing deviation, not a directly measured parameter-gradient leakage or causal effect.",
+    "lineage": "Original artifact hashes are supplied by the exporter; this offline build hashes the compact input and outputs but does not re-audit remote raw artifacts.",
+    "missing_box": "Rollout fraction without the literal \\boxed marker; not boxed-answer validity.",
+    "overlap_advantage_formula": "NPZ overlap_token_advantage: O=top16(student) intersect top16(teacher); pbar and qbar renormalize each full-softmax distribution on O. The value is -KL(pbar||qbar)/|O|, with only response positions having |O|>0 valid. This is an overlap-restricted diagnostic, not the full-vocabulary KL.",
+    "pass_at_8": "Fraction of questions with at least one correct rollout among eight.",
+    "position_coverage": "Maximum per-position valid_count within a bin, not total token count or a count of distinct trajectories reaching every position in the bin.",
+    "position_gradient_space": "No parameter-gradient heatmap is inferred: NPZ metadata says sampled_log_probs_not_model_parameters.",
+    "position_mean": "Sum of metric observations / sum of metric-specific valid_count in each absolute output-position bin. Not a mean of per-position means.",
+    "position_sufficient_statistics": "NPZ metric__sum[t]=sum_i m_it*x_it, metric__squared_sum[t]=sum_i m_it*x_it^2, metric__valid_count[t]=sum_i m_it; use the metric-specific mask (eligible for sign_flip; overlap-valid for overlap advantage). Arrays have 16384 absolute response positions. position_bin=128 metadata does not mean they were already binned. topk=16/position_stride=1 were checked in both real Step1 NPZs.",
+    "post_update_block_formula": "L_iB=sum_{t in B} m_it*(log p_after(y_it|h_it) - log p_behavior(y_it|h_it)); r_iB=exp(L_iB) (implementation caps the exponent at 80 and separately counts overflow/underflow). NPZ post_update_block_log_ratio_abs stores abs(L_iB) expanded to valid tokens; post_update_block_outside_clip stores 1[r_iB<1-clip_low or r_iB>1+clip_high], also expanded. Nonfinite blocks are excluded; numerical counters are separate. Scalar *_mean/outside_clip_fraction average finite nonempty blocks, while binned position means weight the expanded valid tokens; these are different denominators.",
+    "response_mask": "m_it is the response suffix of attention_mask, using the unchanged historical EOS mask with EOS=151643: m_it=1 iff no EOS occurs at positions <t. The first EOS is included; subsequent positions and the prompt are excluded. At the 16384-position cap without EOS, all positions are valid. This uses the stored training tensor/mask, not a mask reconstructed from text or engine finish_reason.",
+    "sign_flip": "Eligible: valid token and both token/shared-mean advantages exceed sign_epsilon in absolute value. Ratio uses eligible_count, not all response tokens.",
+    "sign_flip_formula": "diagnostics/sign_flip_rate; NPZ sign_flip. epsilon=1e-4; e_it=m_it*1[abs(a_it)>epsilon]*1[abs(Abar_iB)>epsilon]; SignFlipRate=sum e_it*1[sign(a_it)!=sign(Abar_iB)] / max(sum e_it,1). WeightedSignFlipRate replaces e_it weights with e_it*abs(a_it), denominator floor epsilon.",
+    "teacher_entropy_limit": "Full-vocabulary teacher entropy is not missing from these Qwen4 diagnostic scalars/NPZs. It is conditional on each arm's own student-generated prefixes, not teacher-generated or fixed common validation states. Cross-arm differences alone do not identify teacher drift, OOD or causation. Stored entropy/statistics cannot recover the teacher's full probability vector or full-vocabulary KL at every prefix.",
+    "training_cap": "response_length/clip_ratio: masked response length equals tensor width, 16384 in this frozen run; not an engine finish-reason measurement."
+  },
+  "diagnostics": {
+    "block3_mean": {
+      "positions": [],
+      "scalars": []
+    },
+    "token_opd": {
+      "positions": [],
+      "scalars": []
+    }
+  },
+  "missing_checkpoints": [],
+  "rows": [
+    {
+      "avg_at_8": 0.754,
+      "engine_truncation_ratio": 0.009,
+      "format_error_rate": 0.009,
+      "pass_at_8": 0.906,
+      "status": "accepted",
+      "step": 200,
+      "task": "math500",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.78025,
+      "engine_truncation_ratio": 0.00825,
+      "format_error_rate": 0.00825,
+      "pass_at_8": 0.912,
+      "status": "accepted",
+      "step": 150,
+      "task": "math500",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.75525,
+      "engine_truncation_ratio": 0.01175,
+      "format_error_rate": 0.0125,
+      "pass_at_8": 0.908,
+      "status": "accepted",
+      "step": 100,
+      "task": "math500",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.78525,
+      "engine_truncation_ratio": 0.0075,
+      "format_error_rate": 0.0085,
+      "pass_at_8": 0.918,
+      "status": "accepted",
+      "step": 50,
+      "task": "math500",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.13333333333333333,
+      "engine_truncation_ratio": 0.1125,
+      "format_error_rate": 0.12083333333333333,
+      "pass_at_8": 0.3333333333333333,
+      "status": "accepted",
+      "step": 200,
+      "task": "aime24",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.15416666666666667,
+      "engine_truncation_ratio": 0.0875,
+      "format_error_rate": 0.09583333333333334,
+      "pass_at_8": 0.3333333333333333,
+      "status": "accepted",
+      "step": 150,
+      "task": "aime24",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.15,
+      "engine_truncation_ratio": 0.12083333333333333,
+      "format_error_rate": 0.1375,
+      "pass_at_8": 0.3,
+      "status": "accepted",
+      "step": 100,
+      "task": "aime24",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.14166666666666666,
+      "engine_truncation_ratio": 0.0625,
+      "format_error_rate": 0.07083333333333333,
+      "pass_at_8": 0.3,
+      "status": "accepted",
+      "step": 50,
+      "task": "aime24",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.1375,
+      "engine_truncation_ratio": 0.03333333333333333,
+      "format_error_rate": 0.041666666666666664,
+      "pass_at_8": 0.3,
+      "status": "accepted",
+      "step": 200,
+      "task": "aime25",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.11666666666666667,
+      "engine_truncation_ratio": 0.05416666666666667,
+      "format_error_rate": 0.05416666666666667,
+      "pass_at_8": 0.26666666666666666,
+      "status": "accepted",
+      "step": 150,
+      "task": "aime25",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.12083333333333333,
+      "engine_truncation_ratio": 0.0625,
+      "format_error_rate": 0.075,
+      "pass_at_8": 0.3333333333333333,
+      "status": "accepted",
+      "step": 100,
+      "task": "aime25",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.11666666666666667,
+      "engine_truncation_ratio": 0.05416666666666667,
+      "format_error_rate": 0.075,
+      "pass_at_8": 0.23333333333333334,
+      "status": "accepted",
+      "step": 50,
+      "task": "aime25",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.4623493975903614,
+      "engine_truncation_ratio": 0.04066265060240964,
+      "format_error_rate": 0.045180722891566265,
+      "pass_at_8": 0.7469879518072289,
+      "status": "accepted",
+      "step": 200,
+      "task": "amc23",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.49698795180722893,
+      "engine_truncation_ratio": 0.030120481927710843,
+      "format_error_rate": 0.03463855421686747,
+      "pass_at_8": 0.7710843373493976,
+      "status": "accepted",
+      "step": 150,
+      "task": "amc23",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.47289156626506024,
+      "engine_truncation_ratio": 0.030120481927710843,
+      "format_error_rate": 0.0391566265060241,
+      "pass_at_8": 0.7469879518072289,
+      "status": "accepted",
+      "step": 100,
+      "task": "amc23",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.5030120481927711,
+      "engine_truncation_ratio": 0.03313253012048193,
+      "format_error_rate": 0.043674698795180725,
+      "pass_at_8": 0.7469879518072289,
+      "status": "accepted",
+      "step": 50,
+      "task": "amc23",
+      "variant": "block3_mean"
+    },
+    {
+      "avg_at_8": 0.75925,
+      "engine_truncation_ratio": 0.008,
+      "format_error_rate": 0.0085,
+      "pass_at_8": 0.91,
+      "status": "accepted",
+      "step": 200,
+      "task": "math500",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.76175,
+      "engine_truncation_ratio": 0.00975,
+      "format_error_rate": 0.0095,
+      "pass_at_8": 0.914,
+      "status": "accepted",
+      "step": 150,
+      "task": "math500",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.76925,
+      "engine_truncation_ratio": 0.0095,
+      "format_error_rate": 0.01075,
+      "pass_at_8": 0.904,
+      "status": "accepted",
+      "step": 100,
+      "task": "math500",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.7865,
+      "engine_truncation_ratio": 0.008,
+      "format_error_rate": 0.0085,
+      "pass_at_8": 0.922,
+      "status": "accepted",
+      "step": 50,
+      "task": "math500",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.1625,
+      "engine_truncation_ratio": 0.06666666666666667,
+      "format_error_rate": 0.07916666666666666,
+      "pass_at_8": 0.3,
+      "status": "accepted",
+      "step": 200,
+      "task": "aime24",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.125,
+      "engine_truncation_ratio": 0.08333333333333333,
+      "format_error_rate": 0.10416666666666667,
+      "pass_at_8": 0.26666666666666666,
+      "status": "accepted",
+      "step": 150,
+      "task": "aime24",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.12916666666666668,
+      "engine_truncation_ratio": 0.09166666666666666,
+      "format_error_rate": 0.12083333333333333,
+      "pass_at_8": 0.26666666666666666,
+      "status": "accepted",
+      "step": 100,
+      "task": "aime24",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.17916666666666667,
+      "engine_truncation_ratio": 0.0875,
+      "format_error_rate": 0.10416666666666667,
+      "pass_at_8": 0.36666666666666664,
+      "status": "accepted",
+      "step": 50,
+      "task": "aime24",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.13333333333333333,
+      "engine_truncation_ratio": 0.03333333333333333,
+      "format_error_rate": 0.0375,
+      "pass_at_8": 0.3,
+      "status": "accepted",
+      "step": 200,
+      "task": "aime25",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.15833333333333333,
+      "engine_truncation_ratio": 0.0625,
+      "format_error_rate": 0.05416666666666667,
+      "pass_at_8": 0.4,
+      "status": "accepted",
+      "step": 150,
+      "task": "aime25",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.10833333333333334,
+      "engine_truncation_ratio": 0.05416666666666667,
+      "format_error_rate": 0.058333333333333334,
+      "pass_at_8": 0.23333333333333334,
+      "status": "accepted",
+      "step": 100,
+      "task": "aime25",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.12916666666666668,
+      "engine_truncation_ratio": 0.041666666666666664,
+      "format_error_rate": 0.07083333333333333,
+      "pass_at_8": 0.23333333333333334,
+      "status": "accepted",
+      "step": 50,
+      "task": "aime25",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.4924698795180723,
+      "engine_truncation_ratio": 0.030120481927710843,
+      "format_error_rate": 0.03614457831325301,
+      "pass_at_8": 0.7710843373493976,
+      "status": "accepted",
+      "step": 200,
+      "task": "amc23",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.4939759036144578,
+      "engine_truncation_ratio": 0.0286144578313253,
+      "format_error_rate": 0.025602409638554216,
+      "pass_at_8": 0.7710843373493976,
+      "status": "accepted",
+      "step": 150,
+      "task": "amc23",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.4924698795180723,
+      "engine_truncation_ratio": 0.025602409638554216,
+      "format_error_rate": 0.025602409638554216,
+      "pass_at_8": 0.7831325301204819,
+      "status": "accepted",
+      "step": 100,
+      "task": "amc23",
+      "variant": "token_opd"
+    },
+    {
+      "avg_at_8": 0.48493975903614456,
+      "engine_truncation_ratio": 0.030120481927710843,
+      "format_error_rate": 0.03162650602409638,
+      "pass_at_8": 0.7831325301204819,
+      "status": "accepted",
+      "step": 50,
+      "task": "amc23",
+      "variant": "token_opd"
+    }
+  ],
+  "schema_version": 1,
+  "uncertainty_scope": "95% percentile paired-question bootstrap, separately within each benchmark; Block3 minus Token in percentage points. Conditional on one seed21 training pair and eight recorded rollouts/question; not a training-run or multi-seed CI. Pointwise intervals, not simultaneous checkpoint or benchmark bounds."
+}

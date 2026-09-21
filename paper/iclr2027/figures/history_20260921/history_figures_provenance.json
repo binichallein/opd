@@ -1,0 +1,1481 @@
+{
+  "schema_version": 1,
+  "input_sha256": "a15146d9999f0c4072dac991e4f973c30a9d65b5f83736d0129150a1ab59e25c",
+  "generator_sha256": "3acb17a63c300004d7c07aca239eebdc338d7b6c99ecc4da6847b713d1aff1af",
+  "units": "percent, no task aggregation",
+  "note": "Separate historical protocol strata. Lines connect measured checkpoints; no interpolated evaluations or training-seed intervals.",
+  "selected_points": {
+    "qwen17_ml2/token_opd/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.38075,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.431,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.4585,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.521,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.42275,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.5475,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "qwen17_ml2/token_opd/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.0375,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.0625,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.05416666666666667,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.05416666666666667,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.05,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.0875,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "qwen17_ml2/token_opd/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.025,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.020833333333333332,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.025,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.0375,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.03333333333333333,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.05416666666666667,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "qwen17_ml2/token_opd/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.13704819277108435,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.18674698795180722,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.2183734939759036,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.2213855421686747,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.23644578313253012,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.27259036144578314,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.83775,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.84625,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.847,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.8415,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.8445,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.8475,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.3875,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.39166666666666666,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.3958333333333333,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.325,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.39166666666666666,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.4375,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.2708333333333333,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.3458333333333333,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.2916666666666667,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.275,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.25416666666666665,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.30833333333333335,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.7168674698795181,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.7319277108433735,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.733433734939759,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.7093373493975904,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.7274096385542169,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.7379518072289156,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.257,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.396,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.42875,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.162,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.03475,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.00575,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.0125,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.025,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.025,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.004166666666666667,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.0125,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.008333333333333333,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.004166666666666667,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.10090361445783133,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.1536144578313253,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.1897590361445783,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.058734939759036146,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.010542168674698794,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.004518072289156626,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.1415,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.149,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.1555,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/math500/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.06125,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.1115,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.063,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.004166666666666667,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.004166666666666667,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/aime24/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.0125,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/aime25/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.004166666666666667,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.0677710843373494,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.06475903614457831,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.060240963855421686,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/amc23/avg_at_8": [
+      {
+        "step": 50,
+        "value": 0.015060240963855422,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.045180722891566265,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.015060240963855422,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ],
+    "qwen17_ml2/token_opd/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.802,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.822,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.82,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.836,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.822,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.848,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "qwen17_ml2/token_opd/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.16666666666666666,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.26666666666666666,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.2,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.2,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.2,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.26666666666666666,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "qwen17_ml2/token_opd/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.13333333333333333,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.06666666666666667,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.1,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.16666666666666666,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.13333333333333333,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.16666666666666666,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "qwen17_ml2/token_opd/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.4578313253012048,
+        "evidence_ids": [
+          "E100"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.5783132530120482,
+        "evidence_ids": [
+          "E102"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.5421686746987951,
+        "evidence_ids": [
+          "E104"
+        ]
+      }
+    ],
+    "qwen17_ml2/block3_mean/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.4939759036144578,
+        "evidence_ids": [
+          "E106"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.6144578313253012,
+        "evidence_ids": [
+          "E108"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.6144578313253012,
+        "evidence_ids": [
+          "E110"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.948,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.942,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.946,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.946,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.948,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.94,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.7333333333333333,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.7,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.7,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.6666666666666666,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.7333333333333333,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.6666666666666666,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.5,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.4666666666666667,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.4666666666666667,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.43333333333333335,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.36666666666666664,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.5,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "deepseek_justrl/token_opd/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.9036144578313253,
+        "evidence_ids": [
+          "E111"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.891566265060241,
+        "evidence_ids": [
+          "E113"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.9036144578313253,
+        "evidence_ids": [
+          "E115"
+        ]
+      }
+    ],
+    "deepseek_justrl/block3_mean/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.8674698795180723,
+        "evidence_ids": [
+          "E112"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.9036144578313253,
+        "evidence_ids": [
+          "E114"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.9036144578313253,
+        "evidence_ids": [
+          "E116"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.654,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.722,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.756,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.566,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.236,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.044,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.06666666666666667,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.13333333333333333,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.1,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.03333333333333333,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.1,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.06666666666666667,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.03333333333333333,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/token_opd/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.42168674698795183,
+        "evidence_ids": [
+          "E143"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.3855421686746988,
+        "evidence_ids": [
+          "E144"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.46987951807228917,
+        "evidence_ids": [
+          "E145"
+        ]
+      }
+    ],
+    "qwen06_nonthinking/block3_mean/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.26506024096385544,
+        "evidence_ids": [
+          "E146"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.060240963855421686,
+        "evidence_ids": [
+          "E147"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.024096385542168676,
+        "evidence_ids": [
+          "E148"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.448,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.458,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.452,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/math500/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.272,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.386,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.284,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.03333333333333333,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.03333333333333333,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/aime24/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.06666666666666667,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/aime25/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.03333333333333333,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ],
+    "llama_historical/token_opd/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.3253012048192771,
+        "evidence_ids": [
+          "E151"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.3132530120481928,
+        "evidence_ids": [
+          "E152"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.2891566265060241,
+        "evidence_ids": [
+          "E153"
+        ]
+      }
+    ],
+    "llama_historical/block3_mean/amc23/pass_at_8": [
+      {
+        "step": 50,
+        "value": 0.08433734939759036,
+        "evidence_ids": [
+          "E154"
+        ]
+      },
+      {
+        "step": 100,
+        "value": 0.2289156626506024,
+        "evidence_ids": [
+          "E155"
+        ]
+      },
+      {
+        "step": 200,
+        "value": 0.0963855421686747,
+        "evidence_ids": [
+          "E156"
+        ]
+      }
+    ]
+  }
+}

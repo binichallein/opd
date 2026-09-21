@@ -1,0 +1,65 @@
+\paragraph{Current model identities.}
+The original student is \texttt{Qwen/Qwen3-4B-Base}, obtained from ModelScope at revision
+\texttt{bbd6fc8d23e8788d987b7b970cbb7bd31c826e38}.
+The public teacher's retained model card identifies \texttt{lllyx/Qwen3-4B-Base-GRPO}, associated with Rethinking OPD \citep{rethinking}. It is a researcher's GRPO-adapted checkpoint, not an official Qwen instruction model and not a privately trained checkpoint from this project.
+Download-cache metadata records revision \texttt{1f3b2966edfb75f2f98a00617588c1f748088422}; the two weight-file ETags match the retained asset hashes. The uploader's model card describes GRPO adaptation on DAPO-Math-17k-Processed. This upstream teacher training is distinct from our student's 200-update OPD runs.
+
+\begin{table}[h]
+\caption{Shared configuration for the current 4B completion comparison. Differences between training rollout inference and full evaluation are intentional and identical across arms.}
+\centering\small
+\begin{tabular}{@{}p{2.5in}p{2.65in}@{}}
+\toprule
+Setting & Value \\
+\midrule
+Training seed / data seed & 21 / 21 \\
+Updates / prompts per update / samples & 200 / 4 / 8 \\
+PPO mini-batch / epochs & 32 responses / 1 \\
+Actor / rollout-logprob / teacher micro-batch & 1 / 4 / 1 per GPU \\
+Optimizer / learning rate & AdamW / $2\times10^{-6}$ \\
+Adam betas / epsilon / weight decay & $(0.9,0.999)$ / $10^{-8}$ / 0.01 \\
+Schedule / warmup & Constant / zero warmup ratio \\
+Gradient-norm clipping & 1.0 \\
+PPO lower / upper clip / dual clip & 0.2 / 0.2 / 3.0 \\
+Explicit entropy / extra KL loss & 0 / disabled \\
+Outcome reward / OPD future-return weight & 0 / 0 \\
+Teacher target log-ratio clipping & Disabled \\
+Special-token OPD mask & Disabled; retain upstream response mask \\
+Prompt cap / response cap & 2,048 / 16,384 \\
+Temperature / top-$p$ / top-$k$ & 1.0 / 0.9 / unrestricted \\
+Training rollout / eval memory fraction & 0.6 / 0.9 \\
+Training max batched rollout tokens & 18,432 \\
+Hardware / tensor parallelism & 4 A100-80GB / 1 \\
+Training parameter / optimizer offload & Enabled / enabled \\
+Gradient checkpointing & Enabled \\
+Save steps / checkpoint deletion & 50, 100, 150, 200 / none \\
+Diagnostic interval / top-$k$ / position bin & Every update / 16 / 128 tokens \\
+Block sign threshold & $10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Effective batching and seeds.}
+Data batching follows the frozen seed-21 loader. Pair validation compares the actual source and prompt identities after collection; relying on equal seed labels alone would be insufficient if the arms consumed RNG differently. The current request-seed rule uses a stable SHA-256 derivation including step and sample identity and does not consume the training RNG merely to log a response. Eight requests for one prompt have separate seed identities. Historical fixed-request-seed runs are explicitly separated in Appendix~\ref{app:history}. A separate window-seed value is retained in the run card but has no effect on a fixed-block treatment.
+
+\paragraph{Training pool.}
+A direct read of the retained parquet verifies exact question--answer sequence repetition: a 17,917-row period occurs 100 times. There are 17,237 unique raw question strings and 17,249 unique raw question--answer pairs, without additional Unicode or mathematical normalization. These are exact-string counts, not semantic deduplication. The original expansion command and upstream dataset revision were not recovered. The retained file's SHA-256 starts with \texttt{cf359f257a320aecb}; the internal manifest preserves the complete digest. No claim of comprehensive train--test semantic decontamination follows from hashing. Both methods nevertheless use exactly the same retained pool, rather than separately downloading whichever dataset version currently bears the same name.
+
+The retained converter names \texttt{BytedTsinghua-SIA/DAPO-Math-17k}, file \texttt{data/dapo-math-17k.parquet}, as its public default input. However, the historical manifest records a copied, already converted parquet, not its original Hub revision or the command that created the 100-fold expansion. The current converter's default deduplication would change this pool. Its current defaults must not be presented as the exact historical preprocessing recipe.
+
+\paragraph{Retrospective string-overlap audit.}
+Comparing the original question fields, two of MATH500's 500 questions occur exactly in the retained training pool. Collapsing Unicode whitespace to single spaces, stripping boundaries and applying Unicode casefold yields four matches in total, including those two. This normalization does not rewrite mathematics or LaTeX. The exact held-out indices are 80 and 276; normalized-only additions are 285 and 412 (zero-based indices in the retained MATH500 artifact). The corresponding counts for AIME24, AIME25 and AMC23 are zero under both rules. We use the previously verified 17,917-row period to cover the pool's string set and check evaluation-file hashes and question-field identities. This is a retrospective data audit, not a filtering intervention: all reported full-benchmark scores retain the original questions. Pool membership alone does not demonstrate actual exposure during these 200 updates; string-level zero overlap does not establish semantic decontamination or audit the teacher's training/pretraining corpus.
+
+A separate audit streams the actual retained input metadata from all 400 compressed training archives, verifies their recorded hashes, and compares both methods' complete 6,400-entry input streams. Each arm contains 800 prompt occurrences, 783 exact unique question strings and 782 whitespace/casefold-normalized strings. There are zero exact evaluation-question exposures and one normalized-only occurrence: MATH500 index 412 at Step71, eight trajectory records per arm. The other three pool-overlap candidates are absent. Both arms encounter the same input at the same step; Step50 precedes that exposure. This observation does not audit semantic equivalents or upstream model training. The separate 496-question sensitivity analysis excludes all four pool-matched items, independently of which happened to be drawn, while retaining full MATH500 as the primary report.
+
+\paragraph{Evaluation artifacts and grading.}
+MATH500 uses the \texttt{HuggingFaceH4/MATH-500} test artifact, related to the MATH and PRM800K evaluation lineage \citep{math,prm800k}. AIME24 was converted from \texttt{BytedTsinghua-SIA/AIME-2024}. AIME25 and AMC23 were converted from the corresponding retained test parquet files in the public OPD repository. Their local counts are respectively 30 and 83; in particular, the AMC23 count must not be silently equated with another paper's 40-question subset. The converted JSONL hash prefixes are \texttt{cc164b47b60771ee} (MATH500), \texttt{6aee5ed24b811ebc} (AIME24), \texttt{daedf1e406b9d73c} (AIME25), and \texttt{a07c52c0098a536a} (AMC23).
+
+The same historical external grader, SHA-256 prefix \texttt{04f7a0328be18409}, scores both arms. Eight independently seeded generations are retained for each question. Every finalized checkpoint checks the expected question identities, response counts, raw output archives, and agreement between summary and graded records. This validates the evaluation contract, not the logical infallibility of the symbolic grader. Grader errors or missing parseable answers must not be reinterpreted as known mathematical correctness. Missing boxed-answer markers and engine length stops remain separate measurements.
+
+The public repository for the two retained parquet sources is \url{https://github.com/thunlp/OPD}, checkout \texttt{1fd6cca846126af90d82ef122e8af261f59d2d37}, at \path{datasets/test_data/AIME25/test.parquet} and \path{datasets/test_data/AMC23/test.parquet}. The checked-out files match the historical source hashes. Their more remote upstream Hub namespaces were not recovered. This data-source repository is distinct from the Revisiting OPD training codebase.
+
+\paragraph{Resource accounting and retention.}
+The two current 200-step training runs took approximately 9.4 and 9.7 hours on four A100 GPUs, excluding evaluation and bounded acceptance probes. This is roughly 76 GPU-hours of training for this pair, not an estimate of the entire project's compute. Total historical compute cannot be reconstructed from the retained summaries with comparable precision. All four full states per arm, including optimizer, scheduler and RNG state, remain retained. Each current arm has 200 diagnostic records and 6,400 raw training trajectories. Some early experiments did not save raw training trajectories; sampling an old checkpoint now would not recover those original rollouts.
+
+\paragraph{Software and precision.}
+The retained runtime uses Python 3.12.13, PyTorch 2.8.0, vLLM 0.11.0, Transformers 4.57.6, Ray 2.55.1, NumPy 1.26.4, Datasets 4.8.5 and OmegaConf 2.3.0. These versions were read from the evaluation environment; they are not inferred from a current package installation guide. The unchanged FSDP actor defaults load the training model in float32 and use bfloat16 forward parameters with float32 reduction and buffers; the reference model and rollout inference use bfloat16. Both arms use the same frozen runtime and model/tokenizer bytes. A generic tokenizer-regex warning was retained, not patched in only one arm during evaluation; the acceptance gate checks the actual prompt token IDs for the paired protocol. This check establishes matched behavior, not that arbitrary prompts are immune to tokenizer defects.

@@ -1,0 +1,101 @@
+\paragraph{最新模型身份。}
+原始学生为从ModelScope获取的\texttt{Qwen/Qwen3-4B-Base}，revision为
+\texttt{bbd6fc8d23e8788d987b7b970cbb7bd31c826e38}。
+公开教师保留的modelcard标识为\texttt{lllyx/Qwen3-4B-Base-GRPO}，关联Rethinking OPD\citep{rethinking}。
+它是研究者发布的GRPO checkpoint，不是Qwen官方指令模型，也不是本项目私有训练模型。
+下载缓存记录revision为\texttt{1f3b2966edfb75f2f98a00617588c1f748088422}，两个权重文件的ETag与保留的资产hash相符。
+modelcard描述其在DAPO-Math-17k-Processed上进行了GRPO；这一上游教师训练不同于本文学生的200步OPD。
+
+\begin{table}[h]
+\caption{最新4B completion对照的共享配置。训练rollout推理与完整评测的部分差异是有意设置，且两组一致。}
+\centering\small
+\begin{tabular}{@{}p{2.5in}p{2.65in}@{}}
+\toprule
+设置 & 数值 \\
+\midrule
+训练seed / 数据seed & 21 / 21 \\
+更新步数 / 每步prompt / 每题采样 & 200 / 4 / 8 \\
+PPO mini-batch / epochs & 32条响应 / 1 \\
+Actor / rollout-logprob / 教师micro-batch & 每GPU 1 / 4 / 1 \\
+优化器 / 学习率 & AdamW / $2\times10^{-6}$ \\
+Adam betas / epsilon / weight decay & $(0.9,0.999)$ / $10^{-8}$ / 0.01 \\
+学习率调度 / warmup & 恒定 / warmup比例0 \\
+梯度范数裁剪 & 1.0 \\
+PPO下/上裁剪 / dual clip & 0.2 / 0.2 / 3.0 \\
+显式熵项 / 额外KL损失 & 0 / 关闭 \\
+Outcome reward / OPD未来return权重 & 0 / 0 \\
+教师target log-ratio裁剪 & 关闭 \\
+特殊token OPD mask & 关闭；保留上游response mask \\
+输入 / 响应token上限 & 2,048 / 16,384 \\
+Temperature / top-$p$ / top-$k$ & 1.0 / 0.9 / 不限制 \\
+训练rollout / 评测显存比例 & 0.6 / 0.9 \\
+训练最大批量rollout token & 18,432 \\
+硬件 / 张量并行度 & 4张A100-80GB / 1 \\
+训练参数 / 优化器offload & 开启 / 开启 \\
+梯度检查点 & 开启 \\
+权重保存step / checkpoint删除 & 50、100、150、200 / 无 \\
+诊断频率 / top-$k$ / 位置bin & 每次更新 / 16 / 128 token \\
+Block符号阈值 & $10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{实际batch与seed。}
+数据batch沿用冻结的seed-21 loader。成对验收比较采集后真实source与prompt身份；
+若两组以不同方式消耗RNG，仅seed标签相同并不足够。
+最新请求seed通过包含step和sample身份的稳定SHA-256规则派生，记录响应本身不会额外消耗训练RNG。
+同题8个请求具有不同seed身份。历史固定请求seed实验在附录\ref{app:history}中独立标注。
+run card保留了独立window-seed，但它不影响fixed-block组。
+
+\paragraph{训练池。}
+直接读取保留parquet可验证题答序列按17,917行周期重复100次。
+未经额外Unicode或数学规范化时，有17,237个唯一原始题面字符串、17,249个唯一原始题答组合。
+这些是精确字符串计数，不是语义去重。原始展开命令与上游数据集revision未能恢复。
+保留文件的SHA-256前缀为\texttt{cf359f257a320aecb}，内部manifest保留完整hash。
+哈希检查不证明完整的训练/测试语义去污染。
+两种方法使用相同保留数据池，而非各自重新下载当前名称相同但版本可能不同的数据集。
+
+\paragraph{评测文件与判分。}
+MATH500使用\texttt{HuggingFaceH4/MATH-500}的test文件，来自MATH和PRM800K评测谱系\citep{math,prm800k}。
+AIME24由\texttt{BytedTsinghua-SIA/AIME-2024}转换。
+AIME25与AMC23来自公开OPD仓库中保留的对应test parquet，题数分别为30和83；
+尤其不能将83题AMC23无说明地视为其他论文的40题子集。
+转换后JSONL的hash前缀为：MATH500 \texttt{cc164b47b60771ee}，AIME24 \texttt{6aee5ed24b811ebc}，
+AIME25 \texttt{daedf1e406b9d73c}，AMC23 \texttt{a07c52c0098a536a}。
+
+两组使用同一历史external grader，SHA-256前缀为\texttt{04f7a0328be18409}。
+每题保留8次独立seed生成。每个完成checkpoint检查预期题目身份、响应数量、原始输出归档，
+以及summary与逐条判分的一致性。
+这验证评测契约，不证明符号grader在逻辑上绝不会判错。
+grader异常或无法解析答案不应被重新解释为已知数学正确。
+缺失boxed标记与引擎length停止始终独立报告。
+
+保留转换器的公开默认输入是 \texttt{BytedTsinghua-SIA/DAPO-Math-17k} 中的 \texttt{data/dapo-math-17k.parquet}。但历史 manifest 记录的是复制而来的已转换 parquet，没有原始 Hub revision 或创建100倍展开的命令。当前转换器默认去重会改变该训练池，不能将当前默认值当成精确的历史预处理方案。
+
+\paragraph{回溯性字符串重叠审计。}
+比较原始题面字段后，MATH500的500题中有2题与保留训练池完全相同。
+将Unicode空白折叠为单个空格、移除首尾空白并进行Unicode casefold后，共有4题匹配（包含前述2题）。
+该规范化不改写数学或LaTeX。精确匹配的测试索引为80、276；仅规范化后新增的索引为285、412，
+均是保留MATH500产物的零起始索引。AIME24、AIME25和AMC23在两种规则下均为零。
+审计依赖已完整验证的17,917行周期覆盖训练池字符串集合，并核对评测文件hash与题面字段一致性。
+这属于回溯数据审计，不是过滤干预：全部完整benchmark得分仍包含原题。
+训练池中存在某题，不代表200个update实际使用了该题；字符串零重叠也不证明语义去污染，或完成教师训练/预训练语料审计。
+
+另一项审计流式读取全部400个压缩训练归档中的实际输入元数据，核对其记录hash，并比较两组完整的6,400条输入序列。
+每组800次prompt occurrence中有783个精确不同题面、782个空白/casefold规范化后不同题面。
+实际exact评测题暴露为零，normalized-only暴露一次：Step71的MATH500索引412，每组八条轨迹记录。
+其他三道训练池重叠候选题未出现。两组在同一步遇到相同输入，Step50早于该暴露。
+这不构成语义等价题或上游模型训练语料审计。独立的496题敏感性分析排除全部四道训练池匹配题，
+不依赖某道题是否实际被抽到；完整MATH500仍是主要报告。
+
+AIME25与AMC23的公开保留来源仓库为 \url{https://github.com/thunlp/OPD}，checkout 为 \texttt{1fd6cca846126af90d82ef122e8af261f59d2d37}，文件分别是 \path{datasets/test_data/AIME25/test.parquet} 与 \path{datasets/test_data/AMC23/test.parquet}。核对的checkout文件与历史源哈希一致，更上游的Hub namespace没有恢复。这个数据来源仓库不同于采用的Revisiting OPD训练代码库。
+
+\paragraph{资源与留存。}
+最新两组200步训练分别约9.4和9.7小时，均使用4张A100，不含评测和小型验收probe，
+合计约76 GPU小时训练；这不是整个项目的总算力估计。
+现有摘要不能以同等精度恢复全部历史计算成本。
+每组4个完整状态保留模型、优化器、scheduler和RNG；每组还有200份诊断和6,400条原始训练轨迹。
+部分早期实验没有保存原始训练轨迹，现在对旧checkpoint重新采样不能恢复当时的rollout。
+
+\paragraph{软件与精度。}
+保留环境使用 Python 3.12.13、PyTorch 2.8.0、vLLM 0.11.0、Transformers 4.57.6、Ray 2.55.1、NumPy 1.26.4、Datasets 4.8.5 和 OmegaConf 2.3.0。这些版本直接读取自评测环境，而非根据现行安装指南推断。未修改的 FSDP actor 默认以 float32 加载训练模型，前向参数使用 bfloat16，归约与 buffer 使用 float32；参考模型及 rollout 推理采用 bfloat16。两组使用相同的冻结运行时、模型与 tokenizer 字节。通用的 tokenizer-regex 警告被保留，没有在评测中只修复某一组；验收关卡检查了配对协议的实际 prompt token ID。这证明的是配对行为一致，不是任意提示均不受 tokenizer 缺陷影响。

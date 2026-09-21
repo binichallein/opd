@@ -1,0 +1,32 @@
+These figures use all 200 retained diagnostic snapshots per arm, not interpolated checkpoint evaluations. Each panel pair uses one common color scale. Bins span 128 response-token positions and apply the coverage rule in Appendix~\ref{app:diagnostics}; gray is masked, not a zero measurement. The prefixes themselves change with the policy, so this is an occupancy-dependent training diagnostic rather than a fixed-input causal experiment. Scalar and positional reductions need not be identical because they weight observations differently.
+
+\newcommand{\positionpanel}[3]{%
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_position_#1.pdf}
+\caption{#2. #3}
+\label{fig:position-#1}
+\end{figure}}
+
+\positionpanel{student_entropy}{Student full-vocabulary entropy}{Both arms remain far below the high-entropy historical Block10 endpoints. This observation does not establish that lower entropy is intrinsically better.}
+\positionpanel{teacher_entropy}{Teacher full-vocabulary entropy on student-generated prefixes}{The frozen teacher is evaluated on each arm's own states; variation does not indicate that teacher weights changed.}
+\positionpanel{entropy_gap_signed}{Signed entropy gap, teacher minus student}{Positive and negative values describe different relative uncertainty, not correctness labels.}
+\positionpanel{entropy_gap_absolute}{Absolute per-position entropy gap}{Taking absolute values before averaging avoids cancellation; it is not the absolute value of the signed-bin mean.}
+\positionpanel{overlap_ratio}{Top-16 set overlap ratio}{Rank-set agreement does not determine probability mass or task accuracy.}
+\positionpanel{student_overlap_mass}{Student probability mass on the top-16 intersection}{Mass is measured using the full student vocabulary distribution, not a top-16 renormalization.}
+\positionpanel{teacher_overlap_mass}{Teacher probability mass on the top-16 intersection}{The intersection is the same set as in the student-mass map; its two probability measures can differ.}
+\positionpanel{overlap_token_advantage}{Implemented overlap-token advantage}{The within-intersection renormalization yields a nonpositive KL-derived statistic as defined in Appendix~\ref{app:diagnostics}; empty intersections are excluded.}
+\positionpanel{sign_flip}{Local versus shared-advantage sign disagreement}{Only positions passing both magnitude thresholds enter the denominator. The size-one Token arm is zero by construction.}
+\positionpanel{leakage}{Absolute advantage redistribution magnitude}{This is the mean absolute change in local feedback, not a probability or proof of harmful task-level credit.}
+\positionpanel{post_update_block_log_ratio_abs}{Absolute post-update block log-ratio}{Block3 uses a product over three tokens while Token uses one; the two numerical scales are not the same likelihood-ratio unit. These measurements follow the update, unlike the entropy snapshots.}
+\positionpanel{post_update_block_outside_clip}{Post-update block ratios outside the configured PPO interval}{This is not the fraction of optimization terms actually clipped: clipping also depends on advantage sign and the dual-clip rule.}
+
+\IfFileExists{\qwendiagnostics/qwen4_coverage.pdf}{%
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_coverage.pdf}
+\caption{Coverage of the entropy maps: maximum valid response count at any original position within each 128-token bin, out of 32 responses per update. It is not the sum of observations over the bin. Low coverage explains many masked tail cells and must be distinguished from low entropy.}
+\label{fig:positioncoverage}
+\end{figure}
+}{}
+\clearpage

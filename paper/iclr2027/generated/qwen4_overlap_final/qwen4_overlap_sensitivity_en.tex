@@ -1,0 +1,21 @@
+% Generated post-hoc sensitivity only; requires booktabs and CJK for Chinese.
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\caption{Post-hoc overlap sensitivity: MATH500 subset (496 questions; COMPLETE).}
+\label{tab:qwen4overlapsensitivity}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & \multicolumn{3}{c}{Avg@8} & \multicolumn{3}{c}{Pass@8} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Step & Block3 & Token & $\Delta$ & Block3 & Token & $\Delta$ \\
+\midrule
+200 & 75.73 & 76.31 & -0.58 [-1.66, 0.50] & 90.73 & 91.33 & -0.60 [-2.62, 1.21] \\
+150 & 78.40 & 76.56 & +1.84 & 91.53 & 91.53 & +0.00 \\
+100 & 75.83 & 77.27 & -1.44 & 90.93 & 90.52 & +0.40 \\
+50 & 78.93 & 79.08 & -0.15 & 91.94 & 92.34 & -0.40 \\
+\bottomrule
+\end{tabular}
+\par\smallskip\footnotesize Excludes four audit whitespace+casefold matches, including two exact matches. This is not a new benchmark or a primary result; official full-500 scores are unchanged. Scores are percentages; $\Delta$ is Block3 minus Token in percentage points. NA: paired question scores unavailable. Brackets at Step200 only: pointwise 95\% paired-question bootstrap on 496 questions; conditional on one training pair, not a multi-training-seed CI.
+\end{table*}

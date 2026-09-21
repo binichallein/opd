@@ -1,0 +1,49 @@
+\paragraph{熵与实际访问的前缀。}
+在学生生成的有效前缀 $h_t$ 上，记 $p_t(v)$ 和 $q_t(v)$ 为学生与教师在共享词表上的 softmax 分布。记录完整词表的 Shannon 熵，单位为 nat：
+\begin{equation}
+ H_{\mathrm S,t}=-\sum_v p_t(v)\log p_t(v),\qquad
+ H_{\mathrm T,t}=-\sum_v q_t(v)\log q_t(v).
+\end{equation}
+温度配置为一。它们既不是 top-16 重归一化后的熵，也不是某个被采样 token 的负对数概率。有符号差定义为 $H_{\mathrm T,t}-H_{\mathrm S,t}$；绝对差先在各位置取绝对值，再求平均。因此，平均绝对差通常不等于平均有符号差的绝对值。学生与教师看到同一个学生前缀。训练快照中的这些量在该批次更新之前计算；追加记录的优化器与更新后 ratio 诊断对应同一次更新的另一个阶段。
+
+\paragraph{高概率 token 对齐。}
+记 $S_t$、$Q_t$ 为师生各自的 top-16 token ID 集合，$O_t=S_t\cap Q_t$。计算
+\begin{equation}
+ \mathrm{Overlap}_t=|O_t|/16,\quad
+ M_{\mathrm S,t}=\sum_{v\in O_t}p_t(v),\quad
+ M_{\mathrm T,t}=\sum_{v\in O_t}q_t(v).
+\end{equation}
+概率质量使用完整词表上的原概率，而非 top-16 内的相对占比。若 $O_t\ne\varnothing$，实际的 overlap-token advantage 先在交集内归一化：
+\begin{equation}
+ \bar p_t(v)=p_t(v)/M_{\mathrm S,t},\quad
+ \bar q_t(v)=q_t(v)/M_{\mathrm T,t},\quad
+ U_t=\frac{1}{|O_t|}\sum_{v\in O_t}\bar p_t(v)
+       \log\frac{\bar q_t(v)}{\bar p_t(v)}.
+\end{equation}
+因此，精确运算下 $U_t=-\KL(\bar p_t\Vert\bar q_t)/|O_t|\le0$，而不是原始采样 token advantage 的平均值。空交集不计入该量的均值，但其 overlap ratio 和概率质量为零。本文给出实际实现的定义，而不假设其他论文中的同名指标采用完全一致的归一化。
+
+\paragraph{局部方向不一致与重分配。}
+记 $b_t$ 为复制到有效 token $t$ 的块内均值，$m_t$ 为记录的 response mask，$\epsilon=10^{-4}$。定义
+\begin{align}
+ e_t&=m_t\mathbf1[|a_t|>\epsilon]\mathbf1[|b_t|>\epsilon],\\
+ f_t&=e_t\mathbf1[\operatorname{sign}(a_t)\ne\operatorname{sign}(b_t)].
+\end{align}
+符号翻转率及其幅度加权形式为
+\begin{equation}
+ F=\frac{\sum_t f_t}{\max(1,\sum_t e_t)},\qquad
+ F_w=\frac{\sum_t |a_t|f_t}{\max(\epsilon,\sum_t |a_t|e_t)}.
+\end{equation}
+局部或共享反馈接近零的 token 不被分类为方向翻转。没有合格位置的批次会同时得到零比率与零覆盖量，这不代表所有方向都一致。重分配指标定义为
+\begin{equation}
+ D=\frac{\sum_t m_t|b_t-a_t|}{\max(1,\sum_t m_t)},\qquad
+ D_{\mathrm{rel}}=\frac{\sum_t m_t|b_t-a_t|}{\max(\epsilon,\sum_t m_t|a_t|)}.
+\end{equation}
+源码将它们命名为 \texttt{leakage\_magnitude} 与 \texttt{normalized\_leakage}。本文使用“重分配”，因为偏离逐 token 反馈或出现符号翻转，本身并不证明任务层面的信用有害。这些统计也不包含联合 ratio 导数及其有效尺度。块长为一的 Token 方法满足 $b_t=a_t$，上述指标按定义为零，不能把它解释为训练行为更优的独立证据。
+
+\paragraph{位置聚合与缺失值。}
+每次更新的保留快照按生成位置存储和、平方和与有效计数，使用诊断 response mask。当前 completion 运行沿用的 EOS mask 包含第一个 EOS（151643），排除之后的位置与 prompt；没有 EOS 且达到上限的响应保留全部位置。图中将每 128 个连续位置组成一格，通过总和除以总计数计算均值，而不是直接平均已有均值。对齐统计采样步幅为一。符号翻转热图使用合格位置数，而非全部响应 token 数作为分母。一个显示的格子必须至少包含一个具有八次有效观测的原始位置；阈值施加于格内最大单位置计数，不是格内token计数之和。灰色遮罩并不表示零熵或零翻转。一格分母中的计数代表 token-位置观测，未必等于不同轨迹数。长响应的覆盖密度与指标数值分开显示。比较两个位置格或训练步，实际条件化于不同的 on-policy 前缀，因此热图本身无法确定崩塌的因果机制。
+
+\paragraph{优化器、长度与格式。}
+记录的梯度范数是 worker 在配置的范数裁剪之前得到、再由日志系统归约的数值，并不测量每个 token 或每一层的导数是否有界。策略梯度损失是实际裁剪目标，其尺度在 Token 和 Block3 之间未必可以直接比较。训练触及上限统计计算达到配置上限的轨迹；评测另外保留引擎的长度终止原因。在没有核查的情况下，不应认为基于 mask 的上限统计与引擎停止原因完全相同。
+
+格式指标是评测包装器对响应中是否缺少字面字符串 \verb|\boxed| 的检查。它不验证花括号是否配对、答案能否提取或 box 中是否是最终答案。这个定义比“答案存在任意格式缺陷”更狭窄，也与算术错误、符号判分失败、thinking 标签异常和长度终止不同。输出可以包含该标记却答案错误；触及长度上限前也可能已经出现该标记。所有比率使用对应 benchmark 的保留响应数，不给出跨 benchmark 混合的格式改进结论。

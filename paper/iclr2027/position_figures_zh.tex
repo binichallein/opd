@@ -1,0 +1,35 @@
+以下图使用每组全部200个训练诊断快照，不是权重评测之间的插值。每对面板共用色标。
+每格覆盖128个响应token位置，并采用附录\ref{app:diagnostics}的覆盖规则；灰色代表遮罩而不是零。
+前缀随策略改变，因此这些是依赖访问分布的训练诊断，不是固定输入的因果实验。
+标量与位置统计可能因观测权重不同而不完全相同。
+
+\newcommand{\positionpanel}[3]{%
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_position_#1.pdf}
+\caption{#2。#3}
+\label{fig:position-#1}
+\end{figure}}
+
+\positionpanel{student_entropy}{学生全词表熵}{两组均远低于历史Block10终点的高熵，但这不证明熵越低越好。}
+\positionpanel{teacher_entropy}{学生生成前缀上的教师全词表熵}{冻结教师分别评估各组自己的状态；变化不代表教师权重改变。}
+\positionpanel{entropy_gap_signed}{有符号熵差，教师减学生}{正负描述相对不确定性的不同，不是正确性标签。}
+\positionpanel{entropy_gap_absolute}{逐位置绝对熵差}{先取绝对值再平均避免抵消，不等于有符号格均值的绝对值。}
+\positionpanel{overlap_ratio}{Top-16集合重叠比例}{排名集合的一致性不决定概率质量或任务准确率。}
+\positionpanel{student_overlap_mass}{Top-16交集上的学生概率质量}{概率取自学生全词表分布，而非top-16重归一。}
+\positionpanel{teacher_overlap_mass}{Top-16交集上的教师概率质量}{交集与学生质量图相同，但两种概率测度可以不同。}
+\positionpanel{overlap_token_advantage}{实现中的overlap-token advantage}{交集内部重归一产生附录\ref{app:diagnostics}定义的非正KL相关统计，空交集排除。}
+\positionpanel{sign_flip}{局部与共享advantage的符号分歧}{仅两个幅度都超过阈值的位置进入分母；Token块长为一，按定义为零。}
+\positionpanel{leakage}{Advantage绝对重分配幅度}{这是局部反馈绝对变化的平均，不是概率，也不能证明任务层面信用有害。}
+\positionpanel{post_update_block_log_ratio_abs}{更新后block log-ratio的绝对值}{Block3使用三个token乘积，Token只使用一个；两者不是相同的似然比单位。这些统计取更新后，与熵快照不同。}
+\positionpanel{post_update_block_outside_clip}{更新后block ratio位于配置PPO区间外的比例}{它不等于优化项实际被裁剪的比例，后者还取决于advantage符号与dual-clip规则。}
+
+\IfFileExists{\qwendiagnostics/qwen4_coverage.pdf}{%
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_coverage.pdf}
+\caption{熵图的覆盖量：每个128-token格内，原始单位置的最大有效响应计数，每步共32个响应。它不是格内观测总和。低覆盖解释了很多被遮罩的尾部格子，需要与低熵区别开来。}
+\label{fig:positioncoverage}
+\end{figure}
+}{}
+\clearpage

@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "draft_only": false,
+  "evidence_errors": [],
+  "papers": {
+    "en": {
+      "main_text_pages": 9,
+      "pdf_bytes": 2020618,
+      "errors": [],
+      "overfull_boxes": 0
+    },
+    "zh": {
+      "main_text_pages": 8,
+      "pdf_bytes": 2288109,
+      "errors": [],
+      "overfull_boxes": 0
+    }
+  },
+  "scope": "Artifact/text/format checks and AI-assisted source review, not author sign-off or independent training replication",
+  "source_zip_sha256": "c72abd05c67ee3187883a9650b0f9aae54c6667086e22dc4a01ead5d194c92af",
+  "source_zip_rebuild": {
+    "en": true,
+    "zh": true
+  },
+  "delivered_pdfs": {
+    "en": {
+      "name": "Block_OPD_EN.pdf",
+      "sha256": "d57589a77e5a0f5fb72538da81ba1b3dc71f8cbe8dcf4310ad63343b146617f8",
+      "matches_build": true
+    },
+    "zh": {
+      "name": "Block_OPD_ZH.pdf",
+      "sha256": "e82fa7d976422f9c942b7e45965315295e827c66c4dfe68ff1ad1b7253bc30eb",
+      "matches_build": true
+    }
+  },
+  "tests": {
+    "paper_analysis": 104,
+    "loss_and_diagnostics": 31
+  },
+  "visual_review": [
+    "English first page",
+    "Chinese method equations",
+    "English endpoint table and accuracy figure",
+    "Chinese historical prompt tables",
+    "English student-entropy position heatmap"
+  ]
+}

@@ -1,0 +1,49 @@
+\paragraph{Entropy and occupied prefixes.}
+At a valid student-generated prefix $h_t$, let $p_t(v)$ and $q_t(v)$ be the student and teacher softmax distributions over the shared vocabulary. We record full-vocabulary Shannon entropies in nats,
+\begin{equation}
+ H_{\mathrm S,t}=-\sum_v p_t(v)\log p_t(v),\qquad
+ H_{\mathrm T,t}=-\sum_v q_t(v)\log q_t(v).
+\end{equation}
+The configured temperature is one. These are not entropies of a renormalized top-16 support, nor negative log probabilities of the one sampled token. The signed gap is $H_{\mathrm T,t}-H_{\mathrm S,t}$; the absolute gap is the absolute value at each position, averaged afterward. Therefore the mean absolute gap is not generally the absolute value of the mean signed gap. Student and teacher are evaluated on the same student prefix. Their training-time snapshots are taken before the update for that batch; appended optimizer and post-update ratio diagnostics describe a different phase of the same update.
+
+\paragraph{Top-token alignment.}
+Let $S_t$ and $Q_t$ be the respective top-16 token-ID sets and $O_t=S_t\cap Q_t$. We compute
+\begin{equation}
+ \mathrm{Overlap}_t=|O_t|/16,\quad
+ M_{\mathrm S,t}=\sum_{v\in O_t}p_t(v),\quad
+ M_{\mathrm T,t}=\sum_{v\in O_t}q_t(v).
+\end{equation}
+Probability masses use the original full-vocabulary probabilities. They are not percentages of the top-16 mass. When $O_t\ne\varnothing$, the implemented overlap-token advantage first renormalizes within the intersection:
+\begin{equation}
+ \bar p_t(v)=p_t(v)/M_{\mathrm S,t},\quad
+ \bar q_t(v)=q_t(v)/M_{\mathrm T,t},\quad
+ U_t=\frac{1}{|O_t|}\sum_{v\in O_t}\bar p_t(v)
+       \log\frac{\bar q_t(v)}{\bar p_t(v)}.
+\end{equation}
+Thus $U_t=-\KL(\bar p_t\Vert\bar q_t)/|O_t|\le0$ in exact arithmetic; it is not the average raw sampled-token advantage. Empty intersections are excluded from its mean, while their overlap ratio and masses are zero. We state the implemented definitions rather than assuming every diagnostic with the same name in another paper uses identical normalization.
+
+\paragraph{Local sign disagreement and redistribution.}
+Let $b_t$ be the block mean copied to valid token $t$, $m_t$ the recorded response mask, and $\epsilon=10^{-4}$. Define
+\begin{align}
+ e_t&=m_t\mathbf1[|a_t|>\epsilon]\mathbf1[|b_t|>\epsilon],\\
+ f_t&=e_t\mathbf1[\operatorname{sign}(a_t)\ne\operatorname{sign}(b_t)].
+\end{align}
+The recorded sign-flip rate and its magnitude-weighted variant are
+\begin{equation}
+ F=\frac{\sum_t f_t}{\max(1,\sum_t e_t)},\qquad
+ F_w=\frac{\sum_t |a_t|f_t}{\max(\epsilon,\sum_t |a_t|e_t)}.
+\end{equation}
+Tokens with near-zero local or shared feedback are not classified as direction reversals. A batch with no eligible entries yields zero together with zero coverage, not evidence that all directions agree. The redistribution statistics are
+\begin{equation}
+ D=\frac{\sum_t m_t|b_t-a_t|}{\max(1,\sum_t m_t)},\qquad
+ D_{\mathrm{rel}}=\frac{\sum_t m_t|b_t-a_t|}{\max(\epsilon,\sum_t m_t|a_t|)}.
+\end{equation}
+The source calls these quantities \texttt{leakage\_magnitude} and \texttt{normalized\_leakage}. We use ``redistribution'' because neither difference from token feedback nor a sign reversal proves harmful task-level credit. These statistics also do not include the joint-ratio derivative or its effective scale. For a size-one Token treatment, $b_t=a_t$ and both families vanish by construction; this is not independent evidence of superior training behavior.
+
+\paragraph{Position aggregation and missingness.}
+For every update, the retained snapshot stores sums, squared sums and valid counts at generated response positions, using the diagnostic response mask. In the current completion run, the historical EOS mask includes the first EOS (151643), excludes subsequent positions and the prompt, and includes every position of a cap-length response without EOS. The figures combine consecutive positions into bins of 128 tokens using ratios of sums to counts, not an unweighted average of precomputed means. Alignment is sampled at stride one. Sign-flip heatmaps use eligible counts rather than all response-token counts. A displayed bin must have at least one original position with eight valid observations; the threshold is applied to the maximum per-position count inside the bin, not to its summed token count. A gray masked cell is not zero entropy or zero disagreement. A bin's denominator counts token-position observations and need not equal the number of distinct trajectories. The changing density of long responses is shown separately from the measured values. Comparing two bins or training steps conditions on different on-policy prefixes and therefore cannot on its own establish which process caused collapse.
+
+\paragraph{Optimizer, lengths and format.}
+The recorded gradient norm is the worker's norm before configured norm clipping, reduced by the training logger; it is not a measurement that every token-specific or layer-specific derivative remains bounded. Policy-gradient loss is the actual clipped objective, which need not be directly comparable in scale between Token and Block3. Training response-cap incidence counts trajectories that reach the configured cap. For evaluation we additionally retain the engine's length-stop reason; a cap statistic based on a mask and an engine stopping reason should not be assumed identical without checking.
+
+Our format indicator is the evaluation wrapper's literal test that the response does not contain the string \verb|\boxed|. It does not validate brace balance, extractability or whether the box contains the final answer. It is narrower than ``the answer has any formatting defect,'' and it is separate from incorrect arithmetic, symbolic grading failure, malformed thinking tags and length termination. A response can contain the marker and still be incorrect; a length-stopped response may already contain it. All rates use the relevant benchmark's retained response count. We make no cross-benchmark aggregate formatting claim.

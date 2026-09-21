@@ -1,0 +1,116 @@
+\section{Additional Derivations}
+\label{app:proofs}
+\paragraph{The production reduction.}
+Let $m_t\in\{0,1\}$ be the final actor mask, $n_b=\sum_{t\in b}m_t$, $N=\sum_t m_t$, and $\eta=10^{-8}$. Empty blocks have $\bar a_b=0$.
+The code minimizes the negative clipped surrogate with a fractional block mask:
+\begin{equation}
+ L_{\mathrm{blk}}=-\frac{\sum_b(n_b/k)\mathcal C(R_b,\bar a_b)}{N/k+\eta}
+ =-\frac{\sum_b n_b\mathcal C(R_b,\bar a_b)}{N+k\eta}.
+\end{equation}
+The token denominator is $N+\eta$. Invalid positions are zeroed before block aggregation; holes are not removed and do not move neighboring tokens into different blocks. Both empty blocks and padding have zero weight. With actor micro-batch size one, the update averages independently normalized response losses. It is not the batch-global token mean when response lengths differ. Thus the configuration label \texttt{token-mean} alone does not establish the global weighting used in DAPO \citep{dapo}.
+
+\paragraph{Clipping convention.}
+For lower and upper ratios $d=0.8$, $u=1.2$, define $s(r,a)=\min\{ra,\clip(r,d,u)a\}$. The inherited objective is
+\begin{equation}
+ \mathcal C(r,a)=\begin{cases}\max\{s(r,a),3a\},&a<0,\\s(r,a),&a\ge0.\end{cases}
+\end{equation}
+This is ordinary PPO clipping with an additional negative-advantage dual-clip rule. The block ratio is formed before applying this operation. Gradient-norm clipping at one is a separate optimizer operation. Neither operation is a guarantee that all future policy ratios or teacher KL values remain inside a prescribed region.
+
+\paragraph{First-order derivatives and synthetic checks.}
+On the active branch, for valid $t\in b$, the derivatives with respect to current sampled log probabilities are
+\begin{equation}
+ \frac{\partial L_{\mathrm{blk}}}{\partial\log p_\theta(y_t\mid h_t)}
+ =-\frac{n_b\bar a_bR_b}{N+k\eta},\qquad
+ \frac{\partial L_{\mathrm{tok}}}{\partial\log p_\theta(y_t\mid h_t)}
+ =-\frac{a_tr_t}{N+\eta}.
+\end{equation}
+At ratio one, their policy loss values agree in the $\eta=0$ idealization for arbitrary advantages, yet their derivatives need not. For five tokens with $a_t=1$, the token derivatives are all $-1/5$, whereas Block3 gives $(-3/5,-3/5,-3/5,-2/5,-2/5)$. For $(a_1,a_2,a_3)=(1,-1,1)$, the token derivatives are $(-1/3,1/3,-1/3)$ and the block derivatives are $(-1/3,-1/3,-1/3)$. These are synthetic derivative examples, not estimates of real parameter-update magnitudes.
+
+\paragraph{A restricted credit-horizon interpretation.}
+Assume a fixed horizon $T$, a deterministic contiguous partition, no masks or truncation, locally parameter-independent student support on which the fixed teacher $q$ is positive, and sampling from the full current student distribution $p_\theta$. Suppose log probabilities are differentiable and differentiation and expectation can be interchanged. Define $c_t=\log p_\theta(y_t\mid h_t)-\log q(y_t\mid h_t)$ and $g_t=\nabla\log p_\theta(y_t\mid h_t)$. Then
+\begin{align}
+ \nabla\KL(P_\theta\Vert Q)
+ &=\E\left[\left(\sum_t c_t\right)\left(\sum_t g_t\right)\right] \\
+ &=\E\left[\sum_t g_t\sum_{u=t}^{T}c_u\right].
+ \label{eq:fullcredit}
+\end{align}
+The derivative of the log-density term has expectation zero. Past terms vanish because $c_u$ for $u<t$ is measurable at $h_t$ and $\E[g_t\mid h_t]=0$. Define $H_{\mathrm{blk}}=\sum_b(\sum_{u\in b}c_u)(\sum_{t\in b}g_t)$ and $H_{\mathrm{seq}}=(\sum_u c_u)(\sum_t g_t)$. Applying the same argument to an unclipped block estimator at the old policy gives
+\begin{equation}
+ \E H_{\mathrm{blk}}=\E\left[\sum_t g_t\sum_{u=t}^{e(t)}c_u\right],\qquad
+ \E(H_{\mathrm{seq}}-H_{\mathrm{blk}})=\E\left[\sum_t g_t\sum_{u>e(t)}c_u\right],
+ \label{eq:horizon}
+\end{equation}
+where $e(t)$ is the end of token $t$'s block. Relative to purely local token feedback, block aggregation can restore within-block future credit; it omits credit across a block boundary. Thus cross terms should not all be called harmful leakage. Their omitted vector can cancel, so increasing block size need not monotonically reduce bias. MiniLLM already accounts for future rewards; this interpretation is not a claim to first introduce temporal credit assignment in distillation \citep{minillm}.
+
+These identities do not establish that the production loss is an exact sequence-KL optimizer. Top-$p$ sampling changes the sampling distribution relative to the scored student; a product over masked positions is not generally a block marginal likelihood ratio; clipping and frozen old-policy targets alter the objective away from the old policy; and a random response length in the normalization introduces a dependence on future actions. The identities are therefore explanatory idealizations with explicit assumptions, not guarantees for the experiment.
+
+\paragraph{Averaging error decomposition.}
+With $a=\mu+\varepsilon$ and $\E\varepsilon=0$, expand $Wa-\mu=(W-I)\mu+W\varepsilon$.
+The expected cross term vanishes, and $\E\varepsilon^\top W^\top W\varepsilon=\operatorname{tr}(W\Sigma W^\top)$, proving Equation~\ref{eq:mse}.
+For independent, equal-variance noise and a constant signal within a $k$-token block, each averaged noise variance is $k\sigma^2/k^2=\sigma^2/k$.
+For a deterministic signal $(2,-1,2)$ with zero noise, the unaveraged error is zero; replacing every component by its mean one creates squared error six. This is a counterexample to universal signal-estimation benefit, not a claim that the teacher's per-token ratio is always the correct task-level signal.
+
+\paragraph{What sliding phases can average out.}
+Let $X$ contain shared parameters, the collected batch, masks, frozen targets and all other forward randomness. Let $L_r(X)$ be the fully clipped and reduced loss for offset $r\in\{0,1,2\}$, and $G_r(X)=\nabla_\theta L_r(X)$. For a conditionally uniform random offset $U$, the implemented phase average satisfies
+\begin{equation}
+ G_{\mathrm{slide}}(X)=\frac13\sum_{r=0}^2G_r(X)
+ =\E[G_U(X)\mid X].
+\end{equation}
+With finite second moments and the same distribution of $X$, the law of total covariance gives
+\begin{equation}
+ \Cov(G_U)-\Cov(G_{\mathrm{slide}})
+ =\E_X[\Cov(G_U\mid X)]\succeq0.
+ \label{eq:phasecov}
+\end{equation}
+This removes variance from offset randomization conditional on a common state; it does not compare Sliding3 with a fixed Block3 partition. PPO clipping may be active because it occurs inside each $L_r$. Gradient-norm clipping and Adam are nonlinear later operations and are outside this identity. Distinct training histories induce distinct distributions of $X$, so the identity is not a performance guarantee for the retained runs or an assertion about an exactly realized average under one fixed RNG seed. Averaging losses is also not the same as averaging advantages before a single clipping operation.
+
+For $N>0$ and matching phase-zero partitions, $L_{\mathrm{hist}}=N L_0/(N+k\eta)$, including partial-tail weights. The gradients have the same factor because the collected mask is frozen. At $\eta=0$, the old reduction and phase-zero reduction are identical. Leading padding or holes can invalidate the matching-partition premise; floating-point operation order can introduce small numerical differences even when the ideal expressions agree.
+
+\section{Configuration and Data Provenance}
+\label{app:config}
+\input{config_en}
+
+\section{Diagnostic Definitions}
+\label{app:diagnostics}
+\input{diagnostics_en}
+
+\section{Historical Evidence and Protocol Boundaries}
+\label{app:history}
+\input{history_notes_en}
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figures/history_20260921/history_avg_at_8.pdf}
+\caption{Historical Avg@8 checkpoint trajectories, using the audited external view for Qwen 1.7B and the retained historical external view for the other strata. Each row keeps its own protocol; all use one training seed, not independent multi-seed replications. Panel scales differ. Lines only connect the three measured checkpoints and do not represent measurements between them.}
+\label{fig:historyavg}
+\end{figure}
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{figures/history_20260921/history_pass_at_8.pdf}
+\caption{Historical Pass@8 for the same checkpoints and protocol strata as Figure~\ref{fig:historyavg}. Each question contributes one if at least one of its eight evaluation responses is correct. This coverage statistic is distinct from averaging the eight correctness indicators. No interval over independent training seeds is implied.}
+\label{fig:historypass}
+\end{figure}
+\clearpage
+\input{generated/history_all_en}
+
+\section{Bounded Prompt Diagnostics}
+\label{app:probes}
+These are inference probes on selected training questions, not additional held-out benchmark scores. The Qwen3-4B and Llama prompt studies use 16 fixed questions with two independently seeded responses per condition (seeds 21 and 22). Qwen 0.6/1.7 primary and first-16 ablation cells retain their separate sample counts; overlapping questions are not summed as independent observations. The tables contain integer counts: length stops, periodic tails, missing literal boxed markers and correctly graded responses. A dash indicates an unrecorded statistic. A periodic tail requires at least 256 retained tail tokens and an offset of at most 128 with at least 99\% token agreement within the last 2,048 tokens; it is a detector, not a general semantic repetition measure.
+
+The historical training user message is:
+\begin{quote}\small
+\texttt{Math problem: [question]}\\
+\texttt{Please carefully reason through the math problem step by step and derive the correct answer. You must conduct reasoning inside <think> and </think> and give the final answer within}\ \verb|\boxed{}.|\
+\end{quote}
+The native model template wraps that content with an assistant generation prefix. ``No think'' deletes only the phrase \texttt{conduct reasoning inside <think> and </think> and}; it is not the same as bypassing a chat template. Historical evaluation instead uses the question and \texttt{Please reason step by step, and put your final answer within} \verb|\boxed{}.|, with thinking explicitly disabled. Thus asking for reasoning tags and disabling a native thinking mode are distinct controls.
+
+For Qwen3-4B, ``plain'' is the bare question followed by two newlines and \texttt{Solution:}; ``candidate'' is the final matched completion protocol in Section~\ref{sec:protocol}. For Llama, ``completion'' retains the non-think historical instruction and a single native BOS, removes chat role boundaries, and appends \texttt{Solution:}; it is not exactly the Qwen plain condition. The ``eval'' cell uses Llama's native non-thinking evaluation template. Removing chat raises Llama student length stops from 1/32 to 4/32 in this probe, while Qwen3-4B's historical-to-candidate change reduces them from 18/32 to 1/32. These observations motivate model-specific validation, not a universal rule to remove chat from instruction-tuned models.
+\input{generated/history_probes}
+
+\section{Complete Current-Pair Checkpoint Results}
+\label{app:current}
+\input{current_appendix_en}
+\FloatBarrier
+
+\section{Every-Step Position Diagnostics}
+\label{app:positionfigures}
+\input{position_figures_en}

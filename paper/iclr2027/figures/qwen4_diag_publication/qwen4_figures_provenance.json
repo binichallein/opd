@@ -1,0 +1,66 @@
+{
+  "builder_sha256": "c50e422e3e4d2288bf23dfed8e94abeb07bee979af32ba79b81cda92313de743",
+  "complete": false,
+  "input_path": "/home/tyf/.config/superpowers/worktrees/opd/qwen4-blockfirst/paper/iclr2027/data/qwen4_diagnostics_all200_20260921.json",
+  "input_sha256": "ef0b13050df5192e5207130f47aa0a67c267306daa337e0c8aa1c44456ae82d6",
+  "missing_checkpoints": [
+    "token_opd:150",
+    "token_opd:100",
+    "token_opd:50"
+  ],
+  "options": {
+    "allow_partial": true,
+    "min_count": 8,
+    "only": [
+      "qwen4_training",
+      "qwen4_coverage",
+      "qwen4_position_student_entropy",
+      "qwen4_position_teacher_entropy",
+      "qwen4_position_entropy_gap_signed",
+      "qwen4_position_entropy_gap_absolute",
+      "qwen4_position_overlap_ratio",
+      "qwen4_position_student_overlap_mass",
+      "qwen4_position_teacher_overlap_mass",
+      "qwen4_position_overlap_token_advantage",
+      "qwen4_position_sign_flip",
+      "qwen4_position_leakage",
+      "qwen4_position_post_update_block_log_ratio_abs",
+      "qwen4_position_post_update_block_outside_clip"
+    ]
+  },
+  "output_sha256": {
+    "qwen4_coverage.pdf": "48bcf58ec0acd7dad2fab3c4406cb90cf0cfa35e66971ab4bc615ea68b8b6685",
+    "qwen4_coverage.png": "e7fd783d2a3bd12959d6cb7e207b2a3a01711d694b0f8a719aa2e9f5cec16d05",
+    "qwen4_position_entropy_gap_absolute.pdf": "f48dc0edd5323d40a87dd6c991692ea51330d72cb132854602d5136a3f717f40",
+    "qwen4_position_entropy_gap_absolute.png": "5299c6b27e31789fd028c81588a175457c5e624634e7ecc85bb90a10616103d3",
+    "qwen4_position_entropy_gap_signed.pdf": "9c1fdfa52441a7d4d78ca75be156dfef5bca09dee2288162669f3e442ecedf30",
+    "qwen4_position_entropy_gap_signed.png": "0603f64f4155e1faf91152979e49424a8ffcea02001f639df109cfa5a501f459",
+    "qwen4_position_leakage.pdf": "7dcda16a8199faf426e711ee33e1edc3b02403d42f8788a90f535ad9ea63f9d2",
+    "qwen4_position_leakage.png": "18a660976d1a160755d8b0f46cbeeed99f554cdc55a2b8438bdfda2e436e5aa2",
+    "qwen4_position_overlap_ratio.pdf": "f271b6ea79d84a99099cf271969b3f8956aaa92081b3c5b15de0a346caf17cc5",
+    "qwen4_position_overlap_ratio.png": "56f6fac9b59461427ca4b59e385265abe16794b16c9a0dac0b6946246f04adbc",
+    "qwen4_position_overlap_token_advantage.pdf": "d7bdba6b55ddfd654c0a65c57bde951425e30c7e37081d3361926eaa0b01194c",
+    "qwen4_position_overlap_token_advantage.png": "0c163385b6b9b39cf24ed7ba6427c0dd7dbe658df3a02bce401e3c0b1a94c14e",
+    "qwen4_position_post_update_block_log_ratio_abs.pdf": "729ca6e8cc2f55bb0d164cea7fd1456cd9859f768cdd0f391548e0fa329887d5",
+    "qwen4_position_post_update_block_log_ratio_abs.png": "0cc5776d806e1cbec99516bd5da5dd00161e88d17bb3e9bcfbd764323e286638",
+    "qwen4_position_post_update_block_outside_clip.pdf": "425d7fab502bbc83f786b81890ed127748c059e08bc0c1e4beab9d0c619874bd",
+    "qwen4_position_post_update_block_outside_clip.png": "ce94b76c359ba021a5f250cb4c1eb2cd593f32e9528b717719eaf9ffd0e232f5",
+    "qwen4_position_sign_flip.pdf": "3301fcc8ce5ca2141b6ccf92ed6bd49744cbc6cb5f67ae0d41b1436d2d620cad",
+    "qwen4_position_sign_flip.png": "5ab456f794a1577536bc6fbc8ace78d2c96db3172111a3c400e36e786f4f8922",
+    "qwen4_position_student_entropy.pdf": "3244df23548d5cbd8c18b4d805e488b52bca4e410377a9f9f46669ac6091412a",
+    "qwen4_position_student_entropy.png": "1e5c7d8f40f974470ff4f09aeb2b1f5ebb6f0487d94bd1316a1f9982bd5d1061",
+    "qwen4_position_student_overlap_mass.pdf": "7ec5f7f78f088301d73b30aa2334182b7086546ce466c6d51c4258469aceaf06",
+    "qwen4_position_student_overlap_mass.png": "c0cfb079114b3e1688b22a7339c5359b6f17eb26669d46379c49d754301cbc36",
+    "qwen4_position_teacher_entropy.pdf": "e2694f7b3b4c760ebfd4a67d49e1452279563add06491aa34f1cd50e1719d218",
+    "qwen4_position_teacher_entropy.png": "09e7c71884176d937d3dce4042879f2db02ea756e221f1354efe3b109521ccf4",
+    "qwen4_position_teacher_overlap_mass.pdf": "41b7cdb2e85378785a29e22a48115dc321aabf71a89315480fd32243a1c55d57",
+    "qwen4_position_teacher_overlap_mass.png": "5c0641e8593bb0d5af499dff6f0924fe53b5b7275a2bedd5fde64fad5f6bc3fb",
+    "qwen4_training.pdf": "2894d8d15176b92f14a6969f034a31fb4493134fd08e99f52e8c1245e1cacdc1",
+    "qwen4_training.png": "5442115e1cccb13f3b16f3562c09df328c6a2415f96cb8f76180a60ebc026152"
+  },
+  "versions": {
+    "matplotlib": "3.10.7",
+    "numpy": "2.3.4",
+    "python": "3.11.14"
+  }
+}

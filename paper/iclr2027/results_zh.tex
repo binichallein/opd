@@ -1,0 +1,44 @@
+\paragraph{当前终点不支持普适优势。}
+在 Step200，Block3 相对 Token 的 Avg@8 在 MATH500、AIME24、AIME25 和 AMC23 上依次相差 $-0.52$、$-2.92$、$+0.42$ 和 $-3.01$ 个百分点。这些是各 benchmark 的描述性差异，而非四次独立的训练重复。所有逐项 95\% 配对题目区间均跨过零；本实验既没有在统计上明确区分出优势，也没有证明等效。Pass@8 提供互补的观察：AIME24 平均成功率下降，但 Block3 至少答对一次的题数增加一题（33.33\% 对 30.00\%）。不能把两种指标合并为单一的“提升”结论。
+\input{\qwenresults/qwen4_step200_zh}
+\IfFileExists{\qwenfigures/qwen4_accuracy.pdf}{%
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{\qwenfigures/qwen4_accuracy.pdf}
+\caption{当前匹配4B对照的四个保存权重。各benchmark独立报告Avg@8，使用独立纵轴范围，同一子图内两种方法共享范围；连线连接实测权重，不代表额外评测。每种方法仅一个训练seed。}
+\label{fig:qwen4accuracy}
+\end{figure}
+}{}
+
+\paragraph{中间权重的收益随checkpoint反转。}
+终点不能概括整条训练轨迹。Step150时，Block3的MATH500 Avg@8提高1.85个百分点（逐点区间$[0.70,3.00]$），AIME24提高2.92个百分点（$[0.42,5.83]$），但AIME25下降4.17个百分点。Step100的MATH500差值则为$-1.40$个百分点（$[-2.57,-0.25]$）；Step50仅AMC23的Avg@8差值为正。这些条件化逐点区间未校正checkpoint/任务选择，也未重复训练seed。结果体现的是checkpoint依赖，而不是稳定收益或已经验证的最佳权重选择规则。
+
+\paragraph{历史正向结果与迁移失败并存。}
+表~\ref{tab:historyendpoints} 在各自历史协议内列出 Step200 终点。1.7B 对照的四项 Avg@8 均明显有利于 Block3。1.5B DeepSeek/JustRL 设置在 MATH500 与 AMC23 上的差异较小，在 AIME 上较大，而不是一致的负向迁移。相反，非 thinking 的 0.6B Block3 模型几乎失去全部被测数学准确率，其 Token 对照却相对初始学生获得提升。Llama 师生对也更有利于 Token。模型规模本身不足以解释这种现象：不同分层的教师适配、初始策略、提示协议、随机种子处理和实现版本并不完全相同。这些实验支持“效果具有条件性”，而不支持因果性的规模规律。
+
+\begin{table}[t]
+\centering\small
+\caption{历史 Step200 Avg@8（\%）。仅同一学生分层内部可以直接比较；不同分层保留原始提示及协议。附录~\ref{app:history} 保留全部权重与 Pass@8 视图。它们并非当前 4B 实验的额外训练 seed。}
+\label{tab:historyendpoints}
+\input{generated/history_endpoints}
+\end{table}
+
+\paragraph{更长块与数值健康。}
+历史 Block10 在记录的优化器诊断仍为有限值时，出现严重生成退化与 Step200 失败。但其最大裁剪前梯度范数仍很大（867.50 和 865.21）；“有限”不能解读为“正常”。旧内置 grader 在四项任务均记录零分，但其 AMC23 兼容性问题使这个零分不能独立证明没有对应能力（附录~\ref{app:history}）。其余证据仍然排除了把“没有 NaN 或 Inf 梯度”作为充分验收条件的做法。它没有分离联合 ratio 裁剪、信用重分配、提示或 rollout 漂移各自的因果作用。随机偏移块和滑动窗口也曾在多个权重上评测。本文保留全部结果，而不是从缺少全新配对对照的自适应搜索中挑出一个“获胜窗口”。
+
+\paragraph{提示问题可以早于算法干预。}
+最初的 4B 尝试在首次优化器更新之前，就出现明显重复和频繁触及长度上限的行为，因而不能归因于 Block3 训练。修复后的对照使用不含 ChatML 的 completion 提示与独立的请求级种子；由于两项修复共同引入，这不是移除聊天边界符的单因素效应估计。不过，两种方法使用了同一套修复后协议。训练触及上限的比例分别为 Token 263/6,400（4.11\%）与 Block3 247/6,400（3.86\%）。这一训练统计量的微小差异，不构成回答格式或 benchmark 准确率普遍改善的证据。评测阶段的格式与长度终止计数单独保留。
+
+\paragraph{发生信用分歧，但未出现Block10式坍塌。}
+图\ref{fig:qwen4training}显示，当前4B对照在训练后期保持低熵，梯度范数大体降低。
+200个更新摘要中，Block3符号分歧率的中位数为15.57\%，按局部advantage绝对值加权后为6.68\%。
+相对重分配幅度的中位数为1.148；它不是概率，可以大于一。
+因此，非零重分配可与没有历史Block10式严重退化的行为同时出现，不能单独诊断坍塌。
+Token的块长为一，其重分配指标按定义为零，不是更好信用分配的独立证据。
+附录\ref{app:positionfigures}提供每个训练步的位置图及覆盖限制。
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_training.pdf}
+\caption{4B逐步训练诊断。熵是学生前缀上的全词表、更新前统计；梯度范数是裁剪前优化器诊断。底图衡量训练响应长度触及上限，不是评测引擎的停止原因。这些曲线没有确立性能差异的成因。}
+\label{fig:qwen4training}
+\end{figure}

@@ -1,0 +1,14 @@
+The current pair uses the matched completion protocol in Appendix~\ref{app:config}. Scores are percentages, not fractions. Differences subtract Token from Block3 at the same checkpoint and on the same benchmark. Missing-box-marker rates and engine length-stop rates use all eight responses per question; Avg@8 and Pass@8 have the definitions in Equation~\ref{eq:metrics}. Checkpoint comparisons describe a single training trajectory per method and should not be interpreted as independent repetitions.
+\input{\qwenresults/qwen4_results_en}
+
+Paired-question bootstrap intervals, where reported, resample the same question identities for both arms, separately within each benchmark. They condition on the recorded eight responses per question and on the trained weights. They do not resample training seeds, estimate teacher uncertainty or provide simultaneous coverage over multiple checkpoints and benchmarks. The percentile procedure uses 10,000 resamples with seed 20260921. A confidence interval crossing zero does not establish equivalence between the methods.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{\qwenfigures/qwen4_pass.pdf}
+\caption{Current paired Pass@8 at all four checkpoints. Task-specific vertical ranges are shared by both methods. Each point uses all questions and eight responses per question, not a selected subset of outputs.}
+\end{figure}
+
+\paragraph{Post-hoc overlap sensitivity.}
+Removing the four training-pool string matches described in Appendix~\ref{app:config} leaves 496 MATH500 questions. At Step200, the Avg@8 difference becomes $-0.58$ points ($[-1.66,0.50]$), versus $-0.52$ on the full benchmark. The Step50/100/150 difference signs also remain unchanged. This sensitivity result does not remove semantic or upstream-model contamination, establish its causal effect, or create a new held-out benchmark. Full-500 scores remain primary.
+\input{\overlapresults/qwen4_overlap_sensitivity_en}

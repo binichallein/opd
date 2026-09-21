@@ -1,0 +1,111 @@
+\paragraph{目录与证据强度。}
+历史目录包含17个实验系列、171条评测记录，其中包括不同grader视图及明确的缺失项，
+不代表171次独立训练。下表对各benchmark独立报告百分比。
+横线表示没有找到完成结果，而非准确率为零。
+n=8单元格为Avg@8 / Pass@8；早期n=1与100题pilot保留原指标定义。
+同一输出重新判分不增加样本，旧checkpoint重新评测也不增加训练seed。
+
+最强证据来自原始评测摘要及验收记录，其次为已最终化配对文件和curated摘要。
+最早的block-sum与block-advantage实验仅有历史报告中的舍入值；我们保留这一限制，
+不从百分比倒推伪造精确正确数。
+匿名稿不带源路径及可识别基础设施信息；完整内部来源表记录各数值对应字段。
+
+\paragraph{H01--H05：clean-room探索。}
+早期师生为官方后训练\texttt{Qwen3-0.6B}与\texttt{Qwen3-4B}，不是Base版本，也不是后续GRPO教师。
+3,400-prompt训练池包含2,000条GSM8K训练样本，以及MATH七个学科各200条训练样本。
+探索包括小规模权重、outcome重权、reference anchor、naive block sum与sum/mean/mixed。
+完整评测为GSM8K test的1,319题及500道MATH题，n=1、输出上限256 token、temperature=0.7、top-$p=0.95$。
+100题pilot不是完整评测，其采样次数参数无法从相关摘要恢复。
+
+这组实验使用不同于主研究的损失：clean-room对当前log probability之和施加停止梯度的权重和advantage，
+不使用PPO ratio，会裁剪原始信号并丢弃不足长度的block。
+其mixed模式插值token局部与block均值信号，不等于后来的block-sum/block-mean插值选项。
+一些命名router/anchor变体的精确参数记录不全，因此这些表记录研究过程及负结果，
+不是当前loss的复现，也不能自动视为同名外部论文实现。
+Outcome重权未消除终点退化：两组重权方法在200步时的primary grader MATH500准确率分别为16.60\%、16.40\%，
+均低于记录的初始参考20.20\%；standard组为14.80\%。缺失中间重权评测，不能确定退化开始的时点。
+旧复合曲线中standard组的Step50来自更早pilot，本文不将它连接成同一训练run的已评轨迹。
+
+\paragraph{H06--H09：大小扫描、坍塌与Qwen 1.7B。}
+DAPO阶段的Qwen3-1.7B-Base学生使用保留的4B GRPO教师。
+原始block-size sweep混有不同硬件环境，部分旧评测调用未显式固定评测seed；
+后续同机Token/Block3提供更干净的历史方法对照。
+Step200时，MATH500 Avg@8从45.85\%变为54.75\%，AIME24从5.42\%变为8.75\%，
+AIME25从2.50\%变为5.42\%，AMC23从21.84\%变为27.26\%；中间checkpoint并非全部有利。
+后来的六权重重评只是对同一批Token/Block3权重重新生成，是评测敏感性记录，不是六次新训练。
+
+1.7B两组训练都采用ChatML并要求\texttt{<think>...</think>}，模板kwargs未显式关闭thinking。
+评测则采用关闭thinking的ChatML、不再要求这些标签，并保留已闭合的空thinking控制前缀。
+旧collector将每请求训练seed重置为21，所以名义上的同题八响应可能重复。
+原始完整训练token轨迹未保留，不能回溯测量其精确重复率。
+这些共同历史选择不会因数据集与全局seed相同，就自动变成当前completion协议。
+
+Block10诊断复跑均使用训练seed21，一次在A800、一次在A100环境。
+两次在Step200均记录四个benchmark零分，同时可用优化器诊断仍为有限数值。
+这里采用旧内置VERL判分，而非当前对照固定的external grader。
+尤其内置AMC23零分存在已知兼容性问题，不能独立证明没有AMC能力；它作为历史输出保留，不是经验证的能力测量。
+严重生成退化及其他任务上的失败仍是相关观察。它们是两种硬件环境的重复，不是多训练seed置信区间。
+仅凭旧标量摘要和端点评分，不能证明唯一原因是梯度爆炸、教师不可靠或reverse-KL模式坍塌。
+
+表\ref{tab:block10health}具体显示仅监控集合overlap的局限：两组Step200的top-16 overlap ratio仍接近0.8，
+但交集token仅承载全词表概率质量的约0.17--0.24。高排名集合重叠不意味着概率质量上的集中一致。
+两组最大有限裁剪前梯度范数出现在不同训练步（A800为191，A100为1），因此这些摘要不支持统一可复现的坍塌时间顺序。
+\begin{table}[ht]
+\centering\small
+\caption{保留的Block10诊断摘要。熵（nat）、overlap ratio与交集概率质量取Step200；最后一列是整次训练中最大的裁剪前梯度范数。数值来自历史诊断报告，而非新的训练复现。}
+\label{tab:block10health}
+\input{generated/history_block10_diagnostics}
+\end{table}
+
+\paragraph{H10--H11：另一蒸馏模型对与替代窗口。}
+DeepSeek-R1-Distill-Qwen-1.5B/JustRL是另一组发布模型，但底层仍源自Qwen，不能当成新非Qwen架构。
+Step200时，Block3相对Token的Avg@8在MATH500、AIME24、AIME25、AMC23分别高0.05、4.17、1.67、0.45个百分点。
+但Step200的MATH500、AIME24 Pass@8下降，Step50的AIME24/AMC23及Step100的AIME25也存在退步。
+历史协议将其判为方向复现失败：原判定要求Avg@8、Pass@8的等任务权重均值差均为正。
+本文保留这个历史判定，但当前表格仍不采用汇总分。正向Avg@8终点既不能抹去未满足的复现门槛，
+也不能被说成全面负结果。单训练seed不足以确立通用迁移能力，表中保留全部任务和checkpoint视图。
+
+Random3与Sliding3作为独立配对训练并评测Step50、100、200。
+Random3使用保存状态的PCG64 RNG（seed910021），每步从三个分区offset中选择一个；Sliding3平均三个offset各自完整的loss。
+两者保留边缘partial window。对从位置零开始、右侧padding的有效响应，忽略$10^{-8}$分母稳定项时，
+长度加权的phase-zero loss与历史Block3在代数上等价，因此不能把它描述成根本不同的归一化。
+新实现会在mask分隔的有效区间重新计坐标，并改变浮点求和顺序，所以任意mask下不保证分区相同。每批次仍仅执行一次optimizer更新。
+Sliding3后期好于Random3，不证明它优于新匹配的fixed Block3或Token对照；两种替代方法均可能随训练退化。
+历史grader恢复修复评测流程，不改变冻结训练；方法比较使用修正后的external视图，旧内置视图单列并保留上述AMC23判分限制。
+
+\paragraph{H12--H15：小Base与指令学生。}
+旧Qwen3-0.6B-Base尝试完成Token训练，但在截断诊断时中止Step50评测，不声称已有对应Block3训练。
+后续配对显式关闭thinking，仍保留ChatML，两组使用相同修复后的non-thinking协议。
+修复还改变EOS停止集合，并按真实生成长度建立mask，因此相对旧运行并非仅修改prompt。
+该设置下Block3出现强负结果：Step200的MATH500 Avg@8仅0.57\%，Token为42.88\%。
+因此1.7B结果不能作为更小学生普遍适合block的依据。
+
+Llama师生为\texttt{Llama-3.2-1B-Instruct}与\texttt{Llama-3.2-3B-Instruct}，
+来自同一Meta发布版本的ModelScope镜像\citep{llama32}。
+它不是3.1教师配3.2学生，两者也都不是Base模型。
+首个原生提示尝试完成初始模型评测，但Token训练在Step146被主动停止。
+新配对在保留Llama原生角色边界的前提下复刻旧1.7B的训练/评测指令差异，Token与Block3均完成200步。
+该协议下Block3在MATH500与AMC23明显更差。
+thinking参数不是Llama原生模式开关，要求输出think标签的文字指令也不同于tokenizer角色格式。
+
+0.6B与Llama训练系列均沿用每请求固定seed21。归档显示，同题名义上的八条训练响应可能重复，
+因此保留6,400条轨迹不等于获得6,400条独立生成。当前completion配对修复了请求级seed规则。
+这个训练采样限制不同于八个独立seed的评测响应，影响的是对有效探索的解释，不用于事后修改既有分数。
+
+\paragraph{H16--H17：更新前重复与completion重启。}
+4B Base模型的ChatML尝试在4步后停止。
+首次更新之前的输出已经存在重复与触及长度上限，因此这些初始失败不可能由之后的Block3梯度造成。
+小型提示诊断检查真实输入token ID、thinking要求、EOS处理与请求seed复用。
+后续completion协议同时去掉ChatML并改为独立派生请求seed，是具有新匹配Token/Block3对照的工程修复，
+不是对角色token的单因素因果消融。
+
+第一次正式重启在首次更新之前因网络存储的临时目录清理错误失败。
+重试将编译/临时缓存移至可执行共享内存，保留冻结训练代码和模型/数据契约；失败尝试及首批轨迹保留。
+保存并恢复Step1--2的CPU/GPU probe仅为技术验收，不算额外benchmark实验。
+最新配对的最终结果见附录\ref{app:current}，替代历史目录中的评测前快照。
+
+\paragraph{未报告或未运行的比较。}
+没有完成文件的计划权重、advantage/ratio/reduction完整析因对照、额外训练seed和新增外部算法基线，
+均不悄然计入已做实验。
+缺失原始训练轨迹也不用后期重新采样冒充。
+这些边界限制论文证据强度，却保留了计划、诊断probe、完成运行和独立复现之间的区别。

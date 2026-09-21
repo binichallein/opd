@@ -1,0 +1,356 @@
+{
+  "schema_version": 1,
+  "audit_started_at_utc": "2026-09-20T18:29:50.443432+00:00",
+  "audit_completed_at_utc": "2026-09-20T18:30:12.099946+00:00",
+  "mode": "read_only_cpu_exact_string_set_membership",
+  "runtime": {
+    "python": "3.12.13",
+    "pyarrow": "24.0.0",
+    "unicode_database": "15.0.0",
+    "cpu_threads": 1
+  },
+  "train": {
+    "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/train.parquet",
+    "physical_rows": 1791700,
+    "row_groups": 17,
+    "read_period_rows": 17917,
+    "columns_read": [
+      "env_kwargs.question",
+      "extra_info.index"
+    ],
+    "unique_exact_questions_in_period": 17237,
+    "unique_whitespace_casefold_questions_in_period": 17186,
+    "period_exact_ordered_questions_sha256": "521eb6a681d0d019b8566c3045a6424635c31f802caaf226290b3aa4a6ade2b1",
+    "period_whitespace_casefold_ordered_questions_sha256": "4bc079838bd760104db20eea21370fa4a00952366d72cd5bc3a22e9b63df208f",
+    "exact_unique_questions_sorted_sha256": "d3d45c4613e9fb15a9a402d426ec8c9f1c8c0fb9e49cb60fa2ca603f744be669",
+    "whitespace_casefold_unique_questions_sorted_sha256": "5a9ba57172d6ce23fa30acb731fbb8c5fb010ac662f5cfbdbac20f10a89ca1f9",
+    "full_parquet_sha256_from_prior_manifest": "cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf",
+    "full_parquet_sha256_recomputed": false,
+    "stat_before": {
+      "bytes": 1606646755,
+      "mtime_ns": "1785040048925869176",
+      "inode": "129197014497125816"
+    },
+    "stat_after": {
+      "bytes": 1606646755,
+      "mtime_ns": "1785040048925869176",
+      "inode": "129197014497125816"
+    },
+    "repeat_period_revalidated_in_full_this_audit": false,
+    "full_pool_extrapolation_basis": "Earlier complete 1791700-row column audit verified first17917 question/answer sequence repeated100 times in order; current audit reads one complete period only."
+  },
+  "heldout_parquet": {
+    "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/test.parquet",
+    "bytes": 513250,
+    "sha256": "c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680",
+    "matches_prior_sha256": true,
+    "rows": 643
+  },
+  "historical_manifest": {
+    "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/manifest.json",
+    "bytes": 2490,
+    "sha256": "65f8512b46565f0dfb790bdf56be9fe09207a256009d04286d5c51d71eafce4d"
+  },
+  "definitions": {
+    "exact": "Python str equality between stored train env_kwargs.question and eval JSONL problem; no stripping, prompt instruction removal, casefold, Unicode normalization, answer comparison or semantic matching.",
+    "whitespace_casefold": "For both sides: return ' '.join(question.split()).casefold(); Unicode whitespace collapsed to one ASCII space and edges stripped, then Unicode casefold; NO NFC/NFKC, punctuation/LaTeX rewriting, answer comparison or semantic matching.",
+    "list_hash_serialization": "UTF-8 bytes of json.dumps(list,ensure_ascii=False,separators=(',',':')); ordered lists keep artifact order; unique-list hashes sort Python Unicode strings first.",
+    "overlap_count_unit": "Number of heldout records whose question key exists in the training period; unique matching key counts and training-row occurrence counts are reported separately."
+  },
+  "per_benchmark": {
+    "math500": {
+      "jsonl": {
+        "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl/math500.jsonl",
+        "bytes": 296355,
+        "sha256": "cc164b47b60771eeda257bcb9a2068940cc0706bb8bb79b6635af4c1d4534501",
+        "matches_prior_sha256": true
+      },
+      "heldout_question_field": "problem",
+      "verified_equal_to_test_parquet_env_kwargs_question_by_source_index": true,
+      "exact_ordered_questions_sha256": "1a69088a4977d55292b2da19191198c2d2e4fbb42b3fe821d16c02824358be72",
+      "whitespace_casefold_ordered_questions_sha256": "6562089c67e5c68ce3c2b3ef54ee741ade40f4082798f44d81ea6482d49f1256",
+      "views": {
+        "exact": {
+          "heldout_rows": 500,
+          "heldout_unique_comparison_keys": 500,
+          "overlap_heldout_rows": 2,
+          "overlap_unique_comparison_keys": 2,
+          "overlap_training_period_rows": 2,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 200,
+          "matches": [
+            {
+              "evaluation_id": "math500/test/80",
+              "eval_question_sha256": "07e22408c9d86bf198748e6e0ffd321d2d6b8d605ebab6f9a119cca4c7ce5785",
+              "comparison_key_sha256": "07e22408c9d86bf198748e6e0ffd321d2d6b8d605ebab6f9a119cca4c7ce5785",
+              "training_period_row_indices": [
+                6216
+              ],
+              "training_source_indices": [
+                6216
+              ],
+              "matching_training_question_sha256": [
+                "07e22408c9d86bf198748e6e0ffd321d2d6b8d605ebab6f9a119cca4c7ce5785"
+              ],
+              "also_exact_match": true
+            },
+            {
+              "evaluation_id": "math500/test/276",
+              "eval_question_sha256": "a153bf646bb8dfb046d7c75433a9e56cd7c552526ee5ec4085c5b284d4b6813a",
+              "comparison_key_sha256": "a153bf646bb8dfb046d7c75433a9e56cd7c552526ee5ec4085c5b284d4b6813a",
+              "training_period_row_indices": [
+                17762
+              ],
+              "training_source_indices": [
+                17762
+              ],
+              "matching_training_question_sha256": [
+                "a153bf646bb8dfb046d7c75433a9e56cd7c552526ee5ec4085c5b284d4b6813a"
+              ],
+              "also_exact_match": true
+            }
+          ],
+          "overlap_heldout_ids_sha256": "6a6d0318d53f83f29600cd8b1cd170a52e999db4f625aaf4b585b15326963ee6"
+        },
+        "whitespace_casefold": {
+          "heldout_rows": 500,
+          "heldout_unique_comparison_keys": 500,
+          "overlap_heldout_rows": 4,
+          "overlap_unique_comparison_keys": 4,
+          "overlap_training_period_rows": 4,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 400,
+          "matches": [
+            {
+              "evaluation_id": "math500/test/80",
+              "eval_question_sha256": "07e22408c9d86bf198748e6e0ffd321d2d6b8d605ebab6f9a119cca4c7ce5785",
+              "comparison_key_sha256": "2f59503bfa556823095b93eba3d9dc8c6eee822ca245e31268fac1c54a5fb012",
+              "training_period_row_indices": [
+                6216
+              ],
+              "training_source_indices": [
+                6216
+              ],
+              "matching_training_question_sha256": [
+                "07e22408c9d86bf198748e6e0ffd321d2d6b8d605ebab6f9a119cca4c7ce5785"
+              ],
+              "also_exact_match": true
+            },
+            {
+              "evaluation_id": "math500/test/276",
+              "eval_question_sha256": "a153bf646bb8dfb046d7c75433a9e56cd7c552526ee5ec4085c5b284d4b6813a",
+              "comparison_key_sha256": "f319859146ffa9def014ab70e269758b644853027e00891426346790584b958c",
+              "training_period_row_indices": [
+                17762
+              ],
+              "training_source_indices": [
+                17762
+              ],
+              "matching_training_question_sha256": [
+                "a153bf646bb8dfb046d7c75433a9e56cd7c552526ee5ec4085c5b284d4b6813a"
+              ],
+              "also_exact_match": true
+            },
+            {
+              "evaluation_id": "math500/test/285",
+              "eval_question_sha256": "d03a1b8fc03cf76a4f4ec3147a0a64c4adb66c431a993cb3ca0b4515d9fdec7b",
+              "comparison_key_sha256": "ebb586005434d9ccdc2a9a268a0be51b67e15e8e3bd1d1a04b9a386b92a4ecb2",
+              "training_period_row_indices": [
+                6170
+              ],
+              "training_source_indices": [
+                6170
+              ],
+              "matching_training_question_sha256": [
+                "8f9996b37bbca7f160a1a2d3138dc95cc08431f5c63d57c0b5929cdf4b836ac2"
+              ],
+              "also_exact_match": false
+            },
+            {
+              "evaluation_id": "math500/test/412",
+              "eval_question_sha256": "2b8fd0ef03dada66be92d8bc85a3fd19557ceaa619ab7d0934da75063319b54b",
+              "comparison_key_sha256": "9bc2bb593c07b21841848ca78b891b595376d57ca627b41e2bd3c6396fcfb6ff",
+              "training_period_row_indices": [
+                6090
+              ],
+              "training_source_indices": [
+                6090
+              ],
+              "matching_training_question_sha256": [
+                "06d5aeabb535b6a990b29e1f5210e010d81f9f767a3bbe9e9b07c62c1ca02c08"
+              ],
+              "also_exact_match": false
+            }
+          ],
+          "overlap_heldout_ids_sha256": "2988232fa86620ec2d40530ca93b2fc2dbf10fd12a78059ea07f8004226ac239"
+        }
+      },
+      "normalized_only_additional_heldout_ids": [
+        "math500/test/285",
+        "math500/test/412"
+      ],
+      "normalized_only_additional_heldout_rows": 2
+    },
+    "aime24": {
+      "jsonl": {
+        "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl/aime24.jsonl",
+        "bytes": 25071,
+        "sha256": "6aee5ed24b811ebc210de62f4606600744bd7e90ed143d835781c1a8783f8fa8",
+        "matches_prior_sha256": true
+      },
+      "heldout_question_field": "problem",
+      "verified_equal_to_test_parquet_env_kwargs_question_by_source_index": true,
+      "exact_ordered_questions_sha256": "fa2f8d9bb3895cf3ba40373fae29b7eb949ce9ca81a1dcc7f21163f958bbc981",
+      "whitespace_casefold_ordered_questions_sha256": "b234bbd1e4249ff12523c475d3f043255dbed04401674fa4d273116d0a0cec00",
+      "views": {
+        "exact": {
+          "heldout_rows": 30,
+          "heldout_unique_comparison_keys": 30,
+          "overlap_heldout_rows": 0,
+          "overlap_unique_comparison_keys": 0,
+          "overlap_training_period_rows": 0,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 0,
+          "matches": [],
+          "overlap_heldout_ids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "whitespace_casefold": {
+          "heldout_rows": 30,
+          "heldout_unique_comparison_keys": 30,
+          "overlap_heldout_rows": 0,
+          "overlap_unique_comparison_keys": 0,
+          "overlap_training_period_rows": 0,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 0,
+          "matches": [],
+          "overlap_heldout_ids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      "normalized_only_additional_heldout_ids": [],
+      "normalized_only_additional_heldout_rows": 0
+    },
+    "aime25": {
+      "jsonl": {
+        "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl/aime25.jsonl",
+        "bytes": 29610,
+        "sha256": "daedf1e406b9d73ca25e9696c92614e300e34c4d09376dacaa465b01bb398d43",
+        "matches_prior_sha256": true
+      },
+      "heldout_question_field": "problem",
+      "verified_equal_to_test_parquet_env_kwargs_question_by_source_index": true,
+      "exact_ordered_questions_sha256": "a0d5b716f4d0c09fad1ae1c84a4572a393b9ca73cb9af5117508a86ff9b59ea3",
+      "whitespace_casefold_ordered_questions_sha256": "86b806842f56ac00656ec5328ab3af7a0b08dcabafcc8b74b47f8bf532d1ff3d",
+      "views": {
+        "exact": {
+          "heldout_rows": 30,
+          "heldout_unique_comparison_keys": 30,
+          "overlap_heldout_rows": 0,
+          "overlap_unique_comparison_keys": 0,
+          "overlap_training_period_rows": 0,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 0,
+          "matches": [],
+          "overlap_heldout_ids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "whitespace_casefold": {
+          "heldout_rows": 30,
+          "heldout_unique_comparison_keys": 30,
+          "overlap_heldout_rows": 0,
+          "overlap_unique_comparison_keys": 0,
+          "overlap_training_period_rows": 0,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 0,
+          "matches": [],
+          "overlap_heldout_ids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      "normalized_only_additional_heldout_ids": [],
+      "normalized_only_additional_heldout_rows": 0
+    },
+    "amc23": {
+      "jsonl": {
+        "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl/amc23.jsonl",
+        "bytes": 69930,
+        "sha256": "a07c52c0098a536a2d03e01e531b02c5e9d0a1f4e66d04a0793c0345e1730b45",
+        "matches_prior_sha256": true
+      },
+      "heldout_question_field": "problem",
+      "verified_equal_to_test_parquet_env_kwargs_question_by_source_index": true,
+      "exact_ordered_questions_sha256": "a65b0dbd01422f85930eab870b4680c648f172df536eaf0977562a44f6e64b2d",
+      "whitespace_casefold_ordered_questions_sha256": "ddebfec974dcdf7a743975c99c740f2c5e0865b6628f9ecaee31cf54d45ba1ae",
+      "views": {
+        "exact": {
+          "heldout_rows": 83,
+          "heldout_unique_comparison_keys": 83,
+          "overlap_heldout_rows": 0,
+          "overlap_unique_comparison_keys": 0,
+          "overlap_training_period_rows": 0,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 0,
+          "matches": [],
+          "overlap_heldout_ids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "whitespace_casefold": {
+          "heldout_rows": 83,
+          "heldout_unique_comparison_keys": 83,
+          "overlap_heldout_rows": 0,
+          "overlap_unique_comparison_keys": 0,
+          "overlap_training_period_rows": 0,
+          "overlap_training_rows_full_pool_inferred_from_prior_100fold_period": 0,
+          "matches": [],
+          "overlap_heldout_ids_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      "normalized_only_additional_heldout_ids": [],
+      "normalized_only_additional_heldout_rows": 0
+    }
+  },
+  "safety": {
+    "gpu_used": false,
+    "training_or_evaluation_launched": false,
+    "train_host_connected": false,
+    "remote_files_written": false,
+    "raw_questions_transferred": false,
+    "model_loaded": false,
+    "training_or_eval_filtered": false,
+    "semantic_decontamination_claim": false
+  },
+  "validation": {
+    "jsonl_and_heldout_parquet_question_identity_checks": 643,
+    "independent_linear_membership_check_all_tasks_passed": true,
+    "integer_stat_fields_serialized_as_decimal_strings": true
+  },
+  "title": "训练池与四个数学评测集的字符串重叠审计",
+  "workspace": "/home/tyf/.config/superpowers/worktrees/opd/qwen4-blockfirst",
+  "prior_period_evidence": {
+    "source_path": "paper/iclr2027/internal/historical_evidence.json",
+    "source_sha256_at_read": "fbdf313b0e2b1d196e949a705ca43d7f452b8dc39cc5a4468f4e5cb1548a2b71",
+    "source_json_pointer": "/data_provenance/dapo_train/observed_pool",
+    "observed_at_utc": "2026-09-20T17:14:32.722302+00:00",
+    "prior_scanned_rows": 1791700,
+    "prior_scan_complete": true,
+    "tested_period_rows": 17917,
+    "prior_all_rows_repeat_first_period_in_order": true,
+    "repetition_count": 100,
+    "note_zh": "本次使用此前完整1,791,700行扫描已验证的17,917行周期，不再次全量验证100段，也未重新计算整个train.parquet哈希。当前周期精确unique=17,237、全文件行数/大小与既有记录一致，读取前后stat未变。"
+  },
+  "interpretation_zh": [
+    "按held-out题目记录计数，不是正确响应数、百分比或8次采样倍数。MATH500 exact为2题，whitespace_casefold为4题，其中2题为规范化后新增；三个竞赛集均为0题。",
+    "比较训练env_kwargs.question与eval JSONL problem，不比较拼接的训练/评测prompt。643个JSONL problem均按source/index核对为test.parquet的env_kwargs.question。",
+    "whitespace_casefold只执行Unicode空白折叠/边缘去空白和Unicode casefold，没有NFC/NFKC、数学表达式、标点、LaTeX或语义规范化；规则明确独立于exact。",
+    "MATH500不是与该训练池严格字符串互斥的评测集。三个零值仅表示在这两种字符串规则下未匹配，不能据此声明语义去污染。",
+    "未检查本次200updates实际抽到的800个prompt位次是否命中这些题，未推断记忆、性能膨胀或因果影响，也未审计teacher/student预训练数据。",
+    "完整池匹配行位次数200/400由此前100倍周期证明推导，仅指池内出现次数，不是本次训练实际消费次数。",
+    "未修改或过滤任何训练/评测文件，未重跑评测，未启动GPU/模型；远端只读CPU检查，未传回题面原文，只传ID、计数、哈希和元数据。"
+  ],
+  "audit_program": {
+    "interpreter": "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl/bin/python",
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "source_sha256": "27afc76a076c7ebd4300c6b9040d28b2d4d883493cbde4c3276ca4ef980957f1",
+    "source_bytes": 9457,
+    "original_remote_stdout_sha256": "1ae24724146391d0cfb7842ee53f9b19f4a0d2b5c7aaf070557d4f2eed56925f",
+    "original_remote_stdout_bytes": 12001,
+    "python": "\nimport os\nfor name in (\"OMP_NUM_THREADS\",\"OPENBLAS_NUM_THREADS\",\"MKL_NUM_THREADS\",\"NUMEXPR_NUM_THREADS\"):\n    os.environ[name]=\"1\"\nimport sys,json,hashlib,datetime,pathlib,io,collections,platform,unicodedata\nimport pyarrow as pa\nimport pyarrow.parquet as pq\npa.set_cpu_count(1)\npa.set_io_thread_count(1)\nroot=pathlib.Path(\"/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/data/math_opd_dapo17k_hf_full_eval4\")\nexpected=json.loads(\"{\\\"period_rows\\\":17917,\\\"full_rows\\\":1791700,\\\"train_bytes\\\":1606646755,\\\"train_sha256\\\":\\\"cf359f257a320aecb6448e824b7cc34f70e694583be3df7177b14f359b7959cf\\\",\\\"test_sha256\\\":\\\"c5c9f1b3f65eb40053cae14c005c39e29443d04acbbabba873e98d64818a9680\\\",\\\"eval\\\":{\\\"aime24\\\":{\\\"rows\\\":30,\\\"sha256\\\":\\\"6aee5ed24b811ebc210de62f4606600744bd7e90ed143d835781c1a8783f8fa8\\\"},\\\"math500\\\":{\\\"rows\\\":500,\\\"sha256\\\":\\\"cc164b47b60771eeda257bcb9a2068940cc0706bb8bb79b6635af4c1d4534501\\\"},\\\"aime25\\\":{\\\"rows\\\":30,\\\"sha256\\\":\\\"daedf1e406b9d73ca25e9696c92614e300e34c4d09376dacaa465b01bb398d43\\\"},\\\"amc23\\\":{\\\"rows\\\":83,\\\"sha256\\\":\\\"a07c52c0098a536a2d03e01e531b02c5e9d0a1f4e66d04a0793c0345e1730b45\\\"}}}\")\ndef sha_bytes(b): return hashlib.sha256(b).hexdigest()\ndef canon(x): return json.dumps(x,ensure_ascii=False,separators=(\",\",\":\")).encode(\"utf-8\")\ndef hash_list(x): return sha_bytes(canon(x))\ndef norm(x): return \" \".join(x.split()).casefold()\ndef stat(p):\n    s=p.stat()\n    return {\"bytes\":s.st_size,\"mtime_ns\":str(s.st_mtime_ns),\"inode\":str(s.st_ino)}\ndef file_sha(p):\n    h=hashlib.sha256()\n    with p.open(\"rb\") as f:\n        for chunk in iter(lambda:f.read(1024*1024),b\"\"): h.update(chunk)\n    return h.hexdigest()\nstarted=datetime.datetime.now(datetime.timezone.utc).isoformat()\ntrain=root/\"train.parquet\"; before=stat(train); pf=pq.ParquetFile(train)\nassert pf.metadata.num_rows==expected[\"full_rows\"],\"Training row count changed\"\nassert before[\"bytes\"]==expected[\"train_bytes\"],\"Training byte size changed\"\nqs=[];indices=[]\nfor batch in pf.iter_batches(batch_size=1024,columns=[\"env_kwargs.question\",\"extra_info.index\"],use_threads=False):\n    take=min(expected[\"period_rows\"]-len(qs),len(batch))\n    qs.extend(batch.column(\"env_kwargs\").field(\"question\").slice(0,take).to_pylist())\n    indices.extend(batch.column(\"extra_info\").field(\"index\").slice(0,take).to_pylist())\n    if len(qs)==expected[\"period_rows\"]: break\nassert len(qs)==17917 and indices==list(range(17917)),\"Unexpected period or source indices\"\nassert all(isinstance(x,str) for x in qs),\"Nonstring training questions\"\nassert len(set(qs))==17237,\"Training unique count changed\"\nexact=collections.defaultdict(list);normalized=collections.defaultdict(list)\nfor i,question in enumerate(qs):\n    exact[question].append(i);normalized[norm(question)].append(i)\ntest=root/\"test.parquet\"; test_sha=file_sha(test)\nassert test_sha==expected[\"test_sha256\"],\"Heldout parquet hash mismatch\"\ntest_rows=[]\nfor batch in pq.ParquetFile(test).iter_batches(batch_size=1024,columns=[\"env_kwargs.question\",\"extra_info.index\",\"data_source\"],use_threads=False):\n    test_rows.extend(batch.to_pylist())\ntest_lookup={}\nfor r in test_rows:\n    key=(r[\"data_source\"],r[\"extra_info\"][\"index\"])\n    assert key not in test_lookup,\"Duplicate heldout identity\"\n    test_lookup[key]=r[\"env_kwargs\"][\"question\"]\nassert len(test_lookup)==643,\"Heldout count mismatch\"\ntasks={}\nfor task in [\"math500\",\"aime24\",\"aime25\",\"amc23\"]:\n    p=root/\"eval_jsonl\"/(task+\".jsonl\");raw=p.read_bytes();digest=sha_bytes(raw)\n    assert digest==expected[\"eval\"][task][\"sha256\"],\"Heldout JSONL hash mismatch: \"+task\n    rows=[json.loads(line) for line in io.StringIO(raw.decode(\"utf-8\")) if line.strip()]\n    assert len(rows)==expected[\"eval\"][task][\"rows\"],\"Heldout JSONL count mismatch: \"+task\n    for row in rows:\n        assert row[\"source\"]==task and row[\"split\"]==\"test\",\"Unexpected heldout source or split\"\n        idx=int(row[\"id\"].rsplit(\"/\",1)[1])\n        assert row[\"id\"]==task+\"/test/\"+str(idx),\"Unexpected heldout ID\"\n        assert row[\"problem\"]==test_lookup[(task,idx)],\"JSONL problem differs from heldout env_kwargs.question\"\n    eval_q=[r[\"problem\"] for r in rows]\n    views={}\n    for name,key_fn,index in [(\"exact\",lambda x:x,exact),(\"whitespace_casefold\",norm,normalized)]:\n        matches=[];train_rows=set();matched_keys=set()\n        for row in rows:\n            question=row[\"problem\"];key=key_fn(question)\n            if key not in index: continue\n            ids=index[key];train_rows.update(ids);matched_keys.add(key)\n            matches.append({\"evaluation_id\":row[\"id\"],\"eval_question_sha256\":sha_bytes(question.encode(\"utf-8\")),\"comparison_key_sha256\":sha_bytes(key.encode(\"utf-8\")),\"training_period_row_indices\":ids,\"training_source_indices\":ids,\"matching_training_question_sha256\":sorted(set(sha_bytes(qs[i].encode(\"utf-8\")) for i in ids)),\"also_exact_match\":question in exact})\n        views[name]={\"heldout_rows\":len(rows),\"heldout_unique_comparison_keys\":len(set(key_fn(x) for x in eval_q)),\"overlap_heldout_rows\":len(matches),\"overlap_unique_comparison_keys\":len(matched_keys),\"overlap_training_period_rows\":len(train_rows),\"overlap_training_rows_full_pool_inferred_from_prior_100fold_period\":len(train_rows)*100,\"matches\":matches,\"overlap_heldout_ids_sha256\":hash_list([x[\"evaluation_id\"] for x in matches])}\n    exact_ids={x[\"evaluation_id\"] for x in views[\"exact\"][\"matches\"]}\n    normalized_ids={x[\"evaluation_id\"] for x in views[\"whitespace_casefold\"][\"matches\"]}\n    assert exact_ids<=normalized_ids,\"Normalization lost an exact match\"\n    exact_reference_ids={r[\"id\"] for r in rows if any(r[\"problem\"]==x for x in qs)}\n    normalized_train_list=[norm(x) for x in qs]\n    normalized_reference_ids={r[\"id\"] for r in rows if any(norm(r[\"problem\"])==x for x in normalized_train_list)}\n    assert exact_ids==exact_reference_ids and normalized_ids==normalized_reference_ids,\"Independent linear membership check failed\"\n    tasks[task]={\"jsonl\":{\"path\":str(p),\"bytes\":len(raw),\"sha256\":digest,\"matches_prior_sha256\":True},\"heldout_question_field\":\"problem\",\"verified_equal_to_test_parquet_env_kwargs_question_by_source_index\":True,\"exact_ordered_questions_sha256\":hash_list(eval_q),\"whitespace_casefold_ordered_questions_sha256\":hash_list([norm(x) for x in eval_q]),\"views\":views,\"normalized_only_additional_heldout_ids\":sorted(normalized_ids-exact_ids),\"normalized_only_additional_heldout_rows\":len(normalized_ids-exact_ids)}\nafter=stat(train)\nassert before==after,\"Training file stat changed during audit\"\nmanifest=root/\"manifest.json\";manifest_sha=file_sha(manifest)\nout={\"schema_version\":1,\"audit_started_at_utc\":started,\"audit_completed_at_utc\":datetime.datetime.now(datetime.timezone.utc).isoformat(),\"mode\":\"read_only_cpu_exact_string_set_membership\",\"runtime\":{\"python\":platform.python_version(),\"pyarrow\":pa.__version__,\"unicode_database\":unicodedata.unidata_version,\"cpu_threads\":1},\"train\":{\"path\":str(train),\"physical_rows\":pf.metadata.num_rows,\"row_groups\":pf.metadata.num_row_groups,\"read_period_rows\":len(qs),\"columns_read\":[\"env_kwargs.question\",\"extra_info.index\"],\"unique_exact_questions_in_period\":len(exact),\"unique_whitespace_casefold_questions_in_period\":len(normalized),\"period_exact_ordered_questions_sha256\":hash_list(qs),\"period_whitespace_casefold_ordered_questions_sha256\":hash_list([norm(x) for x in qs]),\"exact_unique_questions_sorted_sha256\":hash_list(sorted(exact)),\"whitespace_casefold_unique_questions_sorted_sha256\":hash_list(sorted(normalized)),\"full_parquet_sha256_from_prior_manifest\":expected[\"train_sha256\"],\"full_parquet_sha256_recomputed\":False,\"stat_before\":before,\"stat_after\":after,\"repeat_period_revalidated_in_full_this_audit\":False,\"full_pool_extrapolation_basis\":\"Earlier complete 1791700-row column audit verified first17917 question/answer sequence repeated100 times in order; current audit reads one complete period only.\"},\"heldout_parquet\":{\"path\":str(test),\"bytes\":test.stat().st_size,\"sha256\":test_sha,\"matches_prior_sha256\":True,\"rows\":len(test_lookup)},\"historical_manifest\":{\"path\":str(manifest),\"bytes\":manifest.stat().st_size,\"sha256\":manifest_sha},\"definitions\":{\"exact\":\"Python str equality between stored train env_kwargs.question and eval JSONL problem; no stripping, prompt instruction removal, casefold, Unicode normalization, answer comparison or semantic matching.\",\"whitespace_casefold\":\"For both sides: return ' '.join(question.split()).casefold(); Unicode whitespace collapsed to one ASCII space and edges stripped, then Unicode casefold; NO NFC/NFKC, punctuation/LaTeX rewriting, answer comparison or semantic matching.\",\"list_hash_serialization\":\"UTF-8 bytes of json.dumps(list,ensure_ascii=False,separators=(',',':')); ordered lists keep artifact order; unique-list hashes sort Python Unicode strings first.\",\"overlap_count_unit\":\"Number of heldout records whose question key exists in the training period; unique matching key counts and training-row occurrence counts are reported separately.\"},\"per_benchmark\":tasks,\"safety\":{\"gpu_used\":False,\"training_or_evaluation_launched\":False,\"train_host_connected\":False,\"remote_files_written\":False,\"raw_questions_transferred\":False,\"model_loaded\":False,\"training_or_eval_filtered\":False,\"semantic_decontamination_claim\":False},\"validation\":{\"jsonl_and_heldout_parquet_question_identity_checks\":643,\"independent_linear_membership_check_all_tasks_passed\":True,\"integer_stat_fields_serialized_as_decimal_strings\":True}}\nprint(json.dumps(out,ensure_ascii=False))\n",
+    "execution_note": "通过ssh ml2执行现有Python/pyarrow；代码只read/stat/hash并向stdout打印统计，无远端文件创建或写入。",
+    "preliminary_attempt_note": "首次held-out pq.read_table嵌套字段投影产生KeyError，未完成统计且无写入；改用ParquetFile.iter_batches保留struct后成功。最终结果另以线性逐项membership核对。"
+  }
+}

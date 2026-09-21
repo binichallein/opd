@@ -3,6 +3,23 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Completed Qwen4 Evaluation and Paper (2026-09-21)
+
+- Token evaluation completed03:43:15 Beijing, all200/150/100/50 accepted; root
+  acceptance passed/complete and protected inputs verified. Four GPUs were idle
+  at14:52 Beijing. Do not relaunch evaluation or infer authorization for new jobs.
+- Current paper: `paper/iclr2027/`, final results `generated/qwen4_publication/`.
+  Read `docs/results/2026-09-21-qwen4-evaluation-and-paper-final.md` first.
+  Current code/docs commits never replace immutable training/evaluation deployments.
+- Preserve all historical results including failures. Block3 changes advantages,
+  joint ratios and reduction, not pure advantage smoothing. Report each benchmark
+  separately and all checkpoints; one training seed is not multiple replicates.
+- Dataset overlap/exposure audits are retrospective; full scores remain primary.
+  The496-question MATH sensitivity is not a new benchmark or proof of decontamination.
+- English/Chinese paper and anonymous LaTeX sources require strict build acceptance.
+  `internal/`, raw outputs, infrastructure paths and private checkpoints must not
+  enter the anonymous package. No automatic OpenReview submission.
+
 ## Authorized Qwen4 Completion Token Control (2026-09-20)
 
 - NEW authorization2026-09-21: Token training completed and passed all four

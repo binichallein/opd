@@ -1,0 +1,123 @@
+{
+  "complete": true,
+  "data_sha256": "cc164b47b60771eeda257bcb9a2068940cc0706bb8bb79b6635af4c1d4534501",
+  "excluded_ids": [
+    "math500/test/80",
+    "math500/test/276",
+    "math500/test/285",
+    "math500/test/412"
+  ],
+  "exclusion_rule": "whitespace_casefold",
+  "normalization_definition": "For both sides: return ' '.join(question.split()).casefold(); Unicode whitespace collapsed to one ASCII space and edges stripped, then Unicode casefold; NO NFC/NFKC, punctuation/LaTeX rewriting, answer comparison or semantic matching.",
+  "official_questions": 500,
+  "options": {
+    "allow_partial": false,
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20260921,
+    "primary_ci": true
+  },
+  "provenance": {
+    "audit_path": "/home/tyf/.config/superpowers/worktrees/opd/qwen4-blockfirst/paper/iclr2027/internal/dataset_overlap_audit.json",
+    "audit_sha256": "31bf1b79b25aec56d7ab055cd192f0f649709a8845e71171e751e6c95996ed1b",
+    "builder_sha256": "d71a3eb1972055893ad3d343bac61b23c1079522b48e147cab75227811290f3f",
+    "input_path": "/home/tyf/.config/superpowers/worktrees/opd/qwen4-blockfirst/paper/iclr2027/data/qwen4_final_20260921.json",
+    "input_sha256": "0c7091023a66cc9f30d42b47420bad884d1fb437b776e018ad19d5567cf245ab",
+    "numpy_version": "2.3.4",
+    "shared_helpers_sha256": "ab65ae459d76c6706383de14abcaa808a7ddb999b155e4433b3b31a9995114bc"
+  },
+  "retained_ids_sha256": "020f57a1e38df617c01a79846fc99c6ad3f2bb696c331f8a0b5c6e0de4983179",
+  "rows": [
+    {
+      "arms": {
+        "block3_mean": {
+          "avg_at_8": 0.7573084677419355,
+          "pass_at_8": 0.907258064516129
+        },
+        "token_opd": {
+          "avg_at_8": 0.7631048387096774,
+          "pass_at_8": 0.9133064516129032
+        }
+      },
+      "delta_pp": {
+        "avg_at_8": -0.5796370967741882,
+        "pass_at_8": -0.6048387096774244
+      },
+      "paired_ci": {
+        "avg_at_8": {
+          "delta_pp": -0.5796370967741935,
+          "lower_95_pp": -1.663306451612903,
+          "upper_95_pp": 0.5040322580645161
+        },
+        "pass_at_8": {
+          "delta_pp": -0.6048387096774194,
+          "lower_95_pp": -2.620967741935484,
+          "upper_95_pp": 1.2096774193548387
+        }
+      },
+      "step": 200
+    },
+    {
+      "arms": {
+        "block3_mean": {
+          "avg_at_8": 0.7840221774193549,
+          "pass_at_8": 0.9153225806451613
+        },
+        "token_opd": {
+          "avg_at_8": 0.765625,
+          "pass_at_8": 0.9153225806451613
+        }
+      },
+      "delta_pp": {
+        "avg_at_8": 1.839717741935487,
+        "pass_at_8": 0.0
+      },
+      "paired_ci": null,
+      "step": 150
+    },
+    {
+      "arms": {
+        "block3_mean": {
+          "avg_at_8": 0.7583165322580645,
+          "pass_at_8": 0.9092741935483871
+        },
+        "token_opd": {
+          "avg_at_8": 0.7726814516129032,
+          "pass_at_8": 0.905241935483871
+        }
+      },
+      "delta_pp": {
+        "avg_at_8": -1.4364919354838745,
+        "pass_at_8": 0.40322580645161255
+      },
+      "paired_ci": null,
+      "step": 100
+    },
+    {
+      "arms": {
+        "block3_mean": {
+          "avg_at_8": 0.7893145161290323,
+          "pass_at_8": 0.9193548387096774
+        },
+        "token_opd": {
+          "avg_at_8": 0.7908266129032258,
+          "pass_at_8": 0.9233870967741935
+        }
+      },
+      "delta_pp": {
+        "avg_at_8": -0.15120967741935054,
+        "pass_at_8": -0.40322580645161255
+      },
+      "paired_ci": null,
+      "step": 50
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Post-hoc overlap sensitivity on a 496-question MATH500 subset; not a new benchmark or a primary result. Official full-500 scores remain unchanged. Exclusions follow the audit's whitespace-collapse plus casefold matches, including exact matches. No semantic decontamination or causal effect of overlap is established.",
+  "subset_questions": 496,
+  "unavailable_steps": [],
+  "uncertainty_scope": "Optional Step200 pointwise 95% percentile paired-question bootstrap of Block3 minus Token on the same 496 retained MATH500 questions, in percentage points. Conditional on one seed21 training pair; not training-run variance or a multi-training-seed CI.",
+  "units": {
+    "arm_scores": "fraction",
+    "delta_and_ci": "percentage points"
+  }
+}

@@ -1,0 +1,354 @@
+\subsection{H01: 早期3400-prompt权重方法与seed7/13 pilot}
+\label{history:early_weights50}
+训练seed：7, 13；记录训练步数：50。
+\paragraph{100-question pilot: mean score / Pass@k, k unrecorded}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+adaptive\_\allowbreak{}exopd & 50 & 7 & 39.00 / 39.00 & 22.00 / 22.00 \\
+base & 0 & -- & 43.00 / 43.00 & 22.00 / 22.00 \\
+routed\_\allowbreak{}adaptive & 50 & 7 & 40.00 / 40.00 & 26.00 / 26.00 \\
+seed13\_\allowbreak{}standard & 50 & 13 & 43.00 / 43.00 & 22.00 / 22.00 \\
+seed13\_\allowbreak{}topk\_\allowbreak{}default & 50 & 13 & 38.00 / 38.00 & 27.00 / 27.00 \\
+seed7\_\allowbreak{}routed\_\allowbreak{}lam110 & 50 & 7 & 44.00 / 44.00 & 25.00 / 25.00 \\
+seed7\_\allowbreak{}topk\_\allowbreak{}strict & 50 & 7 & 41.00 / 41.00 & 20.00 / 20.00 \\
+standard & 50 & 7 & 46.00 / 46.00 & 25.00 / 25.00 \\
+topk\_\allowbreak{}router & 50 & 7 & 44.00 / 44.00 & 25.00 / 25.00 \\
+\bottomrule\end{longtable}
+}
+\paragraph{Full n=1: original simple grader, accuracy}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+base & 0 & -- & 41.70 & 16.00 \\
+routed\_\allowbreak{}lam110 & 50 & 7 & 41.93 & 16.00 \\
+standard & 50 & 7 & 41.77 & 16.80 \\
+topk\_\allowbreak{}router & 50 & 7 & 41.70 & 16.40 \\
+\bottomrule\end{longtable}
+}
+\paragraph{Full n=1: post-hoc primary grader, accuracy}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+base & 0 & -- & 46.25 & 20.20 \\
+routed\_\allowbreak{}lam110 & 50 & 7 & 47.23 & 20.20 \\
+standard & 50 & 7 & 46.17 & 20.20 \\
+topk\_\allowbreak{}router & 50 & 7 & 46.17 & 19.40 \\
+\bottomrule\end{longtable}
+}
+\subsection{H02: 早期200-step outcome reweight与standard/topk曲线}
+\label{history:early_outcome200}
+训练seed：7；记录训练步数：200。
+\paragraph{Full n=1: original simple grader, accuracy}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+outcome\_\allowbreak{}reweight & 200 & 7 & 33.36 & 12.60 \\
+outcome\_\allowbreak{}topk\_\allowbreak{}router & 200 & 7 & 33.21 & 12.20 \\
+standard & 100 & 7 & 35.25 & 13.80 \\
+standard & 150 & 7 & 33.43 & 12.40 \\
+standard & 200 & 7 & 32.15 & 11.80 \\
+topk\_\allowbreak{}router & 100 & 7 & 35.25 & 14.20 \\
+topk\_\allowbreak{}router & 150 & 7 & 34.87 & 12.00 \\
+topk\_\allowbreak{}router & 200 & 7 & 33.89 & 13.20 \\
+\bottomrule\end{longtable}
+}
+\paragraph{Full n=1: post-hoc primary grader, accuracy}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+outcome\_\allowbreak{}reweight & 200 & 7 & 37.83 & 16.60 \\
+outcome\_\allowbreak{}topk\_\allowbreak{}router & 200 & 7 & 38.51 & 16.40 \\
+standard & 100 & 7 & 39.95 & 16.20 \\
+standard & 150 & 7 & 38.06 & 15.80 \\
+standard & 200 & 7 & 36.16 & 14.80 \\
+topk\_\allowbreak{}router & 100 & 7 & 40.26 & 16.20 \\
+topk\_\allowbreak{}router & 150 & 7 & 39.27 & 14.40 \\
+topk\_\allowbreak{}router & 200 & 7 & 38.82 & 16.20 \\
+\bottomrule\end{longtable}
+}
+\subsection{H03: 早期100-step reference-anchor对照}
+\label{history:early_anchor100}
+训练seed：未记录；记录训练步数：100。
+\paragraph{Full n=1: original simple grader, accuracy}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+anchored\_\allowbreak{}standard & 100 & -- & 35.41 & 12.40 \\
+anchored\_\allowbreak{}topk\_\allowbreak{}router & 100 & -- & 37.15 & 13.40 \\
+standard & 100 & -- & 35.48 & 13.40 \\
+topk\_\allowbreak{}router & 100 & -- & 34.57 & 14.00 \\
+\bottomrule\end{longtable}
+}
+\paragraph{Full n=1: post-hoc primary grader, accuracy}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+anchored\_\allowbreak{}standard & 100 & -- & 40.03 & 15.20 \\
+anchored\_\allowbreak{}topk\_\allowbreak{}router & 100 & -- & 41.93 & 17.80 \\
+standard & 100 & -- & 40.71 & 16.80 \\
+topk\_\allowbreak{}router & 100 & -- & 39.42 & 17.60 \\
+\bottomrule\end{longtable}
+}
+\subsection{H04: 早期seed7 naive block k1/2/3}
+\label{history:early_blocksum50}
+训练seed：7；记录训练步数：50。
+\paragraph{Full n=1: documented rounded accuracy only}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+block\_\allowbreak{}k2 & 50 & 7 & 45.41 & 19.40 \\
+block\_\allowbreak{}k3 & 50 & 7 & 46.85 & 20.20 \\
+token\_\allowbreak{}opd & 50 & 7 & 45.94 & 20.00 \\
+\bottomrule\end{longtable}
+}
+\subsection{H05: 早期seed7 Block3 sum/mean/mixed权重}
+\label{history:early_blockadv50}
+训练seed：7；记录训练步数：50。
+\paragraph{Full n=1: documented rounded accuracy only}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrr@{}}
+\toprule
+Method & Step & Seed & GSM8K & MATH500 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 7 & 46.93 & 19.80 \\
+block3\_\allowbreak{}mixed\_\allowbreak{}lam05 & 50 & 7 & 47.08 & 18.80 \\
+block3\_\allowbreak{}sum & 50 & 7 & 46.55 & 19.20 \\
+\bottomrule\end{longtable}
+}
+\subsection{H06: Qwen1.7 Base blocksize sweep k1/3/5/10}
+\label{history:qwen17_sweep}
+训练seed：21；记录训练步数：200。
+\paragraph{Legacy external grader: Avg@8 / Pass@8, evaluation seeds unspecified}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block10\_\allowbreak{}mean & 200 & 21 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 \\
+block3\_\allowbreak{}mean & 200 & 21 & 69.27 / 87.80 & 9.58 / 30.00 & 8.75 / 26.67 & 39.91 / 61.45 \\
+block5\_\allowbreak{}mean & 200 & 21 & 67.40 / 87.60 & 9.17 / 20.00 & 7.92 / 23.33 & 34.19 / 61.45 \\
+token\_\allowbreak{}opd & 200 & 21 & 69.12 / 88.60 & 13.33 / 26.67 & 6.67 / 16.67 & 36.75 / 62.65 \\
+\bottomrule\end{longtable}
+}
+\subsection{H07: Block10双机独立诊断复跑}
+\label{history:block10_collapse}
+训练seed：21；记录训练步数：200。
+\emph{历史内置AMC23判分存在兼容性问题；零分不等于独立验证的能力测量。}
+\paragraph{Built-in grader: Avg@8 / Pass@8 (separate view)}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+Block10: A100 host & 50 & 21 & 37.75 / 78.60 & 4.17 / 20.00 & 2.08 / 13.33 & 0.00 / 0.00 \\
+Block10: A100 host & 100 & 21 & 0.97 / 7.20 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 \\
+Block10: A100 host & 200 & 21 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 \\
+Block10: A800 host & 50 & 21 & 45.20 / 79.20 & 2.50 / 13.33 & 2.92 / 10.00 & 0.00 / 0.00 \\
+Block10: A800 host & 100 & 21 & 2.70 / 16.60 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 \\
+Block10: A800 host & 200 & 21 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 \\
+\bottomrule\end{longtable}
+}
+\subsection{H08: Qwen1.7 Base 同机Token/Block3严格配对}
+\label{history:qwen17_ml2}
+训练seed：21；记录训练步数：200。
+\emph{历史内置AMC23判分存在兼容性问题；零分不等于独立验证的能力测量。}
+\paragraph{Built-in grader: Avg@8 / Pass@8 (separate view)}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 21 & 50.25 / 81.00 & 5.42 / 20.00 & 3.75 / 16.67 & 0.00 / 0.00 \\
+block3\_\allowbreak{}mean & 100 & 21 & 40.80 / 80.40 & 5.00 / 20.00 & 3.33 / 13.33 & 0.00 / 0.00 \\
+block3\_\allowbreak{}mean & 200 & 21 & 52.83 / 82.20 & 8.75 / 26.67 & 5.42 / 16.67 & 0.00 / 0.00 \\
+token\_\allowbreak{}opd & 50 & 21 & 37.05 / 78.00 & 3.75 / 16.67 & 2.50 / 13.33 & 0.00 / 0.00 \\
+token\_\allowbreak{}opd & 100 & 21 & 41.80 / 80.20 & 6.25 / 26.67 & 2.08 / 6.67 & 0.00 / 0.00 \\
+token\_\allowbreak{}opd & 200 & 21 & 44.45 / 80.00 & 5.42 / 20.00 & 2.50 / 10.00 & 0.00 / 0.00 \\
+\bottomrule\end{longtable}
+}
+\paragraph{Audited historical external grader: Avg@8 / Pass@8}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 21 & 52.10 / 83.60 & 5.42 / 20.00 & 3.75 / 16.67 & 22.14 / 49.40 \\
+block3\_\allowbreak{}mean & 100 & 21 & 42.27 / 82.20 & 5.00 / 20.00 & 3.33 / 13.33 & 23.64 / 61.45 \\
+block3\_\allowbreak{}mean & 200 & 21 & 54.75 / 84.80 & 8.75 / 26.67 & 5.42 / 16.67 & 27.26 / 61.45 \\
+token\_\allowbreak{}opd & 50 & 21 & 38.07 / 80.20 & 3.75 / 16.67 & 2.50 / 13.33 & 13.70 / 45.78 \\
+token\_\allowbreak{}opd & 100 & 21 & 43.10 / 82.20 & 6.25 / 26.67 & 2.08 / 6.67 & 18.67 / 57.83 \\
+token\_\allowbreak{}opd & 200 & 21 & 45.85 / 82.00 & 5.42 / 20.00 & 2.50 / 10.00 & 21.84 / 54.22 \\
+\bottomrule\end{longtable}
+}
+\subsection{H09: Qwen1.7历史六权重新生成评测}
+\label{history:qwen17_reeval}
+训练seed：21；记录训练步数：--。
+\paragraph{Historical external grader: Avg@8 / Pass@8}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 21 & 52.05 / 84.60 & 5.00 / 16.67 & 3.33 / 16.67 & 23.80 / 51.81 \\
+block3\_\allowbreak{}mean & 100 & 21 & 42.65 / 83.00 & 5.00 / 20.00 & 2.50 / 13.33 & 23.49 / 56.63 \\
+block3\_\allowbreak{}mean & 200 & 21 & 54.15 / 84.00 & 7.08 / 26.67 & 5.83 / 16.67 & 29.22 / 65.06 \\
+token\_\allowbreak{}opd & 50 & 21 & 38.30 / 81.80 & 2.50 / 16.67 & 3.75 / 16.67 & 14.61 / 51.81 \\
+token\_\allowbreak{}opd & 100 & 21 & 43.35 / 83.00 & 6.25 / 20.00 & 2.08 / 6.67 & 18.52 / 55.42 \\
+token\_\allowbreak{}opd & 200 & 21 & 45.92 / 83.00 & 6.67 / 16.67 & 3.75 / 10.00 & 23.34 / 60.24 \\
+\bottomrule\end{longtable}
+}
+\subsection{H10: DeepSeek-R1-Distill/JustRL配对}
+\label{history:deepseek_justrl}
+训练seed：21；记录训练步数：200。
+\paragraph{Historical external grader: Avg@8 / Pass@8}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 21 & 84.15 / 94.60 & 32.50 / 66.67 & 27.50 / 43.33 & 70.93 / 86.75 \\
+block3\_\allowbreak{}mean & 100 & 21 & 84.45 / 94.80 & 39.17 / 73.33 & 25.42 / 36.67 & 72.74 / 90.36 \\
+block3\_\allowbreak{}mean & 200 & 21 & 84.75 / 94.00 & 43.75 / 66.67 & 30.83 / 50.00 & 73.80 / 90.36 \\
+token\_\allowbreak{}opd & 50 & 21 & 83.78 / 94.80 & 38.75 / 73.33 & 27.08 / 50.00 & 71.69 / 90.36 \\
+token\_\allowbreak{}opd & 100 & 21 & 84.62 / 94.20 & 39.17 / 70.00 & 34.58 / 46.67 & 73.19 / 89.16 \\
+token\_\allowbreak{}opd & 200 & 21 & 84.70 / 94.60 & 39.58 / 70.00 & 29.17 / 46.67 & 73.34 / 90.36 \\
+\bottomrule\end{longtable}
+}
+\emph{历史内置AMC23判分存在兼容性问题；零分不等于独立验证的能力测量。}
+\paragraph{Built-in grader: Avg@8 / Pass@8 (separate view)}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 21 & 81.80 / 91.60 & 32.50 / 66.67 & 27.50 / 43.33 & 0.00 / 0.00 \\
+block3\_\allowbreak{}mean & 100 & 21 & 82.23 / 91.80 & 39.17 / 73.33 & 25.42 / 36.67 & 0.00 / 0.00 \\
+block3\_\allowbreak{}mean & 200 & 21 & 82.25 / 90.80 & 43.75 / 66.67 & 30.83 / 50.00 & 0.00 / 0.00 \\
+token\_\allowbreak{}opd & 50 & 21 & 81.47 / 91.60 & 38.75 / 73.33 & 27.08 / 50.00 & 0.00 / 0.00 \\
+token\_\allowbreak{}opd & 100 & 21 & 82.12 / 91.00 & 39.17 / 70.00 & 34.58 / 46.67 & 0.00 / 0.00 \\
+token\_\allowbreak{}opd & 200 & 21 & 82.25 / 91.60 & 39.58 / 70.00 & 29.17 / 46.67 & 0.00 / 0.00 \\
+\bottomrule\end{longtable}
+}
+\subsection{H11: Qwen1.7 random3/sliding3}
+\label{history:window_random_sliding}
+训练seed：21；记录训练步数：200。
+\paragraph{Historical external grader: Avg@8 / Pass@8}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+random3 & 50 & 21 & 45.23 / 81.60 & 5.00 / 20.00 & 2.92 / 10.00 & 18.22 / 48.19 \\
+random3 & 100 & 21 & 36.70 / 82.40 & 2.08 / 13.33 & 1.67 / 10.00 & 14.91 / 48.19 \\
+random3 & 200 & 21 & 21.18 / 73.60 & 3.33 / 16.67 & 0.00 / 0.00 & 12.20 / 46.99 \\
+sliding3 & 50 & 21 & 41.33 / 81.80 & 3.75 / 23.33 & 1.67 / 10.00 & 15.66 / 48.19 \\
+sliding3 & 100 & 21 & 52.08 / 85.20 & 4.58 / 20.00 & 2.92 / 10.00 & 24.85 / 57.83 \\
+sliding3 & 200 & 21 & 34.75 / 81.00 & 5.00 / 20.00 & 2.08 / 10.00 & 15.81 / 48.19 \\
+\bottomrule\end{longtable}
+}
+\emph{历史内置AMC23判分存在兼容性问题；零分不等于独立验证的能力测量。}
+\paragraph{Built-in grader: Avg@8 / Pass@8 (separate view)}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+random3 & 50 & 21 & 43.43 / 79.00 & 5.00 / 20.00 & 2.92 / 10.00 & 0.00 / 0.00 \\
+random3 & 100 & 21 & 35.27 / 79.60 & 2.08 / 13.33 & 1.67 / 10.00 & 0.00 / 0.00 \\
+random3 & 200 & 21 & 20.50 / 71.60 & 3.33 / 16.67 & 0.00 / 0.00 & 0.00 / 0.00 \\
+sliding3 & 50 & 21 & 40.02 / 79.20 & 3.75 / 23.33 & 1.67 / 10.00 & 0.00 / 0.00 \\
+sliding3 & 100 & 21 & 50.42 / 82.80 & 4.58 / 20.00 & 2.92 / 10.00 & 0.00 / 0.00 \\
+sliding3 & 200 & 21 & 33.70 / 78.00 & 5.00 / 20.00 & 2.08 / 10.00 & 0.00 / 0.00 \\
+\bottomrule\end{longtable}
+}
+\subsection{H12: Qwen0.6 Base旧thinking-unspecified提示}
+\label{history:qwen06_old_prompt}
+训练seed：21；记录训练步数：200。
+\paragraph{Incomplete planned evaluation: no full benchmark claim}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+token\_\allowbreak{}opd & 50 & 21 & -- & -- & -- & -- \\
+token\_\allowbreak{}opd & 100 & 21 & -- & -- & -- & -- \\
+token\_\allowbreak{}opd & 200 & 21 & -- & -- & -- & -- \\
+\bottomrule\end{longtable}
+}
+\subsection{H13: Qwen0.6 Base显式非thinking配对}
+\label{history:qwen06_nonthinking}
+训练seed：21；记录训练步数：200。
+\paragraph{Historical external grader: Avg@8 / Pass@8}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 21 & 16.20 / 56.60 & 0.00 / 0.00 & 0.42 / 3.33 & 5.87 / 26.51 \\
+block3\_\allowbreak{}mean & 100 & 21 & 3.48 / 23.60 & 0.00 / 0.00 & 0.00 / 0.00 & 1.05 / 6.02 \\
+block3\_\allowbreak{}mean & 200 & 21 & 0.57 / 4.40 & 0.00 / 0.00 & 0.00 / 0.00 & 0.45 / 2.41 \\
+student\_\allowbreak{}base & 0 & -- & 10.45 / 45.20 & 0.42 / 3.33 & 0.00 / 0.00 & 3.46 / 24.10 \\
+teacher & 0 & -- & 83.43 / 93.40 & 23.33 / 43.33 & 18.75 / 26.67 & 57.68 / 77.11 \\
+token\_\allowbreak{}opd & 50 & 21 & 25.70 / 65.40 & 1.25 / 6.67 & 0.42 / 3.33 & 10.09 / 42.17 \\
+token\_\allowbreak{}opd & 100 & 21 & 39.60 / 72.20 & 2.50 / 13.33 & 1.25 / 10.00 & 15.36 / 38.55 \\
+token\_\allowbreak{}opd & 200 & 21 & 42.88 / 75.60 & 2.50 / 10.00 & 0.83 / 6.67 & 18.98 / 46.99 \\
+\bottomrule\end{longtable}
+}
+\subsection{H14: Llama3.2原生非thinking提示尝试}
+\label{history:llama_native_stopped}
+训练seed：21；记录训练步数：146。
+\paragraph{Historical external grader: Avg@8 / Pass@8}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+student\_\allowbreak{}base & 0 & -- & 13.80 / 45.20 & 0.42 / 3.33 & 0.00 / 0.00 & 4.07 / 21.69 \\
+token\_\allowbreak{}opd & 50 & 21 & -- & -- & -- & -- \\
+token\_\allowbreak{}opd & 100 & 21 & -- & -- & -- & -- \\
+token\_\allowbreak{}opd & 200 & 21 & -- & -- & -- & -- \\
+\bottomrule\end{longtable}
+}
+\subsection{H15: Llama3.2 historical17训推差异配对}
+\label{history:llama_historical}
+训练seed：21；记录训练步数：200。
+\paragraph{Historical external grader: Avg@8 / Pass@8}
+{\footnotesize\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}p{1.4in}rrrrrr@{}}
+\toprule
+Method & Step & Seed & MATH500 & AIME24 & AIME25 & AMC23 \\
+\midrule\endhead
+block3\_\allowbreak{}mean & 50 & 21 & 6.12 / 27.20 & 0.00 / 0.00 & 0.00 / 0.00 & 1.51 / 8.43 \\
+block3\_\allowbreak{}mean & 100 & 21 & 11.15 / 38.60 & 1.25 / 6.67 & 0.42 / 3.33 & 4.52 / 22.89 \\
+block3\_\allowbreak{}mean & 200 & 21 & 6.30 / 28.40 & 0.00 / 0.00 & 0.00 / 0.00 & 1.51 / 9.64 \\
+student\_\allowbreak{}base & 0 & -- & 14.00 / 46.40 & 0.42 / 3.33 & 0.00 / 0.00 & 5.27 / 28.92 \\
+token\_\allowbreak{}opd & 50 & 21 & 14.15 / 44.80 & 0.00 / 0.00 & 0.00 / 0.00 & 6.78 / 32.53 \\
+token\_\allowbreak{}opd & 100 & 21 & 14.90 / 45.80 & 0.42 / 3.33 & 0.00 / 0.00 & 6.48 / 31.33 \\
+token\_\allowbreak{}opd & 200 & 21 & 15.55 / 45.20 & 0.42 / 3.33 & 0.00 / 0.00 & 6.02 / 28.92 \\
+\bottomrule\end{longtable}
+}
+\subsection{H16: Qwen4旧ChatML Block3-first失败/中止}
+\label{history:qwen4_chatml_stopped}
+训练seed：21；记录训练步数：4。
+此尝试无已完成benchmark结果记录。
+\subsection{H17: Qwen4新completion Block3与新Token}
+\label{history:qwen4_completion}
+训练seed：21；记录训练步数：200。
+该师生对的最终结果见附录\ref{app:current}。
