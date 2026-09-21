@@ -42,3 +42,16 @@
 - GPU实际更新、完整状态保存、退出恢复必须由运行中的两步门禁另外验收，不以CPU测试代替。
 
 上述是启动快照，不是训练完成或方法有效的结论。后续以实时状态及验收文件为准。
+
+## 23:55预检进展
+
+- Block3第1步更新及保存已完成，训练子任务退出码0，checkpoint/diagnostics审计passed、issues为空。
+- 四个rank的Adam动量非零且有限，优化器step为1；`optimizer_inspection_step1.json`通过。
+- 32条轨迹全部通过实际输入、历史数据顺序、独立seed、logprob/mask、EOS/停止原因审计。
+  截断0/32、生成thinking标签0/32、周期重复0/32；平均1374.906 token，最长4185。
+- 裁剪前梯度范数3.078439，PG loss0.114808，学生熵0.240812，教师熵0.316861；
+  advantage/entropy/post-update ratio的非有限计数均为0。
+- 原始归档SHA256：`4e6dcf9ba743ccda47cef7d60fd273a6b573e716e6a4a4b1c4eb24cebc592835`。
+- 23:55:18第2步恢复子任务自动启动，PID1910758。此时恢复门禁尚未完成，正式训练尚未启动。
+- 预检退出时出现DataLoader清理阶段worker killed警告，但主进程退出0、预期Step1已保存并通过审计；
+  不能将此清理警告误报为正式训练崩溃，也不能因此提前声称恢复成功。

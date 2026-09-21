@@ -23,6 +23,9 @@
   `docs/results/2026-09-21-qwen17-instruct-blockfirst-startup.md` and LIVE state.
   At launch only runtime preflight started; do not claim formal training yet.
   Never relaunch or overwrite this queue, deployment, probes or artifacts.
+- At23:55 Block3 probe1 exited0, checkpoint/rollout/optimizer audits passed:
+  32rollouts,0cap,0think,0periodic; grad3.0784. Probe2 resume started23:55:18,
+  PID1910758; not yet formal training. Verify LIVE state before reporting.
 
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
