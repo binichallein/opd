@@ -23,6 +23,12 @@ reproducibility, data safety, and clear experiment lineage.
   the old launcher's teacher_model_revision field stays empty because its Qwen
   branch assumes HF_REVISION. Never create a fake HF revision or alter old code.
 - Below are historical authorizations, not permissions to restart old queues.
+- Controller1839519 started16:14:23 Beijing, PPID1/SID1839519 verified; control
+  release55e24cfc2a4a3891d348a8247b712e4ead4e0f6a. Read
+  `docs/results/2026-09-21-qwen8-teacher-startup.md` and LIVE queue_state before
+  reporting or acting. At16:15 downloading8B shards, no capability result/training.
+  Never duplicate this queue. Old failed CPU asset init33d883d is archived; NFS
+  hardlink publication fixed and tested. Short training cache=/dev/shm/q48.
 
 ## Completed Qwen4 Evaluation and Paper (2026-09-21)
 

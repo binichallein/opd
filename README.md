@@ -17,6 +17,8 @@ reverse-KL 目标。
 就比原4B-GRPO教师更强，也不把本次诊断分数当成完整benchmark评测。
 
 - [验收标准、训练对照和实现计划](docs/plans/2026-09-21-qwen8-teacher-acceptance.md)
+- [启动状态、PID、数据预检与工程验证](docs/results/2026-09-21-qwen8-teacher-startup.md)：
+  16:14后台队列已启动，先下载/验收教师，不代表训练已开始或教师已合格。
 - 控制器：`scripts/run_qwen8_teacher_pair.py`；仅ml2，新目录，不修改历史产物。
 - 同一数据、seed21、completion提示、原始loss；全部50/100/150/200状态、每步轨迹和热图数据保留。
 - 状态以新队列的 `queue_state.json` 为准；未通过验收不得启动正式训练。
