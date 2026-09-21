@@ -8,6 +8,8 @@ No existing historical asset helper, model, or runtime is written by this script
 
 import argparse
 from contextlib import contextmanager
+import ctypes
+import errno
 import fcntl
 import http.client
 import json
@@ -212,9 +214,38 @@ def _download_lock():
         os.close(fd)
 
 
+def _rename_noreplace(partial, target):
+    """Return False only when the platform/filesystem cannot do no-replace rename."""
+    if not sys.platform.startswith("linux"):
+        return False
+    rename = getattr(ctypes.CDLL(None, use_errno=True), "renameat2", None)
+    if rename is None:
+        return False
+    rename.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint]
+    rename.restype = ctypes.c_int
+    # AT_FDCWD=-100; RENAME_NOREPLACE=1. Ordinary rename() would overwrite a race winner.
+    if rename(-100, os.fsencode(partial), -100, os.fsencode(target), 1) == 0:
+        return True
+    error = ctypes.get_errno()
+    if error in {errno.ENOSYS, errno.EINVAL, errno.EOPNOTSUPP, errno.EXDEV, errno.EPERM}:
+        return False
+    raise OSError(error, os.strerror(error), str(target))
+
+
 def _publish(partial, target):
-    # link() is atomic and refuses to replace an existing destination, unlike rename().
-    os.link(partial, target, follow_symlinks=False)
+    """Publish without hard links or overwrite; caller holds the download lock."""
+    size = _regular(partial)
+    if _rename_noreplace(partial, target):
+        return
+    # NFS may not support rename flags either. Exclusive creation never replaces
+    # an existing file/symlink. Failed copies retain the source and fail closed;
+    # the final manifest is not accepted until all files pass size/SHA checks.
+    digest = sha256(partial)
+    with partial.open("rb") as source, target.open("xb") as output:
+        shutil.copyfileobj(source, output, length=CHUNK_SIZE)
+        output.flush()
+        os.fsync(output.fileno())
+    verify_file(target, {"Size": size, "Sha256": digest})
     partial.unlink()
 
 

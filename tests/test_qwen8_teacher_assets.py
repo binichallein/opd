@@ -1,6 +1,7 @@
 """Offline contracts for the official pinned 8B Base teacher preparer."""
 
 import copy
+import errno
 import hashlib
 import importlib.util
 import io
@@ -544,6 +545,88 @@ def test_download_emits_per_file_transfer_and_verified_progress(prepared, capsys
     for name in contents:
         assert f"Downloading {assets.REPO}@{REVISION} {name}" in progress
         assert f"Verified {name}" in progress
+
+
+@pytest.mark.parametrize("fallback", [False, True])
+def test_nfs_hardlink_prohibition_does_not_block_publication(prepared, monkeypatch, fallback):
+    assets, _, _, _, _, _, _ = prepared
+
+    def denied(*args, **kwargs):
+        raise PermissionError(errno.EPERM, "NFS forbids hard links")
+
+    monkeypatch.setattr(assets.os, "link", denied)
+    if fallback:
+        monkeypatch.setattr(assets, "_rename_noreplace", lambda source, destination: False)
+    protected = assets.download()
+    assert protected == assets.verify_assets()
+    assert not list(assets.TEACHER.glob("*.partial"))
+
+
+@pytest.mark.parametrize("error", [errno.ENOSYS, errno.EINVAL, errno.EOPNOTSUPP,
+                                  errno.EXDEV, errno.EPERM, errno.EACCES, errno.EEXIST])
+def test_rename_syscall_fallback_is_limited_to_unsupported_errors(assets, tmp_path, monkeypatch, error):
+    partial, target = tmp_path / "asset.partial", tmp_path / "asset"
+    partial.write_bytes(b"new bytes")
+
+    class Rename:
+        def __call__(self, source_fd, source, dest_fd, destination, flags):
+            assert source_fd == dest_fd == -100 and flags == 1
+            assets.ctypes.set_errno(error)
+            return -1
+
+    class Libc:
+        renameat2 = Rename()
+
+    monkeypatch.setattr(assets.sys, "platform", "linux")
+    monkeypatch.setattr(assets.ctypes, "CDLL", lambda *args, **kwargs: Libc())
+    if error in (errno.EACCES, errno.EEXIST):
+        with pytest.raises(OSError) as raised:
+            assets._publish(partial, target)
+        assert raised.value.errno == error
+        assert partial.read_bytes() == b"new bytes" and not target.exists()
+    else:
+        assets._publish(partial, target)
+        assert target.read_bytes() == b"new bytes" and not partial.exists()
+
+
+@pytest.mark.parametrize("fallback", [False, True])
+@pytest.mark.parametrize("existing", [False, True, "symlink"])
+def test_publication_never_overwrites_destination(assets, tmp_path, monkeypatch, fallback, existing):
+    partial, target = tmp_path / "asset.partial", tmp_path / "asset"
+    partial.write_bytes(b"new bytes")
+    if existing == "symlink":
+        target.symlink_to(tmp_path / "absent")
+    elif existing:
+        target.write_bytes(b"original")
+    if fallback:
+        assert hasattr(assets, "_rename_noreplace"), "Missing NFS-safe publication"
+        monkeypatch.setattr(assets, "_rename_noreplace", lambda source, destination: False)
+    if existing:
+        with pytest.raises(FileExistsError):
+            assets._publish(partial, target)
+        assert partial.read_bytes() == b"new bytes"
+        assert target.is_symlink() if existing == "symlink" else target.read_bytes() == b"original"
+    else:
+        assets._publish(partial, target)
+        assert target.read_bytes() == b"new bytes" and not partial.exists()
+
+
+def test_exclusive_copy_failure_retains_source_and_cannot_verify(prepared, monkeypatch):
+    assets, _, _, _, _, _, _ = prepared
+    assert hasattr(assets, "_rename_noreplace"), "Missing NFS-safe publication"
+    monkeypatch.setattr(assets, "_rename_noreplace", lambda source, destination: False)
+
+    def interrupted(source, destination, length):
+        destination.write(source.read(1))
+        raise OSError(errno.ENOSPC, "copy interrupted")
+
+    monkeypatch.setattr(assets.shutil, "copyfileobj", interrupted)
+    with pytest.raises(OSError, match="copy interrupted"):
+        assets.download()
+    assert (assets.TEACHER / "source_metadata.json.partial").is_file()
+    assert not (assets.TEACHER / "asset_manifest.json").exists()
+    with pytest.raises(ValueError):
+        assets.verify_assets()
 
 
 def test_curl_uses_pinned_url_resume_and_finite_timeouts(prepared, monkeypatch):

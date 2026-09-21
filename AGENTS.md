@@ -3,6 +3,27 @@
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 
+## Authorized Qwen8 Teacher Qualification (2026-09-21)
+
+- Latest user selects official ModelScope Qwen/Qwen3-8B-Base, first qualify its
+  ability, then train original Qwen3-4B-Base. Read
+  `docs/plans/2026-09-21-qwen8-teacher-acceptance.md` before any launch.
+- New root `runs/20260921v1_qwen4_from8b_completion_seed21_ml2`, controller
+  `scripts/run_qwen8_teacher_pair.py`; ml2 only. Check live state to avoid duplicate
+  queues. Never replace old experiments or frozen training runtime0f9161f.
+- A fixed64-question/n2 capability diagnostic and fixed32-question/n2 student
+  continuation test must pass before GPU updates. Original4B-GRPO is reference
+  only. Rejection/inconclusive stops automatically, no automatic threshold tuning.
+- Both methods must pass a NEW Step1/save/Step2/resume gate with the8B teacher.
+  Then Token200 followed by original Block3Mean200, from the original student
+  independently; keep all50/100/150/200 states, every rollout and diagnostic.
+- Same DAPO bytes/seed21/completion prompt/16K responses/historical losses and
+  normalization. No new full-benchmark eval autostart in this controller.
+- ModelScope teacher revision is pinned and hashed by the new asset manifest;
+  the old launcher's teacher_model_revision field stays empty because its Qwen
+  branch assumes HF_REVISION. Never create a fake HF revision or alter old code.
+- Below are historical authorizations, not permissions to restart old queues.
+
 ## Completed Qwen4 Evaluation and Paper (2026-09-21)
 
 - Token evaluation completed03:43:15 Beijing, all200/150/100/50 accepted; root

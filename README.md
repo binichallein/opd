@@ -9,7 +9,19 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 最新完成：4B对照与ICLR2027双语论文
+## 新增：8B教师能力验收
+
+2026-09-21，用户选定官方 `Qwen/Qwen3-8B-Base`，学生继续使用原始
+`Qwen/Qwen3-4B-Base`。先做固定题目独立解题及学生前缀续写验收；只有能力与
+更新/恢复门禁均通过，才启动Token OPD和Block3 Mean各200步。不能默认参数更大
+就比原4B-GRPO教师更强，也不把本次诊断分数当成完整benchmark评测。
+
+- [验收标准、训练对照和实现计划](docs/plans/2026-09-21-qwen8-teacher-acceptance.md)
+- 控制器：`scripts/run_qwen8_teacher_pair.py`；仅ml2，新目录，不修改历史产物。
+- 同一数据、seed21、completion提示、原始loss；全部50/100/150/200状态、每步轨迹和热图数据保留。
+- 状态以新队列的 `queue_state.json` 为准；未通过验收不得启动正式训练。
+
+## 已完成：4B对照与ICLR2027双语论文
 
 2026-09-21，Qwen3-4B-Base Token OPD的Step200、150、100、50完整评测均已验收，
 与已完成的Block3对照逐benchmark比较。没有继续启动其他训练。
