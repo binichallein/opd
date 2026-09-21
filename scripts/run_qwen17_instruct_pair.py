@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -38,6 +39,18 @@ QUALIFICATION = ROOT / 'runs/20260921v1_qwen8_to17_diagnostics_ml2/qualification
 CAPABILITY_SHA = '57f4a0559e5d505d4f7b67f31d22ec30e2ec77138b26c5b61f82f98c27052cdb'
 HISTORICAL_INPUTS = ROOT / 'runs/20260920v1_qwen4_completion_token_seed21_ml2/token_opd'
 LOSS_REFERENCE = ROOT / 'deployments/0f9161f02f08287fb07f0375ad0a6bda81133ff0'
+ML2_HOST = 'di-20260407234928-vrvxk'
+
+
+def validate_host(hostname):
+    if hostname != ML2_HOST:
+        raise ValueError('This queue is authorized only on the verified ml2 host')
+
+
+def validate_benchmark_hashes(hashes):
+    from audit_block10_run import EXPECTED_EVAL_SHA256
+    if hashes != EXPECTED_EVAL_SHA256:
+        raise ValueError('Benchmark contents differ from historical approved inputs')
 
 
 def validate_cache_mount(fstype, options, free_bytes):
@@ -189,6 +202,8 @@ def preflight(runtime):
         protected[str(path)] = assets.sha256(path)
     if protected[str(base.DATA/'train.parquet')] != jobs.TRAIN_SHA:
         raise ValueError('Changed DAPO training pool')
+    validate_benchmark_hashes({task:protected[str(base.DATA/'eval_jsonl'/f'{task}.jsonl')]
+                              for task in jobs.TASKS})
     shared.grading.validate_grader_hash(base.GRADER, shared.grading.HISTORICAL_GRADER_SHA256)
     qualify.runtime_versions()
     for name in ('opd_ext/window_supervision.py','opd_ext/diagnostics.py',
@@ -435,6 +450,7 @@ def train_variant(root, variant, runtime, commit, runner, protected):
 
 def main():
     from recover_historical17_llama import check_socket_budget
+    validate_host(socket.gethostname())
     runtime=Path(__file__).resolve().parents[1]
     commit=(runtime/'DEPLOYED_COMMIT').read_text().strip()
     if runtime!=ROOT/'deployments'/commit:

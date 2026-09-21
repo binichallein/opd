@@ -189,3 +189,18 @@ def test_runtime_helpers_do_not_import_fixed_runtime(subject):
 def test_reject_unsafe_cache(subject,fstype,options,free):
     with pytest.raises(ValueError):
         subject.validate_cache_mount(fstype,options,free)
+
+
+def test_require_ml2_identity(subject):
+    subject.validate_host(subject.ML2_HOST)
+    with pytest.raises(ValueError):
+        subject.validate_host('another-host')
+
+
+def test_require_historical_benchmark_bytes(subject):
+    from audit_block10_run import EXPECTED_EVAL_SHA256
+    subject.validate_benchmark_hashes(dict(EXPECTED_EVAL_SHA256))
+    changed=dict(EXPECTED_EVAL_SHA256)
+    changed['math500']='0'*64
+    with pytest.raises(ValueError):
+        subject.validate_benchmark_hashes(changed)
