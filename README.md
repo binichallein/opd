@@ -9,11 +9,16 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 新增：8B对1.7B的两组能力诊断
+## 已完成：8B对1.7B的两组能力诊断
 
 2026-09-21用户要求先测官方 `Qwen3-8B-Base -> Qwen3-1.7B-Base`，再测
 `Qwen3-8B -> Qwen3-1.7B` 指令版（官方仓库不带`-Instruct`后缀）。
 本轮只做推理验收，不启动OPD训练。
+
+21:40两组均已结束：Base独立正确率师生均13/128，未过能力门槛；
+非thinking指令组独立38/128至60/128，续写18/64至32/64，通过预设验收。
+指令教师续写仍有6/64截断、3/64周期重复，后续训练需要保留这些风险的监控。
+[完整分项结果与解释边界](docs/results/2026-09-21-qwen8-to17-final.md)。
 
 - [冻结设计与实现计划](docs/plans/2026-09-21-qwen8-to17-diagnostics.md)
 - 复用上一轮64道诊断题、每题2次；各组取自己学生的前32题前缀做配对续写。

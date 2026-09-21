@@ -5,6 +5,17 @@ reproducibility, data safety, and clear experiment lineage.
 
 ## Authorized Qwen8 Teacher Qualification (2026-09-21)
 
+- FINAL: Qwen8-to1.7 diagnostics completed21:40:04 Beijing; controller exited,
+  all four GPUs idle22:10, no training. Read
+  `docs/results/2026-09-21-qwen8-to17-final.md` BEFORE proposing any next run.
+  Base gate inconclusive: direct13/128 for both, continuation13/64 vs16/64.
+  Instruct non-thinking gate passed: direct38/128 vs60/128, continuation18/64
+  vs32/64 (student vs teacher). Teacher continuation cap6/64, periodic3/64 are
+  near frozen limits, not a clean bill of health. All768 diagnostic +8 smoke
+  rollouts retained; this is not full benchmark evaluation or OPD validation.
+  Post-run CPU audit validated all10 cells, sealed hashes, historical regrading
+  and recomputed decisions: diagnostics/20260921_qwen17_pair_postrun_audit/report.json.
+  No new training authorization. Below are historical launch snapshots.
 - NEW authorization: test 8B-Base versus original1.7B-Base, then official
   Qwen3-8B versus Qwen3-1.7B post-trained models in non-thinking mode. Read
   `docs/plans/2026-09-21-qwen8-to17-diagnostics.md`. This is INFERENCE ONLY,
