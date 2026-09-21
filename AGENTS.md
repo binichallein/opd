@@ -26,6 +26,13 @@
 - At23:55 Block3 probe1 exited0, checkpoint/rollout/optimizer audits passed:
   32rollouts,0cap,0think,0periodic; grad3.0784. Probe2 resume started23:55:18,
   PID1910758; not yet formal training. Verify LIVE state before reporting.
+- Update2026-09-22: resume gate PASSED; formal Block3 PID1920585 started00:07:30
+  Beijing. At00:48 step23/200, all736 raw records audited,23 position snapshots;
+  cap6/736,think0,periodic1 (Step17 looping digit0). No fatal training errors or
+  nonfinite metrics; recent5 steps cap0. Read `docs/results/2026-09-22-qwen17-instruct-supervision.md`
+  and LIVE state. No parameter changes, retries or stop-threshold changes made.
+- Same supervision reachedStep24: all768 raw records audited, cap6/768,
+  think0,periodic1. Training continues; live queue is authoritative.
 
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
