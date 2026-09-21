@@ -5,6 +5,27 @@ reproducibility, data safety, and clear experiment lineage.
 
 ## Authorized Qwen8 Teacher Qualification (2026-09-21)
 
+- NEW authorization: test 8B-Base versus original1.7B-Base, then official
+  Qwen3-8B versus Qwen3-1.7B post-trained models in non-thinking mode. Read
+  `docs/plans/2026-09-21-qwen8-to17-diagnostics.md`. This is INFERENCE ONLY,
+  no training even when capability passes. New controller
+  `scripts/run_qwen17_pair_diagnostics.py`, root
+  `runs/20260921v1_qwen8_to17_diagnostics_ml2`; inspect LIVE state before launching.
+  Models from pinned official ModelScope; Base completion, instruct native chat
+  with explicit enable_thinking=False and GPU smoke on each model before main eval.
+  Reuse original64 questions, n2,32 student-prefix questions, same sampling/grader;
+  keep all768 diagnostic +8 smoke rollouts. No replacement of old runtime/results.
+- Old8B-versus4B queue ENDED17:36 Beijing, capability_not_accepted; gate status
+  inconclusive, failures direct_gain/direct_ci, no training. All six cells completed.
+  OldGRPO continuation16/64; gate SHA256
+  ef60b0889ff0041432ddea91c59bf9bf5641dde716f3df62081bd8bd9bc396f8.
+  Below are historical snapshots, not permission to restart the old training queue.
+- Supervision snapshot17:25 Beijing: five of six diagnostic cells complete.
+  Direct student16/128,8B13/128,oldGRPO42/128; continuation student11/64,8B12/64.
+  Direct gain/CI prerequisite not met; do NOT bypass the capability gate or train.
+  OldGRPO continuation PID1852491 started17:23:10; final summary still pending.
+  Read `docs/results/2026-09-21-qwen8-teacher-supervision.md` and LIVE state; the
+  bounded foreground watch ended, original remote queue continues unchanged.
 - Latest user selects official ModelScope Qwen/Qwen3-8B-Base, first qualify its
   ability, then train original Qwen3-4B-Base. Read
   `docs/plans/2026-09-21-qwen8-teacher-acceptance.md` before any launch.

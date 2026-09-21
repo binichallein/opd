@@ -9,7 +9,27 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 新增：8B教师能力验收
+## 新增：8B对1.7B的两组能力诊断
+
+2026-09-21用户要求先测官方 `Qwen3-8B-Base -> Qwen3-1.7B-Base`，再测
+`Qwen3-8B -> Qwen3-1.7B` 指令版（官方仓库不带`-Instruct`后缀）。
+本轮只做推理验收，不启动OPD训练。
+
+- [冻结设计与实现计划](docs/plans/2026-09-21-qwen8-to17-diagnostics.md)
+- 复用上一轮64道诊断题、每题2次；各组取自己学生的前32题前缀做配对续写。
+- Base使用completion，指令版使用原生chat且显式关闭thinking；先做真实GPU输出检查。
+- 768条诊断与8条短输出检查全部保存，不将诊断分数冒充完整benchmark评测。
+- 新队列：`scripts/run_qwen17_pair_diagnostics.py`，ml2唯一执行；Base结果不阻断指令组测试。
+- 能力通过也不会自动训练；状态以新目录的`queue_state.json`为准。
+
+## 已完成：8B对4B教师能力验收
+
+旧队列于17:36结束，8B-Base没有通过能力门槛，正式训练未启动。
+独立答题学生16/128、8B13/128、旧GRPO42/128；续写分别11/64、12/64、16/64。
+最终状态为证据不足（inconclusive），不是程序失败。
+[现场巡检和产物路径](docs/results/2026-09-21-qwen8-teacher-supervision.md)。
+
+以下保留该轮启动时的条件计划，不代表当前仍会运行：
 
 2026-09-21，用户选定官方 `Qwen/Qwen3-8B-Base`，学生继续使用原始
 `Qwen/Qwen3-4B-Base`。先做固定题目独立解题及学生前缀续写验收；只有能力与
