@@ -9,6 +9,18 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 新授权：指令版1.7B对8B，Block3优先自动队列
+
+教师采用已通过验收的官方 `Qwen/Qwen3-8B`，学生为官方 `Qwen/Qwen3-1.7B`。
+先Block3 Mean训练200步，再评测200/150/100/50及原始学生；随后独立从原始学生
+训练Token OPD200步并评测四个权重。两组均保留完整50/100/150/200状态与每步轨迹。
+
+- [本轮配置、对照边界与实施进度](docs/plans/2026-09-21-qwen17-instruct-blockfirst.md)。
+- 使用已验收的原生chat、显式关闭thinking，训推输入逐token核验；不使用旧Base提示。
+- 相同DAPO文件、seed21、采样配置和历史loss；四个benchmark分别计分，保留全部评测输出。
+- 控制器 `scripts/run_qwen17_instruct_pair.py`：恢复门禁失败或任何验收失败即停止，不自动改参重跑。
+- 实际启动情况以新目录 `runs/20260921v1_qwen17_instruct_blockfirst_seed21_ml2/queue_state.json` 为准。
+
 ## 已完成：8B对1.7B的两组能力诊断
 
 2026-09-21用户要求先测官方 `Qwen3-8B-Base -> Qwen3-1.7B-Base`，再测

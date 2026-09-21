@@ -1,5 +1,24 @@
 # Agent Instructions
 
+## Current Authorization: Qwen Instruct Block-First (2026-09-21)
+
+- Latest user authorizes Qwen3-8B -> Qwen3-1.7B official post-trained pair,
+  Block3 Mean200 first, full evaluations200/150/100/50 plus original student,
+  then independent Token200 and four evaluations, automatically. This supersedes
+  the inference-only restriction of the completed qualification below.
+- Read `docs/plans/2026-09-21-qwen17-instruct-blockfirst.md`. New controller
+  `scripts/run_qwen17_instruct_pair.py`, new root
+  `runs/20260921v1_qwen17_instruct_blockfirst_seed21_ml2`. Inspect LIVE state
+  before launching; do not duplicate queues. ml2 only, never train.
+- Use accepted native non-thinking chat protocol, both genuine ModelScope
+  revisions, identical DAPO bytes/seed21/request seeds, historical losses.
+  Block3 includes joint ratio/reduction, not pure advantage smoothing.
+- Each arm needs its own save/exit/resume GPU gate, then original initialization.
+  Retain50/100/150/200 complete states, every rollout/diagnostic, per-benchmark
+  full n8 evaluation and historical grader. No automatic retries or pruning.
+- New protocol uses native EOS151645, stops[151645,151643], length-derived masks;
+  old Base protocols and immutable deployments remain unchanged.
+
 This repository is an internal OPD research workspace. Optimize for
 reproducibility, data safety, and clear experiment lineage.
 

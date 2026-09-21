@@ -1,15 +1,16 @@
 diff --git a/agent_system/environments/env_manager.py b/agent_system/environments/env_manager.py
-index 8939229..390597b 100644
+index 8939229..164f616 100644
 --- a/agent_system/environments/env_manager.py
 +++ b/agent_system/environments/env_manager.py
-@@ -645,9 +645,16 @@ class MathEnvironmentManager(EnvironmentManagerBase):
+@@ -645,9 +645,17 @@ class MathEnvironmentManager(EnvironmentManagerBase):
          postprocess_text_obs: List[str] = []
  
          for i in range(len(text_obs)):
 -            obs_i = MATH_TEMPLATE.format(
 -                task_description=self.tasks[i]
 -            )
-+            if self.config.data.get('opd_prompt_protocol', 'legacy') == 'qwen3_completion_boxed_v1':
++            if self.config.data.get('opd_prompt_protocol', 'legacy') in (
++                    'qwen3_completion_boxed_v1', 'qwen3_native_chat_no_thinking_boxed_v1'):
 +                obs_i = self.tasks[i]
 +            elif self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
 +                from opd_ext.math_protocol import math_prompt
@@ -22,7 +23,7 @@ index 8939229..390597b 100644
              postprocess_text_obs.append(obs_i)
  
          return postprocess_text_obs
-@@ -896,4 +903,4 @@ def make_multitask_envs(config):
+@@ -896,4 +904,4 @@ def make_multitask_envs(config):
      
      print(f"[MultiTask] Created environment managers for tasks: {list(train_env_managers.keys())}")
      
@@ -30,10 +31,10 @@ index 8939229..390597b 100644
 \ No newline at end of file
 +    return train_multi_env, val_multi_env
 diff --git a/agent_system/multi_turn_rollout/rollout_loop.py b/agent_system/multi_turn_rollout/rollout_loop.py
-index fd53aff..a031872 100644
+index fd53aff..3a949d0 100644
 --- a/agent_system/multi_turn_rollout/rollout_loop.py
 +++ b/agent_system/multi_turn_rollout/rollout_loop.py
-@@ -105,12 +105,36 @@ class TrajectoryCollector:
+@@ -105,12 +105,47 @@ class TrajectoryCollector:
          }])
          
          # Apply chat template
@@ -43,6 +44,7 @@ index fd53aff..a031872 100644
 -            tokenize=False,
 -            **apply_chat_template_kwargs
 -        )
++        native_prompt_ids = None
 +        if self.config.data.get('opd_prompt_protocol', 'legacy') == 'qwen3_completion_boxed_v1':
 +            from opd_ext.math_protocol import completion_math_prompt
 +            if apply_chat_template_kwargs.get('enable_thinking') is not False:
@@ -50,6 +52,16 @@ index fd53aff..a031872 100644
 +            if self.tokenizer.bos_token_id is not None or self.tokenizer.eos_token_id != 151643:
 +                raise ValueError('Unexpected completion tokenizer BOS/EOS')
 +            prompt_with_chat_template = completion_math_prompt(obs_content)
++        elif self.config.data.get('opd_prompt_protocol', 'legacy') == 'qwen3_native_chat_no_thinking_boxed_v1':
++            from opd_ext.math_protocol import qwen_instruct_math_prompt, qwen_instruct_render, qwen_instruct_input_ids
++            if apply_chat_template_kwargs.get('enable_thinking') is not False:
++                raise ValueError('Qwen Instruct training requires explicit enable_thinking=False')
++            if is_multi_modal or self.config.data.truncation != 'middle':
++                raise ValueError('Qwen Instruct math requires text-only input and middle truncation')
++            prompt_with_chat_template = qwen_instruct_render(self.tokenizer, obs_content)
++            native_prompt_ids = qwen_instruct_input_ids(
++                self.tokenizer, obs_content, max_prompt_length=self.config.data.max_prompt_length)
++            chat[0]['content'] = qwen_instruct_math_prompt(obs_content)
 +        elif self.config.data.get('opd_prompt_protocol', 'legacy') in ('math_eval_nonthinking_v1', 'llama32_nonthinking_v1'):
 +            from opd_ext.math_protocol import render_nonthinking, valid_control_prefix
 +            if apply_chat_template_kwargs.get('enable_thinking') is not False:
@@ -76,7 +88,34 @@ index fd53aff..a031872 100644
          
          # Initialize return dict
          row_dict = {}
-@@ -363,6 +387,9 @@ class TrajectoryCollector:
+@@ -141,7 +176,15 @@ class TrajectoryCollector:
+         else:
+             raw_prompt = prompt_with_chat_template
+         
+-        input_ids, attention_mask = verl_F.tokenize_and_postprocess_data(prompt=prompt_with_chat_template,
++        if native_prompt_ids is not None:
++            # Preserve apply_chat_template(tokenize=True) IDs in both policy and engine inputs.
++            native_ids = torch.tensor([native_prompt_ids], dtype=torch.long)
++            input_ids, attention_mask = verl_F.postprocess_data(
++                input_ids=native_ids, attention_mask=torch.ones_like(native_ids),
++                max_length=self.config.data.max_prompt_length, pad_token_id=self.tokenizer.pad_token_id,
++                left_pad=True, truncation='middle')
++        else:
++            input_ids, attention_mask = verl_F.tokenize_and_postprocess_data(prompt=prompt_with_chat_template,
+                                                                             tokenizer=self.tokenizer,
+                                                                             max_length=self.config.data.max_prompt_length,
+                                                                             pad_token_id=self.tokenizer.pad_token_id,
+@@ -170,7 +213,8 @@ class TrajectoryCollector:
+         else:
+             position_ids = compute_position_id_with_mask(attention_mask)
+ 
+-        raw_prompt_ids = self.tokenizer.encode(raw_prompt, add_special_tokens=False)
++        raw_prompt_ids = (native_prompt_ids if native_prompt_ids is not None
++                          else self.tokenizer.encode(raw_prompt, add_special_tokens=False))
+         if len(raw_prompt_ids) > self.config.data.max_prompt_length:
+             if self.config.data.truncation == "left":
+                 raw_prompt_ids = raw_prompt_ids[-self.config.data.max_prompt_length :]
+@@ -363,6 +407,9 @@ class TrajectoryCollector:
              )
  
              batch_input.meta_info = gen_batch.meta_info.copy() if gen_batch.meta_info else {}
@@ -86,7 +125,7 @@ index fd53aff..a031872 100644
              
              # Set per-task response length if configured
              if self._task_response_lengths and "task_type" in batch_input.non_tensor_batch:
-@@ -382,6 +409,8 @@ class TrajectoryCollector:
+@@ -382,6 +429,8 @@ class TrajectoryCollector:
  
              batch.non_tensor_batch['uid'] = uid_batch
              batch.non_tensor_batch['traj_uid'] = traj_uid
@@ -95,7 +134,7 @@ index fd53aff..a031872 100644
  
              batch = batch.union(batch_output)
              
-@@ -530,7 +559,20 @@ class TrajectoryCollector:
+@@ -530,7 +579,20 @@ class TrajectoryCollector:
              DataProto: Final collected trajectory data with metadata.
          """
          if is_train:
@@ -1344,7 +1383,7 @@ index 0874078..547d505 100644
  
          output = output.to("cpu")
 diff --git a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
-index 8546325..285f2ff 100644
+index 8546325..8d136a3 100644
 --- a/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
 +++ b/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py
 @@ -222,6 +222,8 @@ class vLLMRollout(BaseRollout):
@@ -1356,7 +1395,19 @@ index 8546325..285f2ff 100644
  
          print(f"kwargs: {kwargs}")
          self.sampling_params = SamplingParams(**kwargs)
-@@ -326,9 +328,22 @@ class vLLMRollout(BaseRollout):
+@@ -265,6 +267,11 @@ class vLLMRollout(BaseRollout):
+ 
+         # used to construct attention_mask
+         eos_token_id = prompts.meta_info["eos_token_id"]
++        if self.config.get('opd_prompt_protocol') == 'qwen3_native_chat_no_thinking_boxed_v1':
++            # HF generation_config lists both stops; archive the native tokenizer EOS separately.
++            eos_token_id = self.inference_engine.get_tokenizer().eos_token_id
++            if eos_token_id != 151645:
++                raise ValueError('Qwen Instruct rollout requires native EOS151645')
+ 
+         batch_size = idx.size(0)
+ 
+@@ -326,9 +333,22 @@ class vLLMRollout(BaseRollout):
  
          # users can customize different sampling_params at different run
          with self.update_sampling_params(**kwargs):
@@ -1380,7 +1431,7 @@ index 8546325..285f2ff 100644
                  lora_request=lora_requests,
                  use_tqdm=False,
              )
-@@ -338,10 +353,24 @@ class vLLMRollout(BaseRollout):
+@@ -338,10 +358,24 @@ class vLLMRollout(BaseRollout):
  
              response = []
              rollout_log_probs = []
@@ -1406,7 +1457,7 @@ index 8546325..285f2ff 100644
                      curr_log_prob = []
                      for i, logprob in enumerate(output.outputs[sample_id].logprobs):
                          curr_log_prob.append(logprob[response_ids[i]].logprob)
-@@ -377,6 +406,14 @@ class vLLMRollout(BaseRollout):
+@@ -377,6 +411,14 @@ class vLLMRollout(BaseRollout):
          response_position_ids = position_ids[..., -1:] + delta_position_id
          position_ids = torch.cat([position_ids, response_position_ids], dim=-1)
          response_attention_mask = get_response_mask(response_id=response, eos_token=eos_token_id, dtype=attention_mask.dtype)

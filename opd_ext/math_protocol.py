@@ -14,6 +14,7 @@ LLAMA_PROTOCOL = 'llama32_nonthinking_v1'
 LLAMA_HISTORICAL_PROTOCOL = 'llama32_historical17_v1'
 QWEN_HISTORICAL_PROTOCOL = 'qwen3_historical17_v1'
 QWEN_COMPLETION_PROTOCOL = 'qwen3_completion_boxed_v1'
+QWEN_INSTRUCT_PROTOCOL = 'qwen3_native_chat_no_thinking_boxed_v1'
 LLAMA_SUFFIX = '<|start_header_id|>assistant<|end_header_id|>\n\n'
 LLAMA_STOP_IDS = [128001, 128008, 128009]
 LLAMA_DATE = '18 Sep 2026'
@@ -92,6 +93,44 @@ def completion_input_ids(tokenizer, question, *, max_prompt_length=2048):
     if max_prompt_length < 2:
         raise ValueError('Invalid maximum prompt length')
     ids = tokenizer.encode(completion_math_prompt(question), add_special_tokens=False)
+    if len(ids) > max_prompt_length:
+        half = max_prompt_length // 2
+        ids = ids[:half] + ids[-(max_prompt_length - half):]
+    return ids
+
+
+def qwen_instruct_math_prompt(question):
+    """Literal user content from the accepted Qwen Instruct qualification."""
+    return (question.strip() + '\n\nPlease solve the problem step by step and put '
+            'the final answer in \\boxed{}.')
+
+
+qwen_instruct_user_content = qwen_instruct_math_prompt
+
+
+def qwen_instruct_render(tokenizer, question):
+    if tokenizer.eos_token_id != 151645:
+        raise ValueError('Qwen Instruct protocol requires native EOS151645')
+    text = tokenizer.apply_chat_template(
+        [{'role': 'user', 'content': qwen_instruct_math_prompt(question)}],
+        tokenize=False, add_generation_prompt=True, enable_thinking=False,
+    )
+    if not text.endswith('<think>\n\n</think>\n\n'):
+        raise ValueError('Native non-thinking prompt must prefill the empty closed think block')
+    return text
+
+
+def qwen_instruct_input_ids(tokenizer, question, max_prompt_length=2048):
+    """Native template IDs; only over-budget prompts undergo middle truncation."""
+    if not 2 <= max_prompt_length <= 2048:
+        raise ValueError('Qwen Instruct maximum prompt length must be between 2 and 2048')
+    text = qwen_instruct_render(tokenizer, question)
+    ids = list(tokenizer.apply_chat_template(
+        [{'role': 'user', 'content': qwen_instruct_math_prompt(question)}],
+        tokenize=True, add_generation_prompt=True, enable_thinking=False,
+    ))
+    if not ids or tokenizer.decode(ids, skip_special_tokens=False, clean_up_tokenization_spaces=False) != text:
+        raise ValueError('Native chat text/token IDs disagree')
     if len(ids) > max_prompt_length:
         half = max_prompt_length // 2
         ids = ids[:half] + ids[-(max_prompt_length - half):]
@@ -222,6 +261,7 @@ def save_rollouts(batch, tokenizer, directory, *, step, run_id, attempt_id, sour
     protocol = native_protocol if protocol is None else protocol
     expected_native = {LLAMA_HISTORICAL_PROTOCOL: LLAMA_PROTOCOL,
                        QWEN_HISTORICAL_PROTOCOL: PROTOCOL,
+                       QWEN_INSTRUCT_PROTOCOL: PROTOCOL,
                        QWEN_COMPLETION_PROTOCOL: PROTOCOL}.get(protocol, protocol)
     if native_protocol != expected_native:
         raise ValueError('Archive protocol does not match the tokenizer')

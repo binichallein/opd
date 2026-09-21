@@ -20,6 +20,8 @@ from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
+from opd_ext.math_protocol import QWEN_INSTRUCT_PROTOCOL
+
 import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
@@ -117,6 +119,14 @@ def worker_generate(
             prompts = [completion_math_prompt(row['problem']) for row in rows]
             generation_inputs = [{'prompt_token_ids': completion_input_ids(tokenizer, row["problem"])} for row in rows]
             stop_token_ids = []  # Same model EOS151643 as completion training; no added ChatML stop.
+        elif prompt_protocol == QWEN_INSTRUCT_PROTOCOL:
+            from opd_ext.math_protocol import qwen_instruct_render, qwen_instruct_input_ids
+            if enable_thinking:
+                raise ValueError('Qwen Instruct evaluation cannot enable thinking')
+            prompts = [qwen_instruct_render(tokenizer, row['problem']) for row in rows]
+            generation_inputs = [{'prompt_token_ids': qwen_instruct_input_ids(tokenizer, row['problem'])}
+                                 for row in rows]
+            stop_token_ids = [151645, 151643]
         elif prompt_protocol == 'legacy':
             prompts = [apply_template(tokenizer, row["prompt"], enable_thinking) for row in rows]
             generation_inputs = evaluation_inputs(tokenizer, prompts)
@@ -315,7 +325,7 @@ def main() -> None:
     parser.add_argument("--eval-seed", type=int, default=21)
     parser.add_argument("--grader", choices=("verl", "external"), default="verl")
     parser.add_argument("--enable-thinking", action="store_true")
-    parser.add_argument('--prompt-protocol', choices=['legacy', 'qwen3_completion_boxed_v1'], default='legacy')
+    parser.add_argument('--prompt-protocol', choices=['legacy', 'qwen3_completion_boxed_v1', QWEN_INSTRUCT_PROTOCOL], default='legacy')
     parser.add_argument("--replace", action="store_true")
     parser.add_argument(
         "--retain-rollouts", action="store_true",

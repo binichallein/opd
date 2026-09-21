@@ -59,7 +59,7 @@ resume_from_path="${RESUME_FROM_PATH:-}"
 window_mode=fixed
 window_seed="${OPD_WINDOW_SEED:-$((910000 + ${ENV_SEED:-21}))}"
 protocol_args=()
-if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_historical17_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_historical17_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_completion_boxed_v1 ]]; then
+if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_historical17_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_historical17_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_completion_boxed_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_native_chat_no_thinking_boxed_v1 ]]; then
     : "${LOSSLESS_ROLLOUT_DIR:?Complete rollout retention is required}"
     : "${ROLLOUT_ATTEMPT_ID:?An explicit attempt identity is required}"
     : "${SOURCE_COMMIT:?Source identity is required}"
@@ -68,6 +68,8 @@ if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PRO
         stop_ids='[128001,128008,128009]'
     elif [[ "${OPD_PROMPT_PROTOCOL}" == qwen3_historical17_v1 || "${OPD_PROMPT_PROTOCOL}" == qwen3_completion_boxed_v1 ]]; then
         stop_ids='[]'
+    elif [[ "${OPD_PROMPT_PROTOCOL}" == qwen3_native_chat_no_thinking_boxed_v1 ]]; then
+        stop_ids='[151645,151643]'
     fi
     protocol_args=(
         "+data.opd_prompt_protocol=${OPD_PROMPT_PROTOCOL}"
@@ -85,13 +87,21 @@ if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PRO
     elif [[ "${OPD_PROMPT_PROTOCOL}" != llama32_historical17_v1 ]]; then
         protocol_args+=(+data.apply_chat_template_kwargs.enable_thinking=false)
     fi
+    if [[ "${OPD_PROMPT_PROTOCOL}" == qwen3_native_chat_no_thinking_boxed_v1 ]]; then
+        protocol_args+=(
+            "+actor_rollout_ref.rollout.opd_prompt_protocol=${OPD_PROMPT_PROTOCOL}"
+            +actor_rollout_ref.rollout.preserve_legacy_response_mask=false
+        )
+    fi
 elif [[ "${OPD_PROMPT_PROTOCOL:-legacy}" != legacy ]]; then
     echo 'Unknown prompt protocol' >&2
     exit 2
 fi
 
 if [[ "${OPD_REQUEST_SEED_RULE:-legacy}" != legacy ]]; then
-    if [[ "${OPD_REQUEST_SEED_RULE}" != sha256_step_question_sample_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" != qwen3_completion_boxed_v1 ]]; then
+    if [[ "${OPD_REQUEST_SEED_RULE}" != sha256_step_question_sample_v1 ||
+          ( "${OPD_PROMPT_PROTOCOL:-legacy}" != qwen3_completion_boxed_v1 &&
+            "${OPD_PROMPT_PROTOCOL:-legacy}" != qwen3_native_chat_no_thinking_boxed_v1 ) ]]; then
         echo 'Unapproved request seed rule/protocol combination' >&2
         exit 2
     fi
