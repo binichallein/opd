@@ -2,6 +2,16 @@
 
 ## Current Authorization: Qwen Instruct Block-First (2026-09-21)
 
+- LIVE update2026-09-22 13:34 Beijing: recovery RUNNING, Step1 completed.
+  Controller2180368, formal Token2181354; new control deploymentcd2d1bd,
+  unchanged training/evaluation deploymentbe736b5. CPU Ray gate passed, formal
+  Ray startup passed; no timeout patch or package modification. First32rollouts
+  match Block3 Step1 prompt AND response token IDs exactly; cap/think/repetition0,
+  grad2.5932, all diagnostic numerics finite, position snapshot saved.
+  `startup_acceptance.json` in recovery root is evidence; read LIVE state before
+  reporting current progress. Do NOT launch again. Auto eval200/150/100/50 follows
+  Token200/checkpoint+trajectory audit/figures. Read
+  `docs/results/2026-09-22-qwen17-token-recovery-startup.md`.
 - NEW user authorization2026-09-22: launch remaining Token200 plus full eval NOW.
   Recovery controller `scripts/recover_qwen17_instruct_token.py`, separate root
   `runs/20260922v1_qwen17_instruct_token_recovery_seed21_ml2`. Check LIVE state
@@ -12,7 +22,7 @@
   Ray2.55.1 port-file timeout is hardcoded15s: startup warmup+CPU worker gate
   mitigates cold imports, does not change this timeout. No blind retries.
   Read `docs/plans/2026-09-22-qwen17-token-recovery.md` for lineage/limitations.
-- LATEST2026-09-22 13:03 check: original queue FAILED07:59:59 during Token
+- Historical2026-09-22 13:03 check: original queue FAILED07:59:59 during Token
   formal Ray startup, zero Token formal updates/rollouts/checkpoints. GPUs idle.
   Block3 completed200 at05:15; all4 Block3 evaluations plus initial student accepted.
   Token save/resume probe passed. Raylet timed out awaiting metrics_agent_port;
