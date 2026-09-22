@@ -2,6 +2,16 @@
 
 ## Current Authorization: Qwen Instruct Block-First (2026-09-21)
 
+- NEW user authorization2026-09-22: launch remaining Token200 plus full eval NOW.
+  Recovery controller `scripts/recover_qwen17_instruct_token.py`, separate root
+  `runs/20260922v1_qwen17_instruct_token_recovery_seed21_ml2`. Check LIVE state
+  before any launch. Training/eval runtime stays immutable be736b5, original
+  Token save/resume gate is reverified/reused; formal initialization is original
+  student, never the probe. Keep all50/100/150/200 and raw trajectories.
+  Original five evaluations are verified/reused, not rerun or overwritten.
+  Ray2.55.1 port-file timeout is hardcoded15s: startup warmup+CPU worker gate
+  mitigates cold imports, does not change this timeout. No blind retries.
+  Read `docs/plans/2026-09-22-qwen17-token-recovery.md` for lineage/limitations.
 - LATEST2026-09-22 13:03 check: original queue FAILED07:59:59 during Token
   formal Ray startup, zero Token formal updates/rollouts/checkpoints. GPUs idle.
   Block3 completed200 at05:15; all4 Block3 evaluations plus initial student accepted.
