@@ -1,0 +1,50 @@
+{
+  "status": "running",
+  "updated_at": "2026-09-22T16:58:35.165524+00:00",
+  "statuses": {
+    "b06_smoke": "complete",
+    "b4_smoke": "complete",
+    "b8_smoke": "complete",
+    "g4_smoke": "complete",
+    "i06_smoke": "complete",
+    "i4_smoke": "complete",
+    "i8_smoke": "complete"
+  },
+  "running": {
+    "b06_b06_direct": {
+      "gpu": 3,
+      "pid": 2659650
+    },
+    "i06_i06_direct": {
+      "gpu": 0,
+      "pid": 2664907
+    },
+    "b4_b06_direct": {
+      "gpu": 1,
+      "pid": 2665306
+    },
+    "i4_i06_direct": {
+      "gpu": 2,
+      "pid": 2666112
+    }
+  },
+  "pending": [
+    "b06_b06_continuation",
+    "i06_i06_continuation",
+    "b4_b06_continuation",
+    "i4_i06_continuation",
+    "g4_b06_direct",
+    "g4_b06_continuation",
+    "g4_i06_direct",
+    "g4_i06_continuation",
+    "i8_i06_direct",
+    "i8_i06_continuation",
+    "b8_b06_direct",
+    "b8_b06_continuation",
+    "i8_b06_direct",
+    "i8_b06_continuation",
+    "b8_i06_direct",
+    "b8_i06_continuation"
+  ],
+  "training_started": false
+}

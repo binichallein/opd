@@ -21,6 +21,7 @@ Base、官方指令版及公共4B-GRPO教师进行能力诊断，本轮不训练
 - `scripts/qualify_qwen06_teachers.py`：逐token输入核对、原生模板对照去重和分对报告。
 - `configs/experiments/qwen06_teacher_screen_assets.json`：ModelScope固定revision与SHA256。
 - 运行状态以 `runs/20260923v1_qwen06_teacher_screen_ml2/queue_state.json` 为准。
+- [启动验收与本地原始证据](docs/results/2026-09-23-qwen06-teacher-screen-startup.md)：七个模型28条GPU短检查完成，四卡正式诊断运行中。
 - GRPO教师自身用过DAPO，本轮不能宣称未见数据泛化或筛选规则已能预测蒸馏收益。
 
 ## 已完成：指令版1.7B对8B的完整配对评测

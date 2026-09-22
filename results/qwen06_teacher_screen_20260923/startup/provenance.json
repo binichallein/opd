@@ -1,0 +1,514 @@
+{
+  "control_commit": "ad990c91f62f1e41e191b48ee7f9a0994046465c",
+  "scope": "Startup only; not formal teacher-screen results",
+  "selection_sha256": "8094e5d8c97c77a654f695b13943a227bb4a1e3fe891fdb3fbce63c19de51f3b",
+  "prepare_manifest_sha256": "61e54d166efec5866d44b27d13362edb618b7acb0bafb08b84460668dcf2a02b",
+  "pairs": {
+    "b4_b06": [
+      "b4",
+      "b06"
+    ],
+    "i4_i06": [
+      "i4",
+      "i06"
+    ],
+    "g4_b06": [
+      "g4",
+      "b06"
+    ],
+    "g4_i06": [
+      "g4",
+      "i06"
+    ],
+    "i8_i06": [
+      "i8",
+      "i06"
+    ],
+    "b8_b06": [
+      "b8",
+      "b06"
+    ],
+    "i8_b06": [
+      "i8",
+      "b06"
+    ],
+    "b8_i06": [
+      "b8",
+      "i06"
+    ]
+  },
+  "versions": {
+    "torch": "2.8.0",
+    "transformers": "4.57.6",
+    "vllm": "0.11.0",
+    "tokenizers": "0.22.2"
+  },
+  "native_direct": {
+    "b06": "b06_b06_direct",
+    "b4": "b4_b06_direct",
+    "b8": "b8_b06_direct",
+    "g4": "g4_i06_direct",
+    "i06": "i06_i06_direct",
+    "i4": "i4_i06_direct",
+    "i8": "i8_i06_direct"
+  },
+  "formal_rollouts": 1920,
+  "smoke_rollouts": 28,
+  "grader_sha256": "04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f",
+  "models": {
+    "b06": {
+      "key": "b06",
+      "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base",
+      "repo": "Qwen/Qwen3-0.6B-Base",
+      "revision": "090764fd1fb07dc1f2e451642ee843579f5b0e38",
+      "source": "https://modelscope.cn/api/v1/models/Qwen/Qwen3-0.6B-Base/repo/files?Revision=090764fd1fb07dc1f2e451642ee843579f5b0e38&Recursive=true",
+      "hashes": {
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base/config.json": "504a6b58c4271583724e66584b6b7698aea18450209df6b2f7582df0e89cee59",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base/generation_config.json": "8c970692323e3ea0e9b8b0a4dca79388d31226e41f83c9fd6014804280ebf6e8",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base/model.safetensors": "cd2a512003e2f9f3cd3c32a9c3573f820bb28c940f73c57b1ddaa983d9223eba",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base/tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base/tokenizer_config.json": "3c04ed3ca964ea2f6b2b5faf0dc4d31aec1cb1e8b4bcf63f402d295046b422b5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B-Base/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      },
+      "config": {
+        "architectures": [
+          "Qwen3ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "bos_token_id": 151643,
+        "eos_token_id": 151643,
+        "head_dim": 128,
+        "hidden_act": "silu",
+        "hidden_size": 1024,
+        "initializer_range": 0.02,
+        "intermediate_size": 3072,
+        "max_position_embeddings": 32768,
+        "max_window_layers": 28,
+        "model_type": "qwen3",
+        "num_attention_heads": 16,
+        "num_hidden_layers": 28,
+        "num_key_value_heads": 8,
+        "rms_norm_eps": 1e-06,
+        "rope_scaling": null,
+        "rope_theta": 1000000,
+        "sliding_window": null,
+        "tie_word_embeddings": true,
+        "torch_dtype": "bfloat16",
+        "transformers_version": "4.51.0",
+        "use_cache": true,
+        "use_sliding_window": false,
+        "vocab_size": 151936
+      }
+    },
+    "b4": {
+      "key": "b4",
+      "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base",
+      "repo": "Qwen/Qwen3-4B-Base",
+      "revision": "bbd6fc8d23e8788d987b7b970cbb7bd31c826e38",
+      "source": "https://modelscope.cn/api/v1/models/Qwen/Qwen3-4B-Base/repo/files?Revision=bbd6fc8d23e8788d987b7b970cbb7bd31c826e38&Recursive=true",
+      "hashes": {
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/config.json": "304b2545a258d35620f1d4bf46940c0471d9baa00715ff8e77f84c2fca5057c1",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/generation_config.json": "8c970692323e3ea0e9b8b0a4dca79388d31226e41f83c9fd6014804280ebf6e8",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/model-00001-of-00003.safetensors": "4c807e2503d68ae373d508689d00a41f4b33f33c2536da97ab81a20caddc1241",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/model-00002-of-00003.safetensors": "f4707585548b2fc75a6b1d732e8465c62040a8699903c32850781beeb9b27826",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/model-00003-of-00003.safetensors": "c7b1aa8fb672de2e00423c99876926022e50b18d4f0d140670788510a27f9965",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/model.safetensors.index.json": "d6c42883a895dfef5b0080ed2116a1bcd764f558406b98923d675978a1abf29c",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/tokenizer_config.json": "3c04ed3ca964ea2f6b2b5faf0dc4d31aec1cb1e8b4bcf63f402d295046b422b5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      },
+      "config": {
+        "architectures": [
+          "Qwen3ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "bos_token_id": 151643,
+        "eos_token_id": 151643,
+        "head_dim": 128,
+        "hidden_act": "silu",
+        "hidden_size": 2560,
+        "initializer_range": 0.02,
+        "intermediate_size": 9728,
+        "max_position_embeddings": 32768,
+        "max_window_layers": 36,
+        "model_type": "qwen3",
+        "num_attention_heads": 32,
+        "num_hidden_layers": 36,
+        "num_key_value_heads": 8,
+        "rms_norm_eps": 1e-06,
+        "rope_scaling": null,
+        "rope_theta": 1000000,
+        "sliding_window": null,
+        "tie_word_embeddings": true,
+        "torch_dtype": "bfloat16",
+        "transformers_version": "4.51.0",
+        "use_cache": true,
+        "use_sliding_window": false,
+        "vocab_size": 151936
+      }
+    },
+    "b8": {
+      "key": "b8",
+      "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base",
+      "repo": "Qwen/Qwen3-8B-Base",
+      "revision": "932bc907a0f908fd665867dec24af47c2f57e719",
+      "source": "https://modelscope.cn/api/v1/models/Qwen/Qwen3-8B-Base/repo/files?Revision=932bc907a0f908fd665867dec24af47c2f57e719&Recursive=true",
+      "hashes": {
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/config.json": "3bd01d7ad7a2e203ecbbe84e24087a51c6d2a108ee4bcc42d0016bf49564983a",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/generation_config.json": "8c970692323e3ea0e9b8b0a4dca79388d31226e41f83c9fd6014804280ebf6e8",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/model-00001-of-00005.safetensors": "9983f1b9ef2f60e7c3730d9bc11ada914e6ec630639b5b020a89bd158cd0446b",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/model-00002-of-00005.safetensors": "9aa12339835bf7a093d3d0b0a0d2d77f8538301cfc7f8e7ec7a585858ebf7a1f",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/model-00003-of-00005.safetensors": "c7dd5a191c8da555def0714550375b3c0117751add408fcdda0c2a79ac0186bc",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/model-00004-of-00005.safetensors": "ad8b708792105133e03fe19e2d56c89c709f677f01285f8b3ede8947d59fd9fe",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/model-00005-of-00005.safetensors": "fbf24915d47ea030bb68ab0b9488f4515a907185baa6dc26837c9c3f2326a550",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/model.safetensors.index.json": "cd39d5e44c5aadfd1954b598883aea1c4a98822a2f7723d214ef2278b7fec2e4",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/tokenizer_config.json": "3c04ed3ca964ea2f6b2b5faf0dc4d31aec1cb1e8b4bcf63f402d295046b422b5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B-Base/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      },
+      "config": {
+        "architectures": [
+          "Qwen3ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "bos_token_id": 151643,
+        "eos_token_id": 151643,
+        "head_dim": 128,
+        "hidden_act": "silu",
+        "hidden_size": 4096,
+        "initializer_range": 0.02,
+        "intermediate_size": 12288,
+        "max_position_embeddings": 32768,
+        "max_window_layers": 36,
+        "model_type": "qwen3",
+        "num_attention_heads": 32,
+        "num_hidden_layers": 36,
+        "num_key_value_heads": 8,
+        "rms_norm_eps": 1e-06,
+        "rope_scaling": null,
+        "rope_theta": 1000000,
+        "sliding_window": null,
+        "tie_word_embeddings": false,
+        "torch_dtype": "bfloat16",
+        "transformers_version": "4.51.0",
+        "use_cache": true,
+        "use_sliding_window": false,
+        "vocab_size": 151936
+      }
+    },
+    "g4": {
+      "key": "g4",
+      "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO",
+      "repo": "lllyx/Qwen3-4B-Base-GRPO",
+      "revision": "1f3b2966edfb75f2f98a00617588c1f748088422",
+      "source": "Read-only public lllyx snapshot; revision from local download cache, hashes from historical evidence; not an original explicit revision pin",
+      "hashes": {
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/.gitattributes": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/README.md": "25889d058465bc1ff4372e91148f67569e4e05d27dd87a76d058f6720e7ff248",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/added_tokens.json": "c0284b582e14987fbd3d5a2cb2bd139084371ed9acbae488829a1c900833c680",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/chat_template.jinja": "87a2728cb8dc9fe424d624542f6060ec05a1d285ebbec578bb078900e33396b5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/config.json": "cd906f3dfa05564d0c0446c73ae50876d1ee395f7d414d56f51c2550ad14a640",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/generation_config.json": "084cc36b84014275cb9398ff4ec9b3b03bddb714224109f1c810a2ec7999fb23",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/grpo.sh": "a907caa6a609474f0602158dacd879c14b34f5a374de72b5935e1594fc4d668c",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/model-00001-of-00002.safetensors": "978e0293f647dc782d23b1f2a5240d738cf334be5ba0ae12460afc7fc36c8c16",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/model-00002-of-00002.safetensors": "c4bf39b031354815b58253016c68599153416f58ce0e3546d40a18605df2549c",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/model.safetensors.index.json": "7c789f9716d87cf8748d068bfaa8ef4626961ec06f858cec3d26a10d75894d77",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/special_tokens_map.json": "6676f091c8bc4d1b50146427cfde92073402866b87b6e39223227931b70083e9",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/tokenizer_config.json": "67e5a0a11cd35f9c00ee52e0af4cdc0baa75fea0cb5fce7d1beb251b4621d15c",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      },
+      "config": {
+        "architectures": [
+          "Qwen3ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "eos_token_id": 151643,
+        "head_dim": 128,
+        "hidden_act": "silu",
+        "hidden_size": 2560,
+        "initializer_range": 0.02,
+        "intermediate_size": 9728,
+        "layer_types": [
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention",
+          "full_attention"
+        ],
+        "max_position_embeddings": 32768,
+        "max_window_layers": 36,
+        "model_type": "qwen3",
+        "num_attention_heads": 32,
+        "num_hidden_layers": 36,
+        "num_key_value_heads": 8,
+        "pad_token_id": 151643,
+        "rms_norm_eps": 1e-06,
+        "rope_scaling": null,
+        "rope_theta": 1000000,
+        "sliding_window": null,
+        "tie_word_embeddings": true,
+        "torch_dtype": "bfloat16",
+        "transformers_version": "4.55.4",
+        "use_cache": true,
+        "use_sliding_window": false,
+        "vocab_size": 151936
+      }
+    },
+    "i06": {
+      "key": "i06",
+      "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B",
+      "repo": "Qwen/Qwen3-0.6B",
+      "revision": "09b42cad3d112e832108974449ccb5e8e0f5b5d1",
+      "source": "https://modelscope.cn/api/v1/models/Qwen/Qwen3-0.6B/repo/files?Revision=09b42cad3d112e832108974449ccb5e8e0f5b5d1&Recursive=true",
+      "hashes": {
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/.gitattributes": "088e25d6bceaa8943f4f292006210358292349cc36e7578f80c62fce75535f46",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/LICENSE": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/README.md": "1ab64a26fcb3b461423b89a433a8c858f1bf8d4086f979cbb3ff878d47cf20e9",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/configuration.json": "f888421726665e8a84b738eed42a64875aed79de8be7daade851ac8bf4c0cef9",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-0.6B/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      },
+      "config": {
+        "architectures": [
+          "Qwen3ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "bos_token_id": 151643,
+        "eos_token_id": 151645,
+        "head_dim": 128,
+        "hidden_act": "silu",
+        "hidden_size": 1024,
+        "initializer_range": 0.02,
+        "intermediate_size": 3072,
+        "max_position_embeddings": 40960,
+        "max_window_layers": 28,
+        "model_type": "qwen3",
+        "num_attention_heads": 16,
+        "num_hidden_layers": 28,
+        "num_key_value_heads": 8,
+        "rms_norm_eps": 1e-06,
+        "rope_scaling": null,
+        "rope_theta": 1000000,
+        "sliding_window": null,
+        "tie_word_embeddings": true,
+        "torch_dtype": "bfloat16",
+        "transformers_version": "4.51.0",
+        "use_cache": true,
+        "use_sliding_window": false,
+        "vocab_size": 151936
+      }
+    },
+    "i4": {
+      "key": "i4",
+      "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B",
+      "repo": "Qwen/Qwen3-4B",
+      "revision": "2c54d5a09e7e92d4f5126b92a5a457448c9593e6",
+      "source": "https://modelscope.cn/api/v1/models/Qwen/Qwen3-4B/repo/files?Revision=2c54d5a09e7e92d4f5126b92a5a457448c9593e6&Recursive=true",
+      "hashes": {
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/.gitattributes": "088e25d6bceaa8943f4f292006210358292349cc36e7578f80c62fce75535f46",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/LICENSE": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/README.md": "71add1cd091c309b1cb1a6b943f2476eb2b004124b3bd1d32dcd0b24cc1abc47",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/config.json": "8ba006f74fecfaaeb392872a60f4a480e7ec9860153d2e1b769ec81f9a147f8a",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/configuration.json": "f888421726665e8a84b738eed42a64875aed79de8be7daade851ac8bf4c0cef9",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/model-00001-of-00003.safetensors": "328a91d3122359d5547f9d79521205bc0a46e1f79a792dfe650e99fc2d651223",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/model-00002-of-00003.safetensors": "6cd087b316306a68c562436b5492edbcf6e16c6dba3a1308279caa5a58e21ca5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/model-00003-of-00003.safetensors": "e4bf436957184f4eeb86a80e9db394503f1f56446b2e6b7edeac5b81470f4ca1",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/model.safetensors.index.json": "6dc0981b8829fead746441f68f38f24c5ca4a3a66351f652c26c6df0efc43ab2",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      },
+      "config": {
+        "architectures": [
+          "Qwen3ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "bos_token_id": 151643,
+        "eos_token_id": 151645,
+        "head_dim": 128,
+        "hidden_act": "silu",
+        "hidden_size": 2560,
+        "initializer_range": 0.02,
+        "intermediate_size": 9728,
+        "max_position_embeddings": 40960,
+        "max_window_layers": 36,
+        "model_type": "qwen3",
+        "num_attention_heads": 32,
+        "num_hidden_layers": 36,
+        "num_key_value_heads": 8,
+        "rms_norm_eps": 1e-06,
+        "rope_scaling": null,
+        "rope_theta": 1000000,
+        "sliding_window": null,
+        "tie_word_embeddings": true,
+        "torch_dtype": "bfloat16",
+        "transformers_version": "4.51.0",
+        "use_cache": true,
+        "use_sliding_window": false,
+        "vocab_size": 151936
+      }
+    },
+    "i8": {
+      "key": "i8",
+      "path": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B",
+      "repo": "Qwen/Qwen3-8B",
+      "revision": "26028140be3ee69b82b1d1450179ab71bb1121b9",
+      "source": "https://modelscope.cn/api/v1/models/Qwen/Qwen3-8B/repo/files?Revision=26028140be3ee69b82b1d1450179ab71bb1121b9&Recursive=true",
+      "hashes": {
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/config.json": "f7c4eadfbbf522470667b797a3c89be2524832d2d599797248dc304fff447c30",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/model-00001-of-00005.safetensors": "31d6a825ae35f11fb85b195b4c42c146c051e446433125a215336abdf95cbf5f",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/model-00002-of-00005.safetensors": "5991236cea6fe21f3d43cab0f0e84448734fbbe0789816202989f2ddc9d18282",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/model-00003-of-00005.safetensors": "c5185c4794be2d8a9784d5753c9922db38df478ce11f9ed0b415b7304d896836",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/model-00004-of-00005.safetensors": "b5ee7de71fbf17db3d5704e0c8f2bc7d005ca9e1d7ca2aeb19827b0cfcaa917a",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/model-00005-of-00005.safetensors": "20c2d6366ab85c90786ccdd829cd2b9e7d30ef3b2ebbb998280e7e4014b542ff",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/model.safetensors.index.json": "f9fdbcb91c23971c13ec5d5f2573d2349e8f61f2f049371ec699281748fdb1bc",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+        "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-8B/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      },
+      "config": {
+        "architectures": [
+          "Qwen3ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "bos_token_id": 151643,
+        "eos_token_id": 151645,
+        "head_dim": 128,
+        "hidden_act": "silu",
+        "hidden_size": 4096,
+        "initializer_range": 0.02,
+        "intermediate_size": 12288,
+        "max_position_embeddings": 40960,
+        "max_window_layers": 36,
+        "model_type": "qwen3",
+        "num_attention_heads": 32,
+        "num_hidden_layers": 36,
+        "num_key_value_heads": 8,
+        "rms_norm_eps": 1e-06,
+        "rope_scaling": null,
+        "rope_theta": 1000000,
+        "sliding_window": null,
+        "tie_word_embeddings": false,
+        "torch_dtype": "bfloat16",
+        "transformers_version": "4.51.0",
+        "use_cache": true,
+        "use_sliding_window": false,
+        "vocab_size": 151936
+      }
+    }
+  },
+  "direct_input_audits": {
+    "b06_b06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "b378fe293bab20a3ff0054e5defca7bf0ffdd78ad412e7c5f5189918df2d81c0"
+    },
+    "i06_i06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "11927b7e2358f1308284a1dc01e78c815f04c0e8a3bedc6fa60b8d9138b81f05"
+    },
+    "b4_b06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "b378fe293bab20a3ff0054e5defca7bf0ffdd78ad412e7c5f5189918df2d81c0"
+    },
+    "i4_i06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "11927b7e2358f1308284a1dc01e78c815f04c0e8a3bedc6fa60b8d9138b81f05"
+    },
+    "g4_b06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "b378fe293bab20a3ff0054e5defca7bf0ffdd78ad412e7c5f5189918df2d81c0"
+    },
+    "g4_i06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "11927b7e2358f1308284a1dc01e78c815f04c0e8a3bedc6fa60b8d9138b81f05"
+    },
+    "i8_i06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "11927b7e2358f1308284a1dc01e78c815f04c0e8a3bedc6fa60b8d9138b81f05"
+    },
+    "b8_b06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "b378fe293bab20a3ff0054e5defca7bf0ffdd78ad412e7c5f5189918df2d81c0"
+    },
+    "i8_b06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "b378fe293bab20a3ff0054e5defca7bf0ffdd78ad412e7c5f5189918df2d81c0"
+    },
+    "b8_i06": {
+      "shared_mapping_consistent": true,
+      "teacher_embedding_vocab_size": 151936,
+      "teacher_unmapped_input_ids": [],
+      "input_ids_sha256": "11927b7e2358f1308284a1dc01e78c815f04c0e8a3bedc6fa60b8d9138b81f05"
+    }
+  }
+}

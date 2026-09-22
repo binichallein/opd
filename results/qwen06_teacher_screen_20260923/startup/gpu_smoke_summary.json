@@ -1,0 +1,44 @@
+{
+  "b06": {
+    "num_rollouts": 4,
+    "generated_think_tags": 0,
+    "length_stops": 4,
+    "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+  },
+  "i06": {
+    "num_rollouts": 4,
+    "generated_think_tags": 0,
+    "length_stops": 4,
+    "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+  },
+  "b4": {
+    "num_rollouts": 4,
+    "generated_think_tags": 0,
+    "length_stops": 4,
+    "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+  },
+  "i4": {
+    "num_rollouts": 4,
+    "generated_think_tags": 0,
+    "length_stops": 4,
+    "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+  },
+  "g4": {
+    "num_rollouts": 4,
+    "generated_think_tags": 0,
+    "length_stops": 4,
+    "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+  },
+  "b8": {
+    "num_rollouts": 4,
+    "generated_think_tags": 0,
+    "length_stops": 3,
+    "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+  },
+  "i8": {
+    "num_rollouts": 4,
+    "generated_think_tags": 0,
+    "length_stops": 4,
+    "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+  }
+}

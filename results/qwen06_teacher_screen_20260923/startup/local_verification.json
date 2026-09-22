@@ -1,0 +1,87 @@
+{
+  "snapshot": "/home/tyf/paper/outputs/qwen06_teacher_screen_20260923/startup_0057",
+  "remote": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260923v1_qwen06_teacher_screen_ml2",
+  "created_at": "2026-09-22T16:58:39.857386+00:00",
+  "scope": "Startup and 28 completed native GPU smoke outputs only; formal diagnostics still running",
+  "verified_files": {
+    "qualification/cells/b06_smoke/manifest.json": "7881651af7e6d5ae3af40cc45a294f87a5cde3678079a81204ea7ecfa83202f6",
+    "qualification/cells/b06_smoke/requests.json": "c81e8f22714913bfe0791d4fa7f114a3cfd4b1ad3627bd8dcb82eeaa255fdd7d",
+    "qualification/cells/b06_smoke/raw.jsonl": "b4effdf1fbff33e4bd2c2a064fd3973ef071f9a8b05a2a5802180f101057c165",
+    "qualification/cells/b06_smoke/results.jsonl": "934d7ed38bb96512fbd0d3d8fd4162ff8eeb52dfa981ce55a82ae19bf2e209f9",
+    "qualification/cells/b06_smoke/engine_events.jsonl": "19543cfce74256038c70e313b73333fd3e6253deb94bd6682f24a6952ddb8f01",
+    "qualification/cells/i06_smoke/manifest.json": "b670d1f90562a6d9ccb62a63aafa2718c6a0d76339be53ad6a3ad9a91dd21539",
+    "qualification/cells/i06_smoke/requests.json": "eab6d2a0a624c8c093689d4eab85e36296c87a5adb640d3fc37005e80696babf",
+    "qualification/cells/i06_smoke/raw.jsonl": "0897da53dcd4bed1bcfa88f301fea5f77e2208d2addac2fb0b711f3225ab03c4",
+    "qualification/cells/i06_smoke/results.jsonl": "08ad9a50e23ef4dd4b3ab3eb259e9c65c2eabcc6c8d11bd1461e8950a9947aae",
+    "qualification/cells/i06_smoke/engine_events.jsonl": "f5544087c2e8d3e5de0a2c84f3113c673c9f704aab802a379dd7609fc04994da",
+    "qualification/cells/b4_smoke/manifest.json": "b3300135c1401b442e82ff19c463110ddc358cef655dd30c2bc64fd12de46041",
+    "qualification/cells/b4_smoke/requests.json": "da357882f1e83ef3854439e7f933d2e42fa095da6c6391e2d7a2a972f3e122a6",
+    "qualification/cells/b4_smoke/raw.jsonl": "ddcf9787130302f8aac9377c613a869de432addccabf8894e8167981e2b6a41a",
+    "qualification/cells/b4_smoke/results.jsonl": "08ad9a50e23ef4dd4b3ab3eb259e9c65c2eabcc6c8d11bd1461e8950a9947aae",
+    "qualification/cells/b4_smoke/engine_events.jsonl": "c0a1db257553a5764376040c0039335f6a5b85374888206faac76efda59e985d",
+    "qualification/cells/i4_smoke/manifest.json": "4f90226da9a4e640c4f3afb9398389a927a68980a6f3eb0f99ac19845c5c8c7a",
+    "qualification/cells/i4_smoke/requests.json": "131dac94e75adda10b9cfb2db1a33b3438f497056f17c7f35c2314a6a23513b7",
+    "qualification/cells/i4_smoke/raw.jsonl": "e52c6b5ea5c1d492d03b78267da60413e6819be14bd3727e22a56287ecdcdf0f",
+    "qualification/cells/i4_smoke/results.jsonl": "08ad9a50e23ef4dd4b3ab3eb259e9c65c2eabcc6c8d11bd1461e8950a9947aae",
+    "qualification/cells/i4_smoke/engine_events.jsonl": "3c18506811129c30479f24c6c664869e5dae38b19106c131b280ca4736c30d20",
+    "qualification/cells/g4_smoke/manifest.json": "7fdd43fea0b7f118a40463526672e9bf8951a5606bd8d9cf0760b529b9e5c7ad",
+    "qualification/cells/g4_smoke/requests.json": "7702a8376528fb2e963ad4b58e3914e49a173096272ce46b7c7f2cb1988f472a",
+    "qualification/cells/g4_smoke/raw.jsonl": "1382a3fcf53d00330c9f1ed58a85abaf2652c75b6c1d87a4aca8203d3d0e25de",
+    "qualification/cells/g4_smoke/results.jsonl": "08ad9a50e23ef4dd4b3ab3eb259e9c65c2eabcc6c8d11bd1461e8950a9947aae",
+    "qualification/cells/g4_smoke/engine_events.jsonl": "86e306810a006811d2b45392e1f73d869acf0507559bca30870ed5435565f2ad",
+    "qualification/cells/b8_smoke/manifest.json": "857b78945fda6d3d4f0296f69c3472697bd9aec1c38e7d58933ddc0f632c655a",
+    "qualification/cells/b8_smoke/requests.json": "295a08569f1feffd3ddcde264f123b1225f9453049a61463d3e22b9f82c2a9a3",
+    "qualification/cells/b8_smoke/raw.jsonl": "3580f9817cc5ece5fca5deed6fe46e5ed156fa10b98d8d1dfc008ee16c37a5b8",
+    "qualification/cells/b8_smoke/results.jsonl": "23f5cfb28afffe2621173b83cedff7126811a56d68f3216817d2fd0f5f9a44eb",
+    "qualification/cells/b8_smoke/engine_events.jsonl": "dbea4f1adf87e652bb607ef12f63ebf4493f60bea87ca19c90c3086f30271551",
+    "qualification/cells/i8_smoke/manifest.json": "b2652e746213e42b6e17bc816d51a798b6a95de3277c4aa22d50864fd56391f0",
+    "qualification/cells/i8_smoke/requests.json": "6e53aa3ad76ba66dd847a57c1d1df1c3b486dc2eaa0b45962cd07df63c508ff2",
+    "qualification/cells/i8_smoke/raw.jsonl": "1a69281f53beec4f62e84a2b3fd8cb63dd08524cfad3e8dd77c870a9f2522bdf",
+    "qualification/cells/i8_smoke/results.jsonl": "08ad9a50e23ef4dd4b3ab3eb259e9c65c2eabcc6c8d11bd1461e8950a9947aae",
+    "qualification/cells/i8_smoke/engine_events.jsonl": "4b6d598ccbcadff6ffc010a5cbf404d6c77a5f20b0fd61a9f6cf6063ef53e6fc"
+  },
+  "smoke_health": {
+    "b06": {
+      "num_rollouts": 4,
+      "generated_think_tags": 0,
+      "length_stops": 4,
+      "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+    },
+    "i06": {
+      "num_rollouts": 4,
+      "generated_think_tags": 0,
+      "length_stops": 4,
+      "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+    },
+    "b4": {
+      "num_rollouts": 4,
+      "generated_think_tags": 0,
+      "length_stops": 4,
+      "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+    },
+    "i4": {
+      "num_rollouts": 4,
+      "generated_think_tags": 0,
+      "length_stops": 4,
+      "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+    },
+    "g4": {
+      "num_rollouts": 4,
+      "generated_think_tags": 0,
+      "length_stops": 4,
+      "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+    },
+    "b8": {
+      "num_rollouts": 4,
+      "generated_think_tags": 0,
+      "length_stops": 3,
+      "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+    },
+    "i8": {
+      "num_rollouts": 4,
+      "generated_think_tags": 0,
+      "length_stops": 4,
+      "scope": "256-token native-input probe, not a truncation estimate for 16K formal diagnostics"
+    }
+  }
+}
