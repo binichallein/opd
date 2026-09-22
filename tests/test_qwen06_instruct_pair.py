@@ -114,6 +114,26 @@ def test_real_smoke_schema_and_recipe_paths(subject):
         assert check_socket_budget(subject.RAY_CACHES[variant]/'gate/tmp') <= 107
 
 
+def test_source_revision_marker_is_derived_without_overwrite(subject, tmp_path):
+    revision = subject.assets.specifications()['i06']['revision']
+    model = {'path': str(tmp_path), 'revision': revision}
+    original = tmp_path/'model.safetensors'
+    original.write_bytes(b'untouched weights')
+    hashes = subject.ensure_revision_marker(model)
+    marker = tmp_path/'SOURCE_REVISION'
+    assert marker.read_text() == revision+'\n'
+    assert original.read_bytes() == b'untouched weights'
+    assert subject.ensure_revision_marker(model) == hashes
+    marker.write_text('different revision\n')
+    with pytest.raises(ValueError):
+        subject.ensure_revision_marker(model)
+    assert marker.read_text() == 'different revision\n'
+    marker.unlink()
+    marker.symlink_to(original)
+    with pytest.raises(ValueError):
+        subject.ensure_revision_marker(model)
+
+
 def test_ray_warmup_precedes_each_arm_without_changing_training(subject, tmp_path, monkeypatch):
     import run_qwen17_instruct_pair as old
     calls = []

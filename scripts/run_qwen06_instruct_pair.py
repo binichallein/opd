@@ -15,8 +15,8 @@ import qualify_qwen06_teachers as screen
 import run_qwen17_instruct_pair as previous
 
 ROOT = previous.ROOT
-RUN_ROOT = ROOT / 'runs/20260923v1_qwen06_instruct_blockfirst_seed21_ml2'
-CACHE = Path('/dev/shm/q06i')
+RUN_ROOT = ROOT / 'runs/20260923v2_qwen06_instruct_blockfirst_seed21_ml2'
+CACHE = Path('/dev/shm/q06j')
 RAY_CACHES = {'block3_mean': CACHE/'rb', 'token_opd': CACHE/'rt'}
 QUALIFICATION = ROOT / 'runs/20260923v1_qwen06_teacher_screen_ml2/qualification'
 CAPABILITY_SHA = 'e19bad52b2fa48c9b074c0fdc661689287b5d35fdc49ecd9e967a6acdd62988c'
@@ -52,6 +52,21 @@ def validate_smoke(health):
         raise ValueError('Native GPU non-thinking check is not accepted')
 
 
+def ensure_revision_marker(model):
+    """Add launcher metadata only after callers verify the pinned model bytes."""
+    marker = Path(model['path'])/'SOURCE_REVISION'
+    expected = (model['revision']+'\n').encode()
+    if marker.is_symlink():
+        raise ValueError('Symlink revision marker is not allowed')
+    if marker.exists():
+        if marker.read_bytes() != expected:
+            raise ValueError('Conflicting revision marker; never overwrite')
+    else:
+        with marker.open('xb') as stream:
+            stream.write(expected)
+    return {str(marker): assets.sha256(marker)}
+
+
 def preflight(run, runtime):
     if os.environ.get('RAY_ADDRESS') or os.environ.get('RAY_TMPDIR'):
         raise ValueError('Unexpected inherited Ray connection or temporary directory')
@@ -68,6 +83,7 @@ def preflight(run, runtime):
         if model != preparation['models'][key]:
             raise ValueError('Training assets differ from the qualified original models')
         protected.update(model['hashes'])
+        protected.update(ensure_revision_marker(model))
     for name in ('pair_summary.json', 'prepare_manifest.json', 'selected.json'):
         protected[str(QUALIFICATION/name)] = assets.sha256(QUALIFICATION/name)
     if set(summary['evidence']) != set(preparation['cells']):

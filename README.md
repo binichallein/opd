@@ -33,8 +33,9 @@ Base、官方指令版及公共4B-GRPO教师进行能力诊断，本轮不训练
 每组训练后自动完整评测四个权重，另评测原始学生，逐benchmark计分。
 `scripts/run_qwen06_instruct_pair.py`在独立命名空间复用既有队列，不覆盖旧运行；
 新增教师门禁和CPU Ray预热，损失、数据、prompt与采样不变。
-实际状态以`runs/20260923v1_qwen06_instruct_blockfirst_seed21_ml2/queue_state.json`为准，
+实际状态以`runs/20260923v2_qwen06_instruct_blockfirst_seed21_ml2/queue_state.json`为准，
 CPU测试通过不代表GPU恢复门禁或正式训练已通过。
+v1在任何GPU更新前因缺少revision标记停止，现场保留；v2仅补齐已核验资产的来源元数据。
 
 ## 已完成：指令版1.7B对8B的完整配对评测
 
