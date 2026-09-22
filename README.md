@@ -9,6 +9,20 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 进行中：0.6B学生的八组教师筛选
+
+[冻结方案](docs/plans/2026-09-23-qwen06-teacher-screen.md)：对用户指定的4B/8B
+Base、官方指令版及公共4B-GRPO教师进行能力诊断，本轮不训练。
+主验收使用学生实际的完整输入和续写前缀，教师原生模板独立答题作为对照。
+复用64道DAPO题、历史grader、配对bootstrap和预设健康门槛；原始rollout全部保存。
+八对共享的学生基线不重复计为独立证据，诊断不代替完整benchmark评测。
+
+- `scripts/run_qwen06_teacher_screen.py`：ml2四卡独立推理队列，失败不自动改参重跑。
+- `scripts/qualify_qwen06_teachers.py`：逐token输入核对、原生模板对照去重和分对报告。
+- `configs/experiments/qwen06_teacher_screen_assets.json`：ModelScope固定revision与SHA256。
+- 运行状态以 `runs/20260923v1_qwen06_teacher_screen_ml2/queue_state.json` 为准。
+- GRPO教师自身用过DAPO，本轮不能宣称未见数据泛化或筛选规则已能预测蒸馏收益。
+
 ## 已完成：指令版1.7B对8B的完整配对评测
 
 2026-09-22 20:29北京时间，原始学生及两组各Step50/100/150/200的9次完整评测
