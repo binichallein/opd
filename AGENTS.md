@@ -1,5 +1,21 @@
 # Agent Instructions
 
+## Final Qwen Instruct Results (2026-09-22)
+
+- Recovery queue COMPLETE at20:29:47 Beijing. All9 model evaluations accepted:
+  original student plus Block3/Token50/100/150/200. No new GPU jobs authorized.
+  Read `docs/results/2026-09-22-qwen17-instruct-final.md` and its archive links.
+- Below are historical startup snapshots, not LIVE status or relaunch permission.
+- Keep every benchmark separate and all four checkpoints visible. Step200
+  Avg@8 favors Block3 on all four tasks, but Pass@8 and earlier checkpoints are
+  mixed. One seed is not independent replication; Block3 changes ratio/reduction
+  as well as advantage. Do not claim universal or significant improvement.
+- User requires completed results saved locally AND on GitHub. Raw outputs stay
+  outside Git; commit curated summaries, figures, provenance and checksum audits.
+  Never claim backup success before hashes pass or GitHub success before push
+  verification. This result archive excludes weights/training parquet, retained
+  on ml2. Do not overwrite sealed snapshots or historical failed runs.
+
 ## Current Authorization: Qwen Instruct Block-First (2026-09-21)
 
 - LIVE update2026-09-22 13:34 Beijing: recovery RUNNING, Step1 completed.

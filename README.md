@@ -9,7 +9,14 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 新授权：指令版1.7B对8B，Block3优先自动队列
+## 已完成：指令版1.7B对8B的完整配对评测
+
+2026-09-22 20:29北京时间，原始学生及两组各Step50/100/150/200的9次完整评测
+全部验收通过。[最终分项分数、对照配置与归档入口](docs/results/2026-09-22-qwen17-instruct-final.md)。
+Step200 Block3的四项Avg@8略高于Token，但Pass@8及其他checkpoint有胜有负，
+不能概括成稳定全面提升。只有一个训练seed。
+
+以下保留启动时的方案；原队列Token启动失败后，通过独立恢复队列完成，旧产物不覆盖。
 
 教师采用已通过验收的官方 `Qwen/Qwen3-8B`，学生为官方 `Qwen/Qwen3-1.7B`。
 先Block3 Mean训练200步，再评测200/150/100/50及原始学生；随后独立从原始学生
@@ -19,7 +26,7 @@ reverse-KL 目标。
 - 使用已验收的原生chat、显式关闭thinking，训推输入逐token核验；不使用旧Base提示。
 - 相同DAPO文件、seed21、采样配置和历史loss；四个benchmark分别计分，保留全部评测输出。
 - 控制器 `scripts/run_qwen17_instruct_pair.py`：恢复门禁失败或任何验收失败即停止，不自动改参重跑。
-- 实际启动情况以新目录 `runs/20260921v1_qwen17_instruct_blockfirst_seed21_ml2/queue_state.json` 为准。
+- 最终状态以 `runs/20260922v1_qwen17_instruct_token_recovery_seed21_ml2/queue_state.json` 为准。
 - 23:38后台队列已启动，先做预检和恢复门禁；[启动证据与验证范围](docs/results/2026-09-21-qwen17-instruct-blockfirst-startup.md)。
 
 ## 已完成：8B对1.7B的两组能力诊断
