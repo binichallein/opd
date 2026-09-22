@@ -2,6 +2,14 @@
 
 ## Current Authorization: Qwen Instruct Block-First (2026-09-21)
 
+- LATEST2026-09-22 13:03 check: original queue FAILED07:59:59 during Token
+  formal Ray startup, zero Token formal updates/rollouts/checkpoints. GPUs idle.
+  Block3 completed200 at05:15; all4 Block3 evaluations plus initial student accepted.
+  Token save/resume probe passed. Raylet timed out awaiting metrics_agent_port;
+  do not confuse this startup error with training collapse or CUDA OOM.
+  Read `docs/results/2026-09-22-qwen17-instruct-block3-eval-token-start-failure.md`.
+  No recovery launched in this status check. Preserve old queue/outputs and Ray
+  failure evidence; no blind rerun or overwriting. Earlier notes below are historical.
 - Latest user authorizes Qwen3-8B -> Qwen3-1.7B official post-trained pair,
   Block3 Mean200 first, full evaluations200/150/100/50 plus original student,
   then independent Token200 and four evaluations, automatically. This supersedes
