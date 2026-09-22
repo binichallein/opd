@@ -1,0 +1,257 @@
+{
+  "scope": "Completed two-step save/resume probe and formal Block3 process startup; formal updates not yet confirmed; not a complete weights backup",
+  "local_snapshot": "/home/tyf/paper/outputs/qwen06_instruct_20260923/resume_0357",
+  "run_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260923v2_qwen06_instruct_blockfirst_seed21_ml2",
+  "observed_at": "2026-09-22T19:58:39.731952+00:00",
+  "queue_state": {
+    "status": "running",
+    "job": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260923v2_qwen06_instruct_blockfirst_seed21_ml2/block3_mean",
+    "pid": 2743663,
+    "updated_at": "2026-09-22T19:57:07.016433+00:00"
+  },
+  "sha256": {
+    "probes/block3_mean/rollouts/probe2/step_000002/raw.jsonl.gz": "498fc989cca632dd6515f81962d437fad255c28bbb1a294e2a1b453457a664c5",
+    "probes/block3_mean/rollouts/probe2/step_000002/raw.jsonl.gz.sha256": "9ac123a9419f90fc927c618f2378146d56af5c83afce769fe25820b754f997bd",
+    "probes/block3_mean/rollout_acceptance_step2.json": "86fd66407e18b538b5ae9548cd842703c1bae8f65182aca6dc59899c7a87ba4b",
+    "probes/block3_mean/optimizer_inspection_step2.json": "cd4f75e58555fde8c499cb55b9be05f6dbb1a33c17310ed743925bc9b4d9bd31",
+    "probes/block3_mean/resume_gate.json": "2f3748ad55ac7736c349a45cea169953369025fb85943692d833c4f29c94f1b2",
+    "probes/block3_mean/acceptance.json": "c91049269d5a7b5a3f71196b41efb3fbde6f7a8245cb8066f89b923b90bf22d7",
+    "probes/block3_mean/diagnostics/scalars.jsonl": "bfad70feadfb1086ed2d613c3a01549be74c90f47e6e5999127db8297a229c2c",
+    "probes/block3_mean/diagnostics/step_00002.npz": "e5efc922d5338172035792291a819c6e8b535f99ac0f73f0a7a7d7552b9b0db2",
+    "queue_jobs/block3_mean_probe2/exit_code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "queue_jobs/block3_mean_probe2/logs/job.log": "fc9682f9d6ac6e46d2a09ae009b903b3d7aaf8a54601901c73ccf03eab29fa00",
+    "queue_jobs/block3_mean_probe_audit2/exit_code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "block3_mean/train.pid": "cdd7e29b2f170d0f826e549402dbd3c033f04fd2a4bb88d7ef217b1ddd6998f9",
+    "block3_mean/run_card.json": "1c414b54149c6146c79c9ae36b34bd86c59c29b09cf92d7d098cd97d3d1a8d95",
+    "queue_process.json": "1674c486669de4e153ddf6657d1e93360d1cf50b66d8ede8d1d0b4bbc7f64aa7"
+  },
+  "resume_gate": {
+    "passed": true,
+    "states": [
+      {
+        "step": 1,
+        "rank": 0,
+        "scheduler_step": 1
+      },
+      {
+        "step": 1,
+        "rank": 1,
+        "scheduler_step": 1
+      },
+      {
+        "step": 1,
+        "rank": 2,
+        "scheduler_step": 1
+      },
+      {
+        "step": 1,
+        "rank": 3,
+        "scheduler_step": 1
+      },
+      {
+        "step": 2,
+        "rank": 0,
+        "scheduler_step": 2
+      },
+      {
+        "step": 2,
+        "rank": 1,
+        "scheduler_step": 2
+      },
+      {
+        "step": 2,
+        "rank": 2,
+        "scheduler_step": 2
+      },
+      {
+        "step": 2,
+        "rank": 3,
+        "scheduler_step": 2
+      }
+    ],
+    "limitation": "Checks saved rank RNG and restored training state, not bitwise vLLM replay"
+  },
+  "optimizer_inspection": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "states": 29,
+        "nonzero_moment_elements": 298024960,
+        "sha256": "02bc7acc3ca11ded725a1ffc69539a4c0aed55bfa6305332ccb37fa13494a918"
+      },
+      {
+        "rank": 1,
+        "states": 29,
+        "nonzero_moment_elements": 298024326,
+        "sha256": "871ce8da5ae7b6f744294cd67ac92f8d5c0fac461ca4cb972c976e754da31893"
+      },
+      {
+        "rank": 2,
+        "states": 29,
+        "nonzero_moment_elements": 298020215,
+        "sha256": "e12cc8beb4e29f7b870d59530690e8ff052ae1ba0ce7d93969e9a845a264ff9d"
+      },
+      {
+        "rank": 3,
+        "states": 29,
+        "nonzero_moment_elements": 298021449,
+        "sha256": "2a055e725860061f845f61e94165355c6894b33dcc83315d64545c3d9d3e8c0f"
+      }
+    ]
+  },
+  "rollout_acceptance": {
+    "passed": true,
+    "steps": [
+      {
+        "step": 1,
+        "count": 32,
+        "sha256": "1e1eaa48da5e774bd2e2d09fecdd3b4589f097dbb790a2764037a869c943cc93",
+        "paired_input_sha256": "b5bcf4bfb99df0b80898ef4f074d4dfde693d77af9677290d3ebc5fc4cbcbb93",
+        "length_stops": 0,
+        "generated_think_tags": 0,
+        "periodic_tails": 0
+      },
+      {
+        "step": 2,
+        "count": 32,
+        "sha256": "498fc989cca632dd6515f81962d437fad255c28bbb1a294e2a1b453457a664c5",
+        "paired_input_sha256": "da379c7b6f7b2b80bacd69d654d89b2dac6f18d9502ae0f4eefa98d2b0988bb4",
+        "length_stops": 0,
+        "generated_think_tags": 0,
+        "periodic_tails": 0
+      }
+    ],
+    "total_rollouts": 64
+  },
+  "checkpoint_acceptance": {
+    "checkpoint_steps": [
+      1,
+      2
+    ],
+    "diagnostic_steps": [
+      1,
+      2
+    ],
+    "eval_steps": [],
+    "issues": [],
+    "passed": true,
+    "run_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260923v2_qwen06_instruct_blockfirst_seed21_ml2/probes/block3_mean",
+    "source_commit": "86a4122df91c5d1b76091619ad13048335d3b949",
+    "warnings": []
+  },
+  "scalars": [
+    {
+      "actor/grad_norm": 11.001259803771973,
+      "actor/pg_clipfrac": 0.00023162444995250553,
+      "actor/pg_loss": 0.21202576626092196,
+      "block_ratio_definition": "post_update_policy_vs_behavior_policy",
+      "credit_definition": "fixed_block_shared_mean_advantage",
+      "diagnostics/block_advantage_max": 1.2647539377212524,
+      "diagnostics/block_advantage_mean": -0.21924594044685364,
+      "diagnostics/block_advantage_nonfinite_count": 0.0,
+      "diagnostics/block_advantage_p95": 0.19409751892089844,
+      "diagnostics/block_advantage_std": 0.6183605790138245,
+      "diagnostics/entropy_gap_absolute": 0.1558111160993576,
+      "diagnostics/entropy_gap_signed": -0.05255856737494469,
+      "diagnostics/leakage_magnitude": 0.3329731523990631,
+      "diagnostics/normalized_leakage": 1.0359655618667603,
+      "diagnostics/overlap_token_advantage": -0.020743636414408684,
+      "diagnostics/post_update_block_log_ratio_abs_max": 0.7533245086669922,
+      "diagnostics/post_update_block_log_ratio_abs_mean": 0.0248720683157444,
+      "diagnostics/post_update_block_log_ratio_abs_p95": 0.10977478325366974,
+      "diagnostics/post_update_block_ratio_max": 1.3910396099090576,
+      "diagnostics/post_update_block_ratio_nonfinite_count": 0.0,
+      "diagnostics/post_update_block_ratio_outside_clip_fraction": 0.007697858847677708,
+      "diagnostics/post_update_block_ratio_overflow_count": 0.0,
+      "diagnostics/post_update_block_ratio_p95": 1.0790590047836304,
+      "diagnostics/post_update_block_ratio_underflow_count": 0.0,
+      "diagnostics/raw_token_advantage_max": 3.0147933959960938,
+      "diagnostics/raw_token_advantage_mean": -0.21924592554569244,
+      "diagnostics/raw_token_advantage_nonfinite_count": 0.0,
+      "diagnostics/raw_token_advantage_p95": 0.31604766845703125,
+      "diagnostics/raw_token_advantage_std": 1.0073015689849854,
+      "diagnostics/sign_flip_rate": 0.24536959826946259,
+      "diagnostics/student_entropy": 0.4064401686191559,
+      "diagnostics/student_entropy_nonfinite_count": 0.0,
+      "diagnostics/student_overlap_mass": 0.9868821501731873,
+      "diagnostics/teacher_entropy": 0.3538815975189209,
+      "diagnostics/teacher_entropy_nonfinite_count": 0.0,
+      "diagnostics/teacher_overlap_mass": 0.9883469939231873,
+      "diagnostics/topk_overlap_ratio": 0.6977259516716003,
+      "diagnostics/weighted_sign_flip_rate": 0.06387229263782501,
+      "effective_coefficient_definition": "phase_averaged_window_advantage_sum_before_clipping",
+      "gradient_diagnostic_space": "sampled_log_probs_not_model_parameters",
+      "position_bin": 128,
+      "position_stride": 1,
+      "prompt_batch_sha256": "fb4e0d40d68b79284cc180bf3363f49dbc7985b848859d77d3fc9493951e63af",
+      "response_length/clip_ratio": 0.0,
+      "response_length/max": 1655.0,
+      "response_length/mean": 778.3125,
+      "rollout_archive/count": 32.0,
+      "rollout_archive/generated_think_tag_rate": 0.0,
+      "rollout_archive/length_stop_rate": 0.0,
+      "sign_epsilon": 0.0001,
+      "step": 1,
+      "topk": 16,
+      "window_mode": "fixed",
+      "window_offset": 0
+    },
+    {
+      "actor/grad_norm": 6.306931495666504,
+      "actor/pg_clipfrac": 0.0004242081195116043,
+      "actor/pg_loss": 0.19027547258883715,
+      "block_ratio_definition": "post_update_policy_vs_behavior_policy",
+      "credit_definition": "fixed_block_shared_mean_advantage",
+      "diagnostics/block_advantage_max": 1.0225639343261719,
+      "diagnostics/block_advantage_mean": -0.1711813062429428,
+      "diagnostics/block_advantage_nonfinite_count": 0.0,
+      "diagnostics/block_advantage_p95": 0.1945020705461502,
+      "diagnostics/block_advantage_std": 0.49168860912323,
+      "diagnostics/entropy_gap_absolute": 0.1495966613292694,
+      "diagnostics/entropy_gap_signed": -0.049553707242012024,
+      "diagnostics/leakage_magnitude": 0.2813582122325897,
+      "diagnostics/normalized_leakage": 1.0220872163772583,
+      "diagnostics/overlap_token_advantage": -0.015372601337730885,
+      "diagnostics/post_update_block_log_ratio_abs_max": 0.7107257843017578,
+      "diagnostics/post_update_block_log_ratio_abs_mean": 0.02743803709745407,
+      "diagnostics/post_update_block_log_ratio_abs_p95": 0.11574473977088928,
+      "diagnostics/post_update_block_ratio_max": 1.5212477445602417,
+      "diagnostics/post_update_block_ratio_nonfinite_count": 0.0,
+      "diagnostics/post_update_block_ratio_outside_clip_fraction": 0.008231252431869507,
+      "diagnostics/post_update_block_ratio_overflow_count": 0.0,
+      "diagnostics/post_update_block_ratio_p95": 1.0861669778823853,
+      "diagnostics/post_update_block_ratio_underflow_count": 0.0,
+      "diagnostics/raw_token_advantage_max": 3.4541187286376953,
+      "diagnostics/raw_token_advantage_mean": -0.1711813062429428,
+      "diagnostics/raw_token_advantage_nonfinite_count": 0.0,
+      "diagnostics/raw_token_advantage_p95": 0.3289036452770233,
+      "diagnostics/raw_token_advantage_std": 0.800320565700531,
+      "diagnostics/sign_flip_rate": 0.25130322575569153,
+      "diagnostics/student_entropy": 0.46795257925987244,
+      "diagnostics/student_entropy_nonfinite_count": 0.0,
+      "diagnostics/student_overlap_mass": 0.9866423606872559,
+      "diagnostics/teacher_entropy": 0.418398916721344,
+      "diagnostics/teacher_entropy_nonfinite_count": 0.0,
+      "diagnostics/teacher_overlap_mass": 0.9883110523223877,
+      "diagnostics/topk_overlap_ratio": 0.7237706184387207,
+      "diagnostics/weighted_sign_flip_rate": 0.07589825987815857,
+      "effective_coefficient_definition": "phase_averaged_window_advantage_sum_before_clipping",
+      "gradient_diagnostic_space": "sampled_log_probs_not_model_parameters",
+      "position_bin": 128,
+      "position_stride": 1,
+      "prompt_batch_sha256": "8ad1c492e904fe39e7a6c313ba85ee7c048d5b5c1b4c659a24b10a583ff73f5f",
+      "response_length/clip_ratio": 0.0,
+      "response_length/max": 3273.0,
+      "response_length/mean": 1445.40625,
+      "rollout_archive/count": 32.0,
+      "rollout_archive/generated_think_tag_rate": 0.0,
+      "rollout_archive/length_stop_rate": 0.0,
+      "sign_epsilon": 0.0001,
+      "step": 2,
+      "topk": 16,
+      "window_mode": "fixed",
+      "window_offset": 0
+    }
+  ]
+}

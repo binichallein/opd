@@ -54,6 +54,7 @@ v1于03:22:53启动，03:24在生成训练命令前停止，未进行GPU训练�
 - [x] CPU回归、配置对齐检查、提交与不可变部署：86a4122；ml2上370项通过，Git历史对照单测本地通过。两臂真实prepare-only和全部输入token ID核验通过。
 - [x] 服务端nohup启动，PPID/SID确认及CPU Ray真实worker门禁通过；启动记录已备份本地。
 - [x] Block3 GPU Step1更新、32条轨迹保存、完整checkpoint及四rank优化器审计通过；0截断、0生成think标签、0周期重复尾部。
-- [ ] Block3从Step1恢复到Step2的完整门禁通过；03:47:19已启动恢复任务。
-- [ ] 正式Block3启动及首步rollout/监控验收。
+- [x] Block3从Step1恢复到Step2的完整门禁通过；两步共64条轨迹均无截断、生成think标签或周期重复尾部，证据已本地备份。
+- [x] 正式Block3于03:57:07独立启动，PID2743663；日志确认200步、禁用resume，未复用probe权重。
+- [ ] 正式Block3首步rollout/监控验收。
 - [ ] 自动完成两臂训练、九次完整评测及最终归档。

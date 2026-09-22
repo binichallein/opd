@@ -76,6 +76,24 @@ v2仅从已核验的ModelScope快照revision生成缺失标记，保留所有权
 保存10个原始文件，包括32条压缩轨迹、位置诊断和完整运行日志；10个文件SHA256均重新核验。
 完整模型与优化器文件仍保留在ml2；本地这份记录不是完整权重备份。
 
+### 恢复验收与正式启动
+
+03:56，恢复任务完成Step2；03:57:07，控制器通过全部恢复检查并自动启动正式Block3 Mean。
+正式进程PID为`2743663`，启动日志确认`total_training_steps=200`、`resume_mode=disable`，
+从原始学生重新开始。03:59检查时仍处于数据与worker初始化，没有正式训练step记录。
+
+Step2保存、退出及审计的退出码均为0。恢复门禁检查Step1和Step2的四rank状态、
+调度器步数、RNG、优化器和dataloader位置；该验收不承诺vLLM逐bit复现。
+两步共64条轨迹，截断、生成think标签、周期重复尾部均为0。
+Step2平均长度1445.41、最大3273 token，裁剪前梯度范数6.3069，
+学生熵0.4680、sign flip 0.2513，熵/advantage/block ratio的非有限数值计数仍全部为0。
+
+[恢复验收与正式启动快照](../../results/qwen06_instruct_20260923/resume/acceptance.json)
+记录全部门禁证据、两步标量和14项文件哈希。
+原始文件保存于`/home/tyf/paper/outputs/qwen06_instruct_20260923/resume_0357`，
+包括Step2的32条原始轨迹、位置诊断和恢复日志；14项哈希全部核验。
+Step1快照仍单独保留，没有覆盖或混入正式训练结果。
+
 ## 启动归档
 
 [启动配置、输入核验和来源哈希](../../results/qwen06_instruct_20260923/startup/startup.json)
