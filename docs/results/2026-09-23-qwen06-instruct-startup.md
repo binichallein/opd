@@ -50,6 +50,32 @@ v2仅从已核验的ModelScope快照revision生成缺失标记，保留所有权
 动态状态以`queue_state.json`、`queue.log`、`queue_jobs/*/logs/job.log`为准；
 本记录的启动状态不替代后续训练/评测完成验收。
 
+### Step1实测
+
+03:46，Block3小步训练与checkpoint审计均以exit code 0结束。
+四rank优化器状态检查通过，保存了Step1完整checkpoint；恢复Step2于03:47:19启动。
+此处仅记录启动健康性，不是正式200步结果，也不证明Block3相对Token有收益。
+
+| Step1指标 | 实测值 |
+| --- | --- |
+| 完整轨迹 | 32条 |
+| 截断 / 生成think标签 / 周期重复尾部 | 均为0/32 |
+| 平均 / 最大响应长度 | 778.31 / 1655 token |
+| 裁剪前梯度范数 | 11.0013 |
+| 学生 / 教师熵 | 0.4064 / 0.3539 |
+| Top16 overlap | 0.6977 |
+| Sign flip / 加权sign flip | 0.2454 / 0.0639 |
+| 归一化leakage | 1.0360 |
+| 熵、advantage和更新后block ratio的非有限计数 | 全部为0 |
+
+进程退出时日志含被忽略的DataLoader清理异常，发生在保存完成之后；
+训练和审计退出码均为0。保留原日志，不将这条清理警告抹去或当作GPU训练失败。
+
+[Step1验收、逐项指标及来源哈希](../../results/qwen06_instruct_20260923/probe1/acceptance.json)
+已归档。本地`/home/tyf/paper/outputs/qwen06_instruct_20260923/probe1_0346`
+保存10个原始文件，包括32条压缩轨迹、位置诊断和完整运行日志；10个文件SHA256均重新核验。
+完整模型与优化器文件仍保留在ml2；本地这份记录不是完整权重备份。
+
 ## 启动归档
 
 [启动配置、输入核验和来源哈希](../../results/qwen06_instruct_20260923/startup/startup.json)
