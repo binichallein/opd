@@ -1,0 +1,105 @@
+{
+  "commit": "ad990c91f62f1e41e191b48ee7f9a0994046465c",
+  "protocol": {
+    "version": "qwen06_student_input_teacher_screen_v1",
+    "enable_thinking": false,
+    "direct_questions": 64,
+    "continuation_questions": 32,
+    "samples_per_question": 2,
+    "response_budget": 16384,
+    "max_prompt_length": 2048,
+    "selection_salt": "qwen8_teacher_acceptance_20260921_selection_v1",
+    "seed_salt": "qwen8_teacher_acceptance_20260921_request_v1",
+    "normalization": "collapse_unicode_whitespace_strip_v1",
+    "ambiguous_answers": "exclude_entire_normalized_question_group",
+    "prefix_rule": "student_sample0_token_midpoint_before_first_boxed_v1",
+    "bootstrap": {
+      "unit": "paired_question",
+      "replicates": 10000,
+      "seed": 21,
+      "confidence": 0.95,
+      "quantile": "linear"
+    },
+    "thresholds": {
+      "direct_gain_min": 0.05,
+      "direct_ci_lower_strict_min": 0.0,
+      "continuation_gain_min": 0.0,
+      "length_stop_max": 0.1,
+      "length_stop_excess_max": 0.05,
+      "periodic_max": 0.05,
+      "missing_boxed_max": 0.25,
+      "missing_boxed_excess_max": 0.05
+    },
+    "periodic_rule": "last2048_min256_period1to128_min4cycles_match0.99",
+    "engine": {
+      "dtype": "bfloat16",
+      "tensor_parallel_size": 1,
+      "enforce_eager": true,
+      "gpu_memory_utilization": 0.6,
+      "max_model_len": 18432,
+      "max_num_seqs": 32,
+      "max_num_batched_tokens": 18432,
+      "seed": 21,
+      "enable_prefix_caching": true,
+      "generation_config": "vllm"
+    },
+    "training_authorized": false,
+    "full_benchmark_eval": false,
+    "input_rule": "student token IDs unchanged; teacher-native direct control separate",
+    "stop_token_ids": [
+      151643,
+      151645
+    ],
+    "native_eos": "each model tokenizer EOS, recorded per cell",
+    "source_selection_sha256": "8094e5d8c97c77a654f695b13943a227bb4a1e3fe891fdb3fbce63c19de51f3b",
+    "source_scope": "Previously selected DAPO questions, not newly unseen data; GRPO teacher trained on DAPO",
+    "smoke_questions": 4,
+    "smoke_max_tokens": 256,
+    "bootstrap_multiplicity_corrected": false,
+    "shared_cells_are_not_independent_replicates": true
+  },
+  "gpu_slots": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "pairs": {
+    "b4_b06": [
+      "b4",
+      "b06"
+    ],
+    "i4_i06": [
+      "i4",
+      "i06"
+    ],
+    "g4_b06": [
+      "g4",
+      "b06"
+    ],
+    "g4_i06": [
+      "g4",
+      "i06"
+    ],
+    "i8_i06": [
+      "i8",
+      "i06"
+    ],
+    "b8_b06": [
+      "b8",
+      "b06"
+    ],
+    "i8_b06": [
+      "i8",
+      "b06"
+    ],
+    "b8_i06": [
+      "b8",
+      "i06"
+    ]
+  },
+  "training_started": false,
+  "created_at": "2026-09-22T16:35:47.693402+00:00",
+  "no_automatic_retry": true,
+  "source_note": "Official ModelScope; existing public GRPO read-only"
+}
