@@ -25,6 +25,17 @@ Base、官方指令版及公共4B-GRPO教师进行能力诊断，本轮不训练
 - [启动验收与本地原始证据](docs/results/2026-09-23-qwen06-teacher-screen-startup.md)保留历史启动时点记录。
 - GRPO教师自身用过DAPO，本轮不能宣称未见数据泛化或筛选规则已能预测蒸馏收益。
 
+## 启动准备：4B到0.6B指令版配对训练
+
+用户选定官方`Qwen/Qwen3-4B`教师和`Qwen/Qwen3-0.6B`学生，
+[复用8B到1.7B指令版对照方案](docs/plans/2026-09-23-qwen06-instruct-blockfirst.md)。
+先Block3 Mean、再Token OPD，各200步，保存50/100/150/200和全部恢复状态；
+每组训练后自动完整评测四个权重，另评测原始学生，逐benchmark计分。
+`scripts/run_qwen06_instruct_pair.py`在独立命名空间复用既有队列，不覆盖旧运行；
+新增教师门禁和CPU Ray预热，损失、数据、prompt与采样不变。
+实际状态以`runs/20260923v1_qwen06_instruct_blockfirst_seed21_ml2/queue_state.json`为准，
+CPU测试通过不代表GPU恢复门禁或正式训练已通过。
+
 ## 已完成：指令版1.7B对8B的完整配对评测
 
 2026-09-22 20:29北京时间，原始学生及两组各Step50/100/150/200的9次完整评测

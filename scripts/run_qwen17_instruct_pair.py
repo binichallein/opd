@@ -40,6 +40,9 @@ CAPABILITY_SHA = '57f4a0559e5d505d4f7b67f31d22ec30e2ec77138b26c5b61f82f98c27052c
 HISTORICAL_INPUTS = ROOT / 'runs/20260920v1_qwen4_completion_token_seed21_ml2/token_opd'
 LOSS_REFERENCE = ROOT / 'deployments/0f9161f02f08287fb07f0375ad0a6bda81133ff0'
 ML2_HOST = 'di-20260407234928-vrvxk'
+PROJECT_NAME = 'opd_qwen17_instruct'
+EXPERIMENT_PREFIX = 'qwen17-instruct'
+DISPLAY_LABEL = 'Qwen1.7 Instruct'
 
 
 def validate_host(hostname):
@@ -72,8 +75,8 @@ def cleanup_failed_group(pgid):
 
 def training_env(runtime, commit, root, variant, probe_step=None):
     env = base.launcher_env(runtime, commit, root, variant, probe_step)
-    env.update(PROJECT_NAME='opd_qwen17_instruct',
-               EXP_NAME=f'qwen17-instruct-{variant}' + ('-probe' if probe_step else ''),
+    env.update(PROJECT_NAME=PROJECT_NAME,
+               EXP_NAME=f'{EXPERIMENT_PREFIX}-{variant}' + ('-probe' if probe_step else ''),
                STUDENT_MODEL=str(STUDENT), MATH_TEACHER=str(TEACHER),
                STUDENT_MODEL_REVISION=STUDENT_REVISION, TEACHER_MODEL_REVISION=TEACHER_REVISION,
                OPD_PROMPT_PROTOCOL=PROTOCOL, OPD_REQUEST_SEED_RULE=SEED_RULE,
@@ -197,6 +200,12 @@ def preflight(runtime):
         if accepted.get('passed') is not True or accepted.get('num_rollouts')!=4:
             raise ValueError('Missing actual GPU non-thinking acceptance')
         protected[str(path)] = assets.sha256(path)
+    protected.update(common_preflight(runtime))
+    return protected
+
+
+def common_preflight(runtime):
+    protected = {}
     for path in [base.DATA/'train.parquet',base.DATA/'test.parquet',base.DATA/'manifest.json',base.GRADER,
                  *[base.DATA/'eval_jsonl'/f'{task}.jsonl' for task in jobs.TASKS]]:
         protected[str(path)] = assets.sha256(path)
@@ -442,7 +451,7 @@ def train_variant(root, variant, runtime, commit, runner, protected):
         paired=validate_paired_rollouts(base.read_json(root/'block3_mean/rollout_acceptance.json'),evidence)
         jobs.write_json(root/'paired_rollout_acceptance.json',paired)
     runner([base.PLOT_PYTHON,runtime/'scripts/analyze_single_opd_diagnostics.py',
-            '--run-dir',run,'--output-dir',run/'figures','--label',f'Qwen1.7 Instruct {variant} seed21'],
+            '--run-dir',run,'--output-dir',run/'figures','--label',f'{DISPLAY_LABEL} {variant} seed21'],
            root/f'queue_jobs/{variant}_figures')
     shared.verify_hashes(protected)
     return {'passed':True,'variant':variant,'steps':200,'checkpoint_steps':sorted(STEPS)}
