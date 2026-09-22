@@ -170,7 +170,7 @@ def export(snapshot, output, acceptance, verification):
     shutil.copy2(snapshot/'evaluation_acceptance.json',output/'source_evaluation_acceptance.json')
     with (output/'metrics.csv').open('w',newline='') as f:
         fields = list(dict.fromkeys(key for row in rows for key in row))
-        writer = csv.DictWriter(f,fieldnames=fields)
+        writer = csv.DictWriter(f,fieldnames=fields,lineterminator='\n')
         writer.writeheader()
         writer.writerows(rows)
     for arm in ('block3_mean','token_opd'):

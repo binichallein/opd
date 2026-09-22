@@ -98,3 +98,17 @@ def test_fetch_never_overwrites_verified_snapshot(monkeypatch, tmp_path):
     with pytest.raises(FileExistsError):
         s.fetch(tmp_path, accepted(s, s.EXPECTED))
     assert commands == []
+
+
+def test_export_csv_uses_git_friendly_lf_without_changing_scores(tmp_path):
+    s = subject()
+    snapshot = tmp_path/'snapshot'
+    output = tmp_path/'export'
+    for arm in ('block3_mean', 'token_opd'):
+        (snapshot/arm/'figures').mkdir(parents=True)
+    acceptance = accepted(s, ['student_base'])
+    (snapshot/'evaluation_acceptance.json').write_text(json.dumps(acceptance))
+    s.export(snapshot, output, acceptance, {'verified_at':'test', 'training':{}})
+    csv_bytes = (output/'metrics.csv').read_bytes()
+    assert b'\r' not in csv_bytes
+    assert len(list(s.csv.DictReader(csv_bytes.decode().splitlines()))) == 4
