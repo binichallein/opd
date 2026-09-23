@@ -38,3 +38,13 @@ worker按需启动，不修改Ray安装包。新64-CPU/0-GPU启动验收有360�
 
 新目录：`runs/20260923v5_qwen17_base_grpo_blockfirst_seed21_ml2`。
 这是恢复方案记录；是否已经恢复训练，以新目录实时日志和rollout为准，不以脚本存在代替成功。
+
+## 部署记录
+
+- 新增7项回归覆盖配置不变、旧故障验证、全部rank验收和原生SHA清单解析；先失败后实现。
+- 本地相关回归211 passed；ml2不可变部署核心回归80 passed。
+- 代码`be2eff65325ed35d26911046beb4ab42d82bf8ad`已推送GitHub并校验部署。
+- 20:26:13北京时间nohup启动v5，PID/SID3182452、PPID1，当前先执行输入与原验收的复核。
+- 本地故障证据及两步probe的轨迹/诊断备份位于
+  `/home/tyf/paper/outputs/qwen17_base_grpo_pair_20260923/ray_recovery_2030/`。
+  目录名是操作标签，不是精确启动时间；不包含大权重，完整权重仍在ml2。

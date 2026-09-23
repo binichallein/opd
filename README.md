@@ -16,10 +16,12 @@ reverse-KL 目标。
 以单独授权记录继续，保存/恢复、输入和完整评测的工程验收仍必须通过。
 先Block3 Mean训练200步及200/150/100/50评测，再初始学生评测，最后Token OPD独立训练和四次评测。
 两组seed21、DAPO文件及顺序相同，Base统一completion输入，保留全部恢复状态、rollout和诊断图。
-入口为`scripts/run_qwen17_base_grpo_pair.py`，运行目录为
-`runs/20260923v4_qwen17_base_grpo_blockfirst_seed21_ml2`。实际启动及进度以服务端状态为准。
-[启动记录及本地证据](docs/results/2026-09-23-qwen17-base-grpo-pair-startup.md)：19:28后台队列启动，
-输入、配对配置及Ray检查通过；正式训练须等待保存/恢复探针通过。
+原v4两步恢复探针已通过，正式首步前卡在Ray驱动注册；旧现场完整保留。
+20:26启动独立恢复入口`scripts/recover_qwen17_base_grpo.py`，新目录为
+`runs/20260923v5_qwen17_base_grpo_blockfirst_seed21_ml2`。
+[故障与恢复记录](docs/results/2026-09-23-qwen17-base-grpo-ray-recovery.md)：
+只关闭Ray worker预启动等待，不改变实验设置；实际进度以新目录状态及正式rollout为准。
+[原启动记录及本地证据](docs/results/2026-09-23-qwen17-base-grpo-pair-startup.md)保留历史时点。
 
 ## 已完成能力测试：4B-GRPO到1.7B-Base
 
