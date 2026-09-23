@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "updated_at": "2026-09-23T10:59:48.693397+00:00",
+  "statuses": {
+    "b17_smoke": "complete",
+    "g4_smoke": "complete",
+    "b17_b17_direct": "complete",
+    "g4_b17_direct": "complete",
+    "g4_native_direct": "complete",
+    "b17_b17_continuation": "complete",
+    "g4_b17_continuation": "complete"
+  },
+  "training_started": false,
+  "pair_statuses": {
+    "g4_b17": "inconclusive"
+  }
+}

@@ -9,7 +9,7 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 仅能力测试：4B-GRPO到1.7B-Base
+## 已完成能力测试：4B-GRPO到1.7B-Base
 
 用户最新要求本轮只筛选教师，训练另定。教师为历史公开
 `lllyx/Qwen3-4B-Base-GRPO`，学生为官方`Qwen/Qwen3-1.7B-Base`。
@@ -17,7 +17,8 @@ reverse-KL 目标。
 另测教师原生chat对照。只读已有模型，不修改权重或启动训练。
 
 - [固定测试协议与实施计划](docs/plans/2026-09-23-qwen17-base-grpo-teacher-screen.md)
-- [启动记录与本地证据](docs/results/2026-09-23-qwen17-base-grpo-screen-startup.md)：18:33启动，两模型短检查完成，三路正式GPU推理已产生输出；尚无最终验收结果。
+- [最终结果与完整本地备份](docs/results/2026-09-23-qwen17-base-grpo-screen-final.md)：18:59完成，教师独立42/128对学生13/128，但续写12/64对13/64，结果为证据不足；健康门槛均通过，未启动训练。
+- [启动记录与本地证据](docs/results/2026-09-23-qwen17-base-grpo-screen-startup.md)保留启动时点状态，不代表最终结论。
 - 推理入口：`scripts/run_qwen17_base_grpo_screen.py`；资格判断复用既有预设门槛。
 - 新运行目录：`runs/20260923v3_qwen17_base_grpo_teacher_screen_ml2`。
 - 512条正式输出，另8条短检查；保留全部原始轨迹，不根据结果改参重试。
