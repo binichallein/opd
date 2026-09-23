@@ -1,0 +1,85 @@
+\paragraph{独立的官方指令模型分层。}
+教师为\texttt{Qwen/Qwen3-8B}，ModelScope revision为
+\texttt{26028140be3ee69b82b1d1450179ab71bb1121b9}；学生为
+\texttt{Qwen/Qwen3-1.7B}，revision为\texttt{4855588ea1a12789f2e965e5f52a9e4a24c94b2a}。
+二者都是官方后训练模型，仓库名称不包含Instruct字样，但均不是Base权重。
+本组与附录\ref{app:history}中历史1.7B学生/公开GRPO教师的实验分开报告。
+Token与Block3分别从同一原始学生独立初始化，采用同一保留DAPO训练池、seed21、
+200步、每步4题每题8条、学习率$2\times10^{-6}$及四个保存权重。
+优化器、裁剪和micro-batch沿用附录\ref{app:config}中的共同配置。
+历史Block3目标未改动，因而仍不是仅修改advantage的消融。
+两组各6,400条轨迹的输入与请求seed已逐项配对审计；复用同一数据不是独立数据集复现，
+也不会消除训练池原有的重叠风险。
+
+\paragraph{原生非thinking提示。}
+与4B Base的completion分层不同，本组保留Qwen原生chat template。
+单条user消息由去除首尾空白的题面、两个换行，以及
+\texttt{Please solve the problem step by step and put the final answer in}
+\verb|\boxed{}.|构成，不追加\texttt{Solution:}。
+训练与评测均显式设置\texttt{enable\_thinking=False}及
+\texttt{add\_generation\_prompt=True}。
+模板生成的空闭合\texttt{<think>...</think>}控制前缀属于输入，不是模型生成的推理。
+EOS为151645，停止集合为$\{151645,151643\}$；有效响应长度不包含padding尾部。
+真实collector、教师与评测输入token ID均核验一致；普通文字逐步解题仍然允许。
+
+\paragraph{评测与恢复来源。}
+原始学生、两种算法的Step50/100/150/200均完整评测四项benchmark，
+使用同一固定历史grader、seed21至28、temperature1.0、top-$p=0.9$及16,384-token上限。
+共9个模型视图、46,296条评测响应。归档标签\texttt{student\_base}指训练前的指令版学生，
+不是Base模型。最初的Token启动在Ray初始化时失败，尚无正式更新；成功重试保留冻结训练实现，
+并从原始学生独立初始化。已经验收的Block3与原始学生评测直接复用，没有重生成或算成额外实验。
+所有训练和评测原始轨迹均保留。
+
+\paragraph{完整权重而非挑选最佳。}
+表\ref{tab:qwen17avgall}和\ref{tab:qwen17passall}保留全部保存权重。
+Step50的四项Avg@8中三项更有利于Token，Step150的AIME24也更有利于Token。
+本组MATH500最高Avg@8来自Token Step100，而不是Block3 Step200。
+最终端点两方法的四项Avg@8均高于原始学生，但MATH500 Pass@8均更低：
+89.60\%和89.80\%，原始学生为91.20\%。这不支持八次尝试覆盖率全面提升。
+正文端点表采用10,000次配对题目重采样，bootstrap seed为20260923。
+区间条件固定为这一个训练seed及已有响应，不是训练seed区间，也未校正多个权重/benchmark比较。
+Step200的全部Avg@8和Pass@8区间均包含零；这也不意味着证明了等效。
+
+\begin{table}[htbp]
+\centering\small
+\caption{官方8B到1.7B指令版：完整Avg@8（\%），包括原始学生；各benchmark独立计分。}
+\label{tab:qwen17avgall}
+\input{\qweninstructresults/qwen17_avg_at_8_zh}
+\end{table}
+\begin{table}[htbp]
+\centering\small
+\caption{相同模型视图的Pass@8（\%）。每题八次尝试不是八次独立训练。}
+\label{tab:qwen17passall}
+\input{\qweninstructresults/qwen17_pass_at_8_zh}
+\end{table}
+\FloatBarrier
+
+\paragraph{行为指标并非全面改善。}
+训练中Token有94/6,400条引擎长度终止（1.47\%），Block3为77/6,400（1.20\%），
+两组均未生成thinking标签。最大记录裁剪前梯度范数分别为5.13与6.90。
+这些有限诊断数值不证明更好的数学推理或更低的梯度方差。
+全部9次评测的生成thinking标签计数均为零，但表\ref{tab:qwen17behavior}显示，
+缺失boxed标记和长度终止的差异依赖benchmark：AIME24上Block3两者都更多，
+AIME25和AMC23上则更少。历史格式指标只检查缺失字面boxed标记，
+不是完整语法、答案提取或数学正确性的审计。
+
+\begin{table}[htbp]
+\centering\scriptsize
+\caption{官方指令版Step200行为比例（\%）。缺失box标记与引擎长度终止分别统计，分母均为全部响应。}
+\label{tab:qwen17behavior}
+\input{\qweninstructresults/qwen17_behavior}
+\end{table}
+\FloatBarrier
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qweninstructfigures/qwen17_avg_at_8.pdf}
+\caption{官方指令版的Avg@8。虚线为原始学生，实线仅连接实测权重；各任务有独立纵轴范围。}
+\label{fig:qwen17avg}
+\end{figure}
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qweninstructfigures/qwen17_pass_at_8.pdf}
+\caption{官方指令版的Pass@8。Avg@8更高不意味着八次尝试覆盖率更高；不报告跨任务平均。}
+\label{fig:qwen17pass}
+\end{figure}
+\FloatBarrier

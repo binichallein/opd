@@ -98,7 +98,16 @@ Step200 Block3的四项Avg@8略高于Token，但Pass@8及其他checkpoint有胜�
 - 同一数据、seed21、completion提示、原始loss；全部50/100/150/200状态、每步轨迹和热图数据保留。
 - 状态以新队列的 `queue_state.json` 为准；未通过验收不得启动正式训练。
 
-## 已完成：4B对照与ICLR2027双语论文
+## 已完成：4B对照、8B到1.7B指令版与ICLR2027双语论文
+
+2026-09-23，中英文论文新增已验收的官方Qwen3-8B到Qwen3-1.7B指令版结果，
+保留初始学生和两方法各50/100/150/200步的全部分项评分、曲线及行为指标。
+Step200四项Avg@8差值为正，但配对题目区间均包含零，Pass@8并非一致提高；
+不能据此宣称稳定优于Token OPD或多seed复现。
+
+- [本次论文更新、证据边界及交付记录](docs/results/2026-09-23-paper-qwen17-instruct-update.md)
+- [新增指令版分项指标](paper/iclr2027/generated/qwen17_instruct_20260923/qwen17_results.csv)
+- [紧凑证据、配对区间及来源哈希](paper/iclr2027/generated/qwen17_instruct_20260923/qwen17_summary.json)
 
 2026-09-21，Qwen3-4B-Base Token OPD的Step200、150、100、50完整评测均已验收，
 与已完成的Block3对照逐benchmark比较。没有继续启动其他训练。

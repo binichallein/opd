@@ -77,6 +77,12 @@ For $N>0$ and matching phase-zero partitions, $L_{\mathrm{hist}}=N L_0/(N+k\eta)
 \section{Historical Evidence and Protocol Boundaries}
 \label{app:history}
 \input{history_notes_en}
+\begin{table}[htbp]
+\centering\small
+\caption{Historical Step200 Avg@8 (\%). Rows are comparable only within each student stratum; original prompts and protocols are retained. These are not extra training seeds of either matched comparison.}
+\label{tab:historyendpoints}
+\input{generated/history_endpoints}
+\end{table}
 \begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/history_20260921/history_avg_at_8.pdf}
@@ -106,10 +112,20 @@ The native model template wraps that content with an assistant generation prefix
 For Qwen3-4B, ``plain'' is the bare question followed by two newlines and \texttt{Solution:}; ``candidate'' is the final matched completion protocol in Section~\ref{sec:protocol}. For Llama, ``completion'' retains the non-think historical instruction and a single native BOS, removes chat role boundaries, and appends \texttt{Solution:}; it is not exactly the Qwen plain condition. The ``eval'' cell uses Llama's native non-thinking evaluation template. Removing chat raises Llama student length stops from 1/32 to 4/32 in this probe, while Qwen3-4B's historical-to-candidate change reduces them from 18/32 to 1/32. These observations motivate model-specific validation, not a universal rule to remove chat from instruction-tuned models.
 \input{generated/history_probes}
 
-\section{Complete Current-Pair Checkpoint Results}
+\section{Complete 4B Base Checkpoint Results}
 \label{app:current}
 \input{current_appendix_en}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_training.pdf}
+\caption{Every-step 4B training diagnostics. Entropies are full-vocabulary, pre-update quantities at student prefixes; gradient norms are pre-clipping. The bottom panel measures response length at the training cap, not evaluation engine stopping reasons. These curves do not establish the cause of performance differences.}
+\label{fig:qwen4training}
+\end{figure}
 \FloatBarrier
+
+\section{Official Qwen3-8B to 1.7B Instruct Comparison}
+\label{app:instruct}
+\input{instruct_appendix_en}
 
 \section{Every-Step Position Diagnostics}
 \label{app:positionfigures}

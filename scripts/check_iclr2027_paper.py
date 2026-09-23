@@ -30,6 +30,44 @@ def validate_evaluation(report):
         raise ValueError('Missing primary-endpoint paired-question intervals')
 
 
+def validate_instruct_evaluation(report):
+    tasks = {'math500': 500, 'aime24': 30, 'aime25': 30, 'amc23': 83}
+    steps = (50, 100, 150, 200)
+    names = {'student_base'} | {f'{arm}_step{s}' for arm in ('token_opd', 'block3_mean') for s in steps}
+    if (report.get('complete') is not True or report.get('student') != 'Qwen/Qwen3-1.7B'
+            or report.get('teacher') != 'Qwen/Qwen3-8B'
+            or report.get('protocol') != 'qwen3_native_chat_no_thinking_boxed_v1'
+            or report.get('training_seed') != 21 or set(report.get('per_model', {})) != names):
+        raise ValueError('Incomplete or wrong Instruct comparison')
+    for result in report['per_model'].values():
+        if set(result) != set(tasks):
+            raise ValueError('Missing Instruct benchmark')
+        for task, n in tasks.items():
+            row = result[task]
+            if row.get('num_examples') != n or row.get('num_rollouts') != 8*n:
+                raise ValueError('Wrong Instruct question/response count')
+            for metric in ('avg_at_8', 'pass_at_8', 'format_error_rate', 'engine_truncation_ratio'):
+                value = row.get(metric)
+                if not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 1:
+                    raise ValueError('Invalid Instruct metric')
+    if set(report.get('bootstrap', {})) != {str(s) for s in steps}:
+        raise ValueError('Missing Instruct checkpoint intervals')
+    for step in steps:
+        cis = report['bootstrap'][str(step)]
+        if set(cis) != set(tasks):
+            raise ValueError('Missing Instruct benchmark intervals')
+        for task, values in cis.items():
+            for metric in ('avg_at_8', 'pass_at_8'):
+                ci = values.get(metric, {})
+                nums = [ci.get(k) for k in ('delta_pp', 'lower_95_pp', 'upper_95_pp')]
+                if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in nums):
+                    raise ValueError('Nonfinite or missing Instruct interval')
+                delta = 100*(report['per_model'][f'block3_mean_step{step}'][task][metric]
+                             - report['per_model'][f'token_opd_step{step}'][task][metric])
+                if not math.isclose(nums[0], delta, abs_tol=1e-10) or nums[1] > nums[2]:
+                    raise ValueError('Instruct interval disagrees with accepted scores')
+
+
 def inspect_paper(paper, *, require_evaluation=True):
     reports = {}
     for lang in ('en', 'zh'):
@@ -76,6 +114,14 @@ def inspect_paper(paper, *, require_evaluation=True):
             if not directory.is_relative_to((paper / 'generated').resolve()):
                 raise ValueError('Result directory must be inside the manuscript generated directory')
             validate_evaluation(json.loads((directory / 'qwen4_summary.json').read_text()))
+            if (paper / 'instruct_appendix_en.tex').exists():
+                match = re.search(r'\\newcommand\{\\qweninstructresults\}\{([^}]+)\}', assets)
+                if not match:
+                    raise ValueError('Missing Instruct result declaration')
+                directory = (paper / match.group(1)).resolve()
+                if not directory.is_relative_to((paper / 'generated').resolve()):
+                    raise ValueError('Instruct evidence must be inside generated')
+                validate_instruct_evaluation(json.loads((directory / 'qwen17_summary.json').read_text()))
         except (OSError, ValueError, KeyError) as exc:
             evidence_errors.append(str(exc))
     result = {'passed': not evidence_errors and not any(row['errors'] for row in reports.values()),

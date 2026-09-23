@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering\small
+\caption{官方Qwen3-8B到Qwen3-1.7B指令版：Step200分数（\%）及Block3减Token差值（百分点）。}
+\label{tab:qwen17endpoint}
+\begin{tabular}{lrrrr}
+\toprule
+Benchmark & Original & Token & Block3 & $\Delta$ [95\% CI] \\
+\midrule
+\multicolumn{5}{c}{Avg@8} \\
+MATH500 & 71.45 & 72.12 & 72.22 & +0.10 [-1.18, 1.38] \\
+AIME24 & 10.00 & 14.17 & 16.67 & +2.50 [-2.50, 8.33] \\
+AIME25 & 10.42 & 12.08 & 12.92 & +0.83 [-3.75, 5.83] \\
+AMC23 & 40.51 & 43.07 & 43.37 & +0.30 [-3.16, 3.92] \\
+\midrule
+\multicolumn{5}{c}{Pass@8} \\
+MATH500 & 91.20 & 89.60 & 89.80 & +0.20 [-2.00, 2.40] \\
+AIME24 & 26.67 & 43.33 & 36.67 & -6.67 [-20.00, 6.67] \\
+AIME25 & 23.33 & 30.00 & 30.00 & +0.00 [-16.67, 16.67] \\
+AMC23 & 69.88 & 75.90 & 74.70 & -1.20 [-9.64, 7.23] \\
+\bottomrule
+\end{tabular}
+\par\smallskip\footnotesize Original为本实验训练前的指令版学生，不是Base模型。方括号为10,000次配对题目重采样的逐点95\%区间；仅一个训练seed，未校正checkpoint或任务选择。
+\end{table}

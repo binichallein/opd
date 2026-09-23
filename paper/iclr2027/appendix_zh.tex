@@ -101,6 +101,12 @@ PPO裁剪可以处于激活状态，因为它已包含在每个$L_r$内部；之
 \section{历史证据及协议边界}
 \label{app:history}
 \input{history_notes_zh}
+\begin{table}[htbp]
+\centering\small
+\caption{历史Step200 Avg@8（\%）。仅同一学生分层内部直接比较，保留原始提示和协议；它们不是任一匹配对照的额外训练seed。}
+\label{tab:historyendpoints}
+\input{generated/history_endpoints}
+\end{table}
 \begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/history_20260921/history_avg_at_8.pdf}
@@ -130,10 +136,20 @@ PPO裁剪可以处于激活状态，因为它已包含在每个$L_r$内部；之
 Qwen3-4B 的“plain”是裸题目、两个换行及 \texttt{Solution:}；“candidate”是第~\ref{sec:protocol} 节最终配对的 completion 协议。Llama 的“completion”保留移除 think 要求后的历史指令与一个原生 BOS，去掉聊天角色边界并追加 \texttt{Solution:}，并不等于 Qwen 的 plain 条件。“eval”使用 Llama 原生的非 thinking 评测模板。在这组 probe 中，去 chat 使 Llama 学生的长度终止从 1/32 升到 4/32；而 Qwen3-4B 从 historical 改为 candidate 后，由 18/32 降至 1/32。这支持按模型进行验证，而不是对指令模型普遍移除聊天格式。
 \input{generated/history_probes}
 
-\section{最新师生对的全部Checkpoint结果}
+\section{4B Base的全部Checkpoint结果}
 \label{app:current}
 \input{current_appendix_zh}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_training.pdf}
+\caption{4B逐步训练诊断。熵是学生前缀上的全词表、更新前统计，梯度范数是裁剪前诊断。底图衡量训练响应触及上限，不是评测引擎停止原因；曲线不确立性能差异的成因。}
+\label{fig:qwen4training}
+\end{figure}
 \FloatBarrier
+
+\section{官方Qwen3-8B到1.7B指令版对照}
+\label{app:instruct}
+\input{instruct_appendix_zh}
 
 \section{逐步位置诊断}
 \label{app:positionfigures}

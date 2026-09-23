@@ -43,3 +43,13 @@ def test_symlink_rejected(tmp_path):
     (tmp_path / 'linked.tex').symlink_to(source)
     with pytest.raises(ValueError):
         m.checked_file(tmp_path, tmp_path / 'linked.tex')
+
+
+def test_actual_package_includes_instruct_tables_and_figures_not_internal_paths():
+    m = module()
+    paper = Path(__file__).resolve().parents[1] / 'paper/iclr2027'
+    files = m.collect_files(paper)
+    assert 'generated/qwen17_instruct_20260923/qwen17_step200_en.tex' in files
+    assert 'generated/qwen17_instruct_20260923/qwen17_pass_at_8_zh.tex' in files
+    assert 'figures/qwen17_instruct_20260923/qwen17_avg_at_8.pdf' in files
+    assert not any('internal/' in name or name.endswith('.jsonl') for name in files)

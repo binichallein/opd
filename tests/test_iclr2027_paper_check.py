@@ -84,3 +84,31 @@ def test_incomplete_evidence_cannot_be_finalized(change):
         report['bootstrap'] = []
     with pytest.raises(ValueError):
         CHECK.validate_evaluation(report)
+
+
+def instruct_report():
+    path = Path(__file__).resolve().parents[1] / 'paper/iclr2027/generated/qwen17_instruct_20260923/qwen17_summary.json'
+    return json.loads(path.read_text())
+
+
+def test_complete_instruct_pair_is_checked_separately():
+    assert hasattr(CHECK, 'validate_instruct_evaluation'), 'Instruct finalization gate missing'
+    CHECK.validate_instruct_evaluation(instruct_report())
+
+
+@pytest.mark.parametrize('change', ['missing_base', 'missing_checkpoint', 'wrong_protocol', 'missing_ci', 'bad_ci'])
+def test_instruct_finalization_rejects_incomplete_or_wrong_evidence(change):
+    assert hasattr(CHECK, 'validate_instruct_evaluation'), 'Instruct finalization gate missing'
+    report = instruct_report()
+    if change == 'missing_base':
+        del report['per_model']['student_base']
+    elif change == 'missing_checkpoint':
+        del report['per_model']['token_opd_step150']
+    elif change == 'wrong_protocol':
+        report['protocol'] = 'qwen3_completion_boxed_v1'
+    elif change == 'missing_ci':
+        del report['bootstrap']['200']['math500']
+    else:
+        report['bootstrap']['200']['math500']['avg_at_8']['delta_pp'] = 99
+    with pytest.raises(ValueError):
+        CHECK.validate_instruct_evaluation(report)

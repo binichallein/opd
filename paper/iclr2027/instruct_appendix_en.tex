@@ -1,0 +1,97 @@
+\paragraph{A separate official Instruct-model stratum.}
+The teacher is \texttt{Qwen/Qwen3-8B}, ModelScope revision
+\texttt{26028140be3ee69b82b1d1450179ab71bb1121b9}; the student is
+\texttt{Qwen/Qwen3-1.7B}, revision \texttt{4855588ea1a12789f2e965e5f52a9e4a24c94b2a}.
+Both are official post-trained models whose repository names omit the word Instruct.
+Neither is a Base checkpoint. This pair is distinct from the historical 1.7B
+student/public-GRPO-teacher stratum in Appendix~\ref{app:history}.
+Token and Block3 independently start from the same original student, using the
+same retained DAPO pool, seed21, 200 updates, four prompts and eight responses per
+prompt, learning rate $2\times10^{-6}$, and the four saved checkpoints.
+The optimizer, clipping and micro-batch settings follow the shared configuration
+in Appendix~\ref{app:config}. The historical Block3 objective is unchanged; this
+is not an advantage-only ablation. Complete input and request-seed audits match
+all 6,400 training trajectories per arm. Reusing the same data does not constitute
+an independent dataset replication or remove its overlap limitations.
+
+\paragraph{Native, non-thinking prompt.}
+Unlike the 4B Base completion stratum, this pair retains the original Qwen chat
+template. Its single user message consists of the stripped question, two newlines,
+and \texttt{Please solve the problem step by step and put the final answer in}
+\verb|\boxed{}.|. There is no \texttt{Solution:} suffix. Both training and evaluation
+call the template with \texttt{enable\_thinking=False} and
+\texttt{add\_generation\_prompt=True}. The resulting empty, already-closed
+\texttt{<think>...</think>} control prefix is part of the input, not generated reasoning.
+EOS is 151645 and the stop-token set is $\{151645,151643\}$; recorded effective
+response lengths exclude padded suffixes. Actual collector, teacher and evaluation
+input token IDs are checked. Ordinary textual step-by-step solutions remain allowed.
+
+\paragraph{Evaluation and recovery provenance.}
+The original student and both arms at Steps50/100/150/200 each complete all four
+benchmarks with the same pinned historical grader, eight seeds21--28,
+temperature1.0, top-$p=0.9$, and a 16,384-token output limit: nine model views and
+46,296 evaluated responses. The archive label \texttt{student\_base} means the
+original Instruct student, not a Base-model variant. An initial Token launch failed
+during Ray startup before any formal update. The successful retry preserved the
+frozen training implementation and independently initialized the original student;
+already accepted Block3 and original-student evaluations were reused, not regenerated
+or counted as additional runs. All raw training and evaluation trajectories are retained.
+
+\paragraph{All checkpoints, not a selected best.}
+Tables~\ref{tab:qwen17avgall} and~\ref{tab:qwen17passall} retain every saved checkpoint.
+Step50 favors Token in three of four Avg@8 tasks, and Step150 favors Token on
+AIME24. The highest MATH500 Avg@8 in this stratum is Token Step100, not Block3
+Step200. At the final endpoint, both methods exceed the original student on all
+four Avg@8 tasks, yet both have lower MATH500 Pass@8 (89.60\% and 89.80\% versus
+91.20\%). This does not support uniform improvement in eight-attempt coverage.
+The endpoint table in the main text uses 10,000 paired-question bootstrap resamples
+with bootstrap seed20260923. Intervals condition on one trained seed and the
+recorded responses, and are neither training-seed intervals nor corrected for
+multiple checkpoint/benchmark comparisons. All Step200 Avg@8 and Pass@8 intervals
+include zero; this is not proof of equivalence.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Official 8B to 1.7B Instruct: complete Avg@8 (\%), including the original student. Each benchmark is scored separately.}
+\label{tab:qwen17avgall}
+\input{\qweninstructresults/qwen17_avg_at_8_en}
+\end{table}
+\begin{table}[htbp]
+\centering\small
+\caption{The same model views evaluated with Pass@8 (\%). Eight attempts per question are not eight independent training runs.}
+\label{tab:qwen17passall}
+\input{\qweninstructresults/qwen17_pass_at_8_en}
+\end{table}
+\FloatBarrier
+
+\paragraph{Behavior is not uniformly improved.}
+During training, Token has 94/6,400 engine length stops (1.47\%), versus 77/6,400
+for Block3 (1.20\%); neither generates thinking tags. The maximum recorded
+pre-clipping gradient norms are 5.13 and 6.90, respectively. These finite
+diagnostics do not prove better mathematical reasoning or reduced gradient variance.
+At evaluation, all nine views have zero generated thinking-tag counts, but
+Table~\ref{tab:qwen17behavior} shows benchmark-dependent differences in missing
+boxed markers and length stops. In AIME24, Block3 has more of both than Token;
+in AIME25 and AMC23, it has fewer. A missing literal boxed marker is the historical
+format metric, not a full syntax check, answer-extraction audit or correctness label.
+
+\begin{table}[htbp]
+\centering\scriptsize
+\caption{Step200 behavior rates (\%) for the official Instruct pair. Missing box and engine length stops are separate metrics with all responses as denominators.}
+\label{tab:qwen17behavior}
+\input{\qweninstructresults/qwen17_behavior}
+\end{table}
+\FloatBarrier
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qweninstructfigures/qwen17_avg_at_8.pdf}
+\caption{Official Instruct pair, Avg@8. Dashed lines denote the original student; curves connect only measured checkpoints. Each task has its own vertical range.}
+\label{fig:qwen17avg}
+\end{figure}
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth]{\qweninstructfigures/qwen17_pass_at_8.pdf}
+\caption{Official Instruct pair, Pass@8. Higher Avg@8 does not imply higher eight-attempt coverage. No across-task average is reported.}
+\label{fig:qwen17pass}
+\end{figure}
+\FloatBarrier

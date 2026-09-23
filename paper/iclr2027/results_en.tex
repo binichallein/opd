@@ -1,4 +1,4 @@
-\paragraph{The current endpoint does not establish a general advantage.}
+\paragraph{The 4B Base endpoint does not establish a general advantage.}
 At Step200, Block3's Avg@8 differences from Token are $-0.52$, $-2.92$, $+0.42$ and $-3.01$ percentage points on MATH500, AIME24, AIME25 and AMC23, respectively. These are benchmark-specific descriptive differences, not four independent training replications. All pointwise 95\% paired-question intervals cross zero; the experiment establishes neither a statistically resolved advantage nor equivalence. Pass@8 tells a complementary story: AIME24 has lower average success but one more question solved at least once by Block3 (33.33\% versus 30.00\%). The two metrics must not be collapsed into a single claim of improvement.
 \input{\qwenresults/qwen4_step200_en}
 \IfFileExists{\qwenfigures/qwen4_accuracy.pdf}{%
@@ -13,15 +13,12 @@ At Step200, Block3's Avg@8 differences from Token are $-0.52$, $-2.92$, $+0.42$ 
 \paragraph{Intermediate gains reverse across checkpoints.}
 The endpoint does not describe the entire trajectory. At Step150, Block3 improves MATH500 Avg@8 by 1.85 points (pointwise interval $[0.70,3.00]$) and AIME24 by 2.92 points ($[0.42,5.83]$), but reduces AIME25 by 4.17 points. At Step100, the MATH500 difference instead equals $-1.40$ points ($[-2.57,-0.25]$); at Step50, only AMC23 has a positive Avg@8 difference. These conditional, pointwise intervals do not correct for checkpoint/task selection or replicate training seeds. The results show checkpoint-dependent differences, not a consistent improvement or a validated best-checkpoint selection rule.
 
+\paragraph{A new official Instruct pair has small positive mean-accuracy differences.}
+For Qwen3-8B teaching Qwen3-1.7B, Block3's Step200 Avg@8 differences are $+0.10$, $+2.50$, $+0.83$ and $+0.30$ points (Table~\ref{tab:qwen17endpoint}). All pointwise 95\% paired-question intervals include zero. Pass@8 differences are $+0.20$, $-6.67$, $0.00$ and $-1.20$ points: higher average accuracy is not uniformly better eight-attempt coverage. Both methods exceed the original student's four Avg@8 scores, but both reduce its MATH500 Pass@8 from 91.20\%. Checkpoints also reverse: Step50 favors Token on three Avg@8 tasks, and Step150 favors Token on AIME24. Appendix~\ref{app:instruct} retains all nine model views and behavior metrics. This is a separate matched stratum, not a new seed of the older 1.7B experiment or proof that model scale or prompting caused the difference.
+\input{\qweninstructresults/qwen17_step200_en}
+
 \paragraph{Earlier positive results coexist with failed transfers.}
 Table~\ref{tab:historyendpoints} reports the historical Step200 endpoints within their original protocol strata. The 1.7B comparison shows sizeable differences in favor of Block3 on all four Avg@8 benchmarks. The 1.5B DeepSeek/JustRL setting gives much smaller differences on MATH500 and AMC23 and larger ones on AIME, rather than a uniformly negative transfer. By contrast, the non-thinking 0.6B Block3 model nearly loses all measured mathematical accuracy while its Token control improves over the initial student. The Llama pair also favors Token. Model scale alone cannot explain this pattern: teacher adaptation, initial policy, prompt protocol, seed handling and implementation versions differ between strata. These experiments support a statement of conditional behavior, not a causal scaling law.
-
-\begin{table}[t]
-\centering\small
-\caption{Historical Step200 Avg@8 (\%). Rows are comparable only within each student stratum; different strata retain their original prompts and protocols. All checkpoint and Pass@8 views are retained in Appendix~\ref{app:history}. These are not additional training seeds of the current 4B experiment.}
-\label{tab:historyendpoints}
-\input{generated/history_endpoints}
-\end{table}
 
 \paragraph{Longer blocks and numerical health.}
 The historical Block10 runs exhibit severe generation degradation and recorded Step200 failures despite finite optimizer diagnostics. Their maximum pre-clipping gradient norms are nevertheless large (867.50 and 865.21); ``finite'' must not be read as ``well behaved.'' The older built-in grader records zeros on all four tasks, but its AMC23 compatibility caveat prevents treating that particular zero as independent proof of no capability (Appendix~\ref{app:history}). The remaining evidence still rules out using the mere absence of NaN or Inf gradients as a sufficient acceptance criterion. It does not isolate which of joint-ratio clipping, credit redistribution, prompting or rollout drift caused the failure. Randomly shifted blocks and sliding windows were also evaluated at several checkpoints. We report every retained result rather than identifying a winning window from an adaptive search without a new matched control.
@@ -31,9 +28,3 @@ The first 4B attempt exhibited severe repetition and frequent cap hits before an
 
 \paragraph{Credit disagreement without a Block10-like collapse.}
 Figure~\ref{fig:qwen4training} shows low late-training entropy and largely reduced gradient norms in the current 4B pair. The median Block3 sign-disagreement rate over the 200 update summaries is 15.57\%, or 6.68\% when weighted by absolute local advantage. Its median relative redistribution magnitude is 1.148; this statistic is not a probability and can exceed one. Nonzero redistribution therefore coexists with the absence of the severe historical Block10 behavior, and cannot by itself diagnose collapse. Token's size-one redistribution statistics are zero by definition, not independent evidence of better credit assignment. Appendix~\ref{app:positionfigures} reports every-step position maps and their coverage limits.
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{\qwendiagnostics/qwen4_training.pdf}
-\caption{Every-step 4B training diagnostics. Entropies are full-vocabulary, pre-update quantities at the student prefixes; gradient norms are pre-clipping optimizer diagnostics. The bottom panel measures response length at the training cap, not the evaluation engine's stopping reason. The curves do not establish the cause of performance differences.}
-\label{fig:qwen4training}
-\end{figure}

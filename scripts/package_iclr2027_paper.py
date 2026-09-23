@@ -83,6 +83,12 @@ def collect_files(paper):
     paths += [paper / 'figures' / name for name in ('study_overview.png', 'credit_assignment_concept.png')]
     for directory in figure_dirs:
         paths += list(directory.glob('*.pdf'))
+    if (paper / 'instruct_appendix_en.tex').exists():
+        result = local_dir(paper, asset_macro(asset_text, 'qweninstructresults'))
+        figures = local_dir(paper, asset_macro(asset_text, 'qweninstructfigures'))
+        paths += list(result.glob('*.tex'))
+        paths += [result / 'qwen17_results.csv', result / 'qwen17_summary.json']
+        paths += [figures / f'qwen17_{metric}.pdf' for metric in ('avg_at_8', 'pass_at_8')]
     return {checked_file(paper, path): path for path in paths}
 
 
@@ -95,7 +101,7 @@ def package(paper, output):
     payloads = {}
     for name, path in sorted(files.items()):
         value = path.read_bytes()
-        if path.suffix in ('.tex', '.bib', '.sty', '.bst'):
+        if path.suffix in ('.tex', '.bib', '.sty', '.bst', '.json', '.csv'):
             check_text(name, value.decode('utf-8'))
         payloads[name] = value
     payloads['README.txt'] = README.encode()

@@ -4,10 +4,18 @@
 英文为按ICLR2027匿名样式编排的论文稿；中文为对应阅读稿，不是另一次投稿。
 所有实验结论须以验收完成的数据为准。不能把本目录的产生本身视为实验验证或可直接投稿的保证。
 
-当前四个Token权重已全部验收，最终数据为`data/qwen4_final_20260921.json`，
+4B Base 对照的四个Token权重已全部验收，最终数据为`data/qwen4_final_20260921.json`，
 表格为`generated/qwen4_publication/`。`qwen4_final/`为相同分数的早期标签版本，
 publication版本仅规范模型名。旧partial缓存不用于成稿。
 全文保留历史正向、负向、中止与先导实验；完整性不等于所有实验具有相同证据强度。
+
+2026-09-23新增已完成的官方`Qwen/Qwen3-8B`教师到`Qwen/Qwen3-1.7B`学生指令版对照。
+包括初始学生，以及Token/Block3各Step50/100/150/200，共9个模型视图；
+四项benchmark分别报告，未混入仍在进行的4B到0.6B训练结果。
+新表格及带来源哈希的紧凑汇总位于`generated/qwen17_instruct_20260923/`，
+曲线位于`figures/qwen17_instruct_20260923/`。
+该组使用原生聊天模板并显式关闭thinking，不与历史Base/GRPO组混成同一实验。
+Step200四项Avg@8差值为正，但配对题目区间均包含零，Pass@8有升有降。
 
 ## 结构
 
@@ -31,7 +39,8 @@ bash scripts/build_iclr2027_paper.sh
 默认Tectonic路径为`$HOME/.cache/opd-paper-tools/bin/tectonic`，可用`TECTONIC`变量覆盖。
 产物为`build/en/main_en.pdf`和`build/zh/main_zh.pdf`。
 检查器验证英文正文页数、引用、AI声明、常见匿名泄漏和未完成标记，但不代替人工科学审阅。
-默认还要求当前两方法的4个权重、4项benchmark均已通过验收，并有Step200配对题目区间。
+默认还要求4B Base和新增指令版两组对照的全部权重、4项benchmark均已通过验收，
+并验证指令版初始学生及四个checkpoint的配对题目区间与汇总分数一致。
 评测尚未完成时可用`bash scripts/build_iclr2027_paper.sh --draft`检查排版，产物不视为定稿。
 
 ## 提交前
@@ -56,11 +65,25 @@ bash scripts/build_iclr2027_paper.sh
 这些工具不合并不同grader视图，不把缺失值改成零，不汇总四项benchmark为总分。
 数值图全由数据程序化绘制；两张概念图的AI生成来源见内部图审计。
 
+`scripts/build_qwen17_paper_assets.py`从已验收的本地指令版归档读取36份逐题评分文件，
+核对SHA-256、模型revision、prompt协议、采样配置及两组6,400条训练输入对齐记录。
+它不重新生成回答或修改grader，复用现有逐题bootstrap实现，执行10,000次配对重采样
+（bootstrap seed20260923）。这些区间以一个训练seed和已有8次响应为条件，
+不是多训练seed置信区间，也没有做多重比较校正。生成器拒绝覆盖已有产物目录。
+复现时在包含numpy和matplotlib的隔离环境运行：
+
+```bash
+python scripts/build_qwen17_paper_assets.py \
+  --snapshot LOCAL_ACCEPTED_BACKUP \
+  --source results/qwen17_instruct_20260922/final_20260922_2316/results.json \
+  --tables NEW_TABLE_DIRECTORY --figures NEW_FIGURE_DIRECTORY
+```
+
 测试绘图工具可使用隔离环境，避免修改训练环境：
 
 ```bash
 uv run --no-project --python 3.11 --with pytest --with numpy --with matplotlib \
-  python -m pytest tests/test_qwen4_paper_assets.py \
+  python -m pytest tests/test_qwen4_paper_assets.py tests/test_qwen17_paper_assets.py \
   tests/test_history_paper_tables.py tests/test_history_paper_figures.py \
   tests/test_iclr2027_paper_check.py tests/test_paper_package.py \
   tests/test_overlap_sensitivity.py -q
