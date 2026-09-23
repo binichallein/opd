@@ -17,6 +17,7 @@ reverse-KL 目标。
 另测教师原生chat对照。只读已有模型，不修改权重或启动训练。
 
 - [固定测试协议与实施计划](docs/plans/2026-09-23-qwen17-base-grpo-teacher-screen.md)
+- [启动记录与本地证据](docs/results/2026-09-23-qwen17-base-grpo-screen-startup.md)：18:33启动，两模型短检查完成，三路正式GPU推理已产生输出；尚无最终验收结果。
 - 推理入口：`scripts/run_qwen17_base_grpo_screen.py`；资格判断复用既有预设门槛。
 - 新运行目录：`runs/20260923v3_qwen17_base_grpo_teacher_screen_ml2`。
 - 512条正式输出，另8条短检查；保留全部原始轨迹，不根据结果改参重试。
