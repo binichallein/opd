@@ -23,6 +23,7 @@ import run_nonthinking_eval_block3 as shared
 import run_historical17_reeval_llama as historical
 import run_window_queue as jobs
 from opd_ext.request_seeds import SEED_RULE, request_identities, request_seed
+from opd_ext.math_protocol import qwen_instruct_input_ids as prompt_input_ids
 
 ROOT = assets.ROOT
 RUN_ROOT = ROOT / 'runs/20260921v1_qwen17_instruct_blockfirst_seed21_ml2'
@@ -43,6 +44,10 @@ ML2_HOST = 'di-20260407234928-vrvxk'
 PROJECT_NAME = 'opd_qwen17_instruct'
 EXPERIMENT_PREFIX = 'qwen17-instruct'
 DISPLAY_LABEL = 'Qwen1.7 Instruct'
+EOS_TOKEN_ID = 151645
+STUDENT_INITIALIZATION = 'original ModelScope Instruct, independently per arm'
+BASELINE_ALIGNMENT = 'Matched original Qwen3 Instruct pair; accepted native nonthinking prompt; historical losses unchanged'
+AUTHORIZATION = {}
 
 
 def validate_host(hostname):
@@ -85,7 +90,7 @@ def training_env(runtime, commit, root, variant, probe_step=None):
                LOSSLESS_ROLLOUT_DIR=str(root/variant/'rollouts'),
                ROLLOUT_ATTEMPT_ID=f'probe{probe_step}' if probe_step else 'formal',
                LOCAL_CACHE_ROOT=str(CACHE/variant/'train'),
-               BASELINE_ALIGNMENT='Matched original Qwen3 Instruct pair; accepted native nonthinking prompt; historical losses unchanged')
+               BASELINE_ALIGNMENT=BASELINE_ALIGNMENT)
     return env
 
 
@@ -308,7 +313,6 @@ def validate_rollout(row, ids, identity, step):
 
 def audit_rollouts(run, steps, *, probe=False):
     from transformers import AutoTokenizer
-    from opd_ext.math_protocol import qwen_instruct_input_ids
     from diagnose_token_truncation import analyze_tokens
     tokenizer=AutoTokenizer.from_pretrained(STUDENT,local_files_only=True)
     evidence=[]
@@ -326,7 +330,7 @@ def audit_rollouts(run, steps, *, probe=False):
         for row, old, identity in zip(rows,original,identities):
             if row['source_extra_info']!=old['source_extra_info']:
                 raise ValueError('Historical DAPO source order changed')
-            validate_rollout(row,qwen_instruct_input_ids(tokenizer,row['source_extra_info']['question']),identity,step)
+            validate_rollout(row,prompt_input_ids(tokenizer,row['source_extra_info']['question']),identity,step)
             if probe and row['generated_think_tags']:
                 raise ValueError('GPU training rollout generated thinking tags; preserve probe and stop')
             fingerprint.append([row[k] for k in ('source_extra_info','prompt_token_ids','request_identity','sampling')])
@@ -383,7 +387,7 @@ def evaluate_model(root, name, runtime, commit, runner, protected):
     tokenizer=AutoTokenizer.from_pretrained(model,local_files_only=True)
     reference=AutoTokenizer.from_pretrained(STUDENT,local_files_only=True)
     if (tokenizer.get_vocab()!=reference.get_vocab() or tokenizer.chat_template!=reference.chat_template
-            or tokenizer.eos_token_id!=151645):
+            or tokenizer.eos_token_id!=EOS_TOKEN_ID):
         raise ValueError('Merged model tokenizer/template/EOS changed')
     jobs.write_json(folder/'eval_card.json',{**shared.EVAL_VALUES,'model':str(model),'role':name,
         'source_commit':commit,'tasks':shared.TASK_COUNTS,'retain_rollouts':True,
@@ -483,8 +487,9 @@ def main():
             'eval_steps':STEPS,'eval_tasks':shared.TASK_COUNTS,'eval_values':shared.EVAL_VALUES,
             'ordering':'Block3 probe/train/eval -> original student eval -> Token probe/train/eval',
             'retain_all_checkpoints':True,'retain_all_rollouts':True,'full_eval_autostart':True,
-            'student_initialization':'original ModelScope Instruct, independently per arm',
-            'prompt_protocol':PROTOCOL,'request_seed_rule':SEED_RULE,'capability_gate_sha256':CAPABILITY_SHA})
+            'student_initialization':STUDENT_INITIALIZATION,
+            'prompt_protocol':PROTOCOL,'request_seed_rule':SEED_RULE,'capability_gate_sha256':CAPABILITY_SHA,
+            'authorization':AUTHORIZATION})
         try:
             jobs.wait_for_idle()
             if shutil.disk_usage(ROOT).free<1_000_000_000_000:

@@ -9,9 +9,19 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 已授权训练：4B-GRPO到1.7B-Base
+
+教师能力筛选结果为证据不足；用户随后明确要求“这次不管了，启动训练吧，和上次一样”。
+[本轮完整对照方案](docs/plans/2026-09-23-qwen17-base-grpo-blockfirst.md)不修改原筛选结论，
+以单独授权记录继续，保存/恢复、输入和完整评测的工程验收仍必须通过。
+先Block3 Mean训练200步及200/150/100/50评测，再初始学生评测，最后Token OPD独立训练和四次评测。
+两组seed21、DAPO文件及顺序相同，Base统一completion输入，保留全部恢复状态、rollout和诊断图。
+入口为`scripts/run_qwen17_base_grpo_pair.py`，运行目录为
+`runs/20260923v4_qwen17_base_grpo_blockfirst_seed21_ml2`。实际启动及进度以服务端状态为准。
+
 ## 已完成能力测试：4B-GRPO到1.7B-Base
 
-用户最新要求本轮只筛选教师，训练另定。教师为历史公开
+能力测试阶段的用户授权为只筛选教师，训练另定。教师为历史公开
 `lllyx/Qwen3-4B-Base-GRPO`，学生为官方`Qwen/Qwen3-1.7B-Base`。
 主测试使用Base裸题目、boxed指令和`Solution:`，教师接收学生原始输入和续写前缀；
 另测教师原生chat对照。只读已有模型，不修改权重或启动训练。
