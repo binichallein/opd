@@ -9,6 +9,19 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 仅能力测试：4B-GRPO到1.7B-Base
+
+用户最新要求本轮只筛选教师，训练另定。教师为历史公开
+`lllyx/Qwen3-4B-Base-GRPO`，学生为官方`Qwen/Qwen3-1.7B-Base`。
+主测试使用Base裸题目、boxed指令和`Solution:`，教师接收学生原始输入和续写前缀；
+另测教师原生chat对照。只读已有模型，不修改权重或启动训练。
+
+- [固定测试协议与实施计划](docs/plans/2026-09-23-qwen17-base-grpo-teacher-screen.md)
+- 推理入口：`scripts/run_qwen17_base_grpo_screen.py`；资格判断复用既有预设门槛。
+- 新运行目录：`runs/20260923v3_qwen17_base_grpo_teacher_screen_ml2`。
+- 512条正式输出，另8条短检查；保留全部原始轨迹，不根据结果改参重试。
+- GPU启动与最终验收以该目录的`queue_state.json`为准；测试通过也不自动训练。
+
 ## 已完成：0.6B学生的八组教师筛选
 
 [冻结方案](docs/plans/2026-09-23-qwen06-teacher-screen.md)：对用户指定的4B/8B

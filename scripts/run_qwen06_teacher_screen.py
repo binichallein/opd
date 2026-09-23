@@ -19,6 +19,15 @@ ROOT = q.old.BASE
 RUN = ROOT / 'runs/20260923v1_qwen06_teacher_screen_ml2'
 PYTHON = Path('/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl/bin/python')
 CACHE = Path('/dev/shm/q06screen0923')
+QUALIFIER_SCRIPT = 'qualify_qwen06_teachers.py'
+ASSET_DOWNLOADS = ('i06', 'i4')
+
+
+def preparation_commands(control):
+    commands = [(f'asset_{k}', [PYTHON, control / 'scripts/prepare_qwen06_screen_assets.py',
+                               '--model', k, '--download']) for k in ASSET_DOWNLOADS]
+    return commands + [('prepare', [PYTHON, control / 'scripts' / QUALIFIER_SCRIPT,
+                                     'prepare', '--root', RUN / 'qualification'])]
 
 
 def idle_gpus():
@@ -101,10 +110,7 @@ def main():
                 gpu=subprocess.check_output(['nvidia-smi', '-q'], text=True),
                 cpu_count=os.cpu_count(), disk_free=shutil.disk_usage(ROOT).free,
                 memory=Path('/proc/meminfo').read_text(), time=jobs.now()))
-            cpu_jobs = [(f'asset_{k}', [PYTHON, control / 'scripts/prepare_qwen06_screen_assets.py',
-                                      '--model', k, '--download']) for k in ('i06', 'i4')]
-            cpu_jobs.append(('prepare', [PYTHON, control / 'scripts/qualify_qwen06_teachers.py',
-                                         'prepare', '--root', RUN / 'qualification']))
+            cpu_jobs = preparation_commands(control)
             for name, argv in cpu_jobs:
                 jobs.write_json(RUN / 'queue_state.json', dict(status=name, updated_at=jobs.now()))
                 proc = launch(control, name, argv)
@@ -130,7 +136,7 @@ def main():
                 ready = q.ready_cells(cells, statuses, set(active))
                 available = sorted(idle_gpus() - {gpu for gpu, _ in active.values()})
                 for name, gpu in zip(ready, available):
-                    proc = launch(control, name, [PYTHON, control / 'scripts/qualify_qwen06_teachers.py',
+                    proc = launch(control, name, [PYTHON, control / 'scripts' / QUALIFIER_SCRIPT,
                         'generate', '--root', RUN / 'qualification', '--cell', name, '--gpu', str(gpu)], gpu)
                     active[name] = (gpu, proc)
                     last_progress = time.monotonic()
@@ -141,7 +147,7 @@ def main():
                     raise RuntimeError('No schedulable free GPU or dependency deadlock; no unrelated processes killed')
                 if len(statuses) < len(cells):
                     time.sleep(10)
-            proc = launch(control, 'summarize', [PYTHON, control / 'scripts/qualify_qwen06_teachers.py',
+            proc = launch(control, 'summarize', [PYTHON, control / 'scripts' / QUALIFIER_SCRIPT,
                 'summarize', '--root', RUN / 'qualification'])
             active['summarize'] = (None, proc)
             code = proc.wait()

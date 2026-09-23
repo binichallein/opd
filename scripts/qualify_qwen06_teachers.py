@@ -19,6 +19,7 @@ PAIRS = {'b4_b06': ('b4', 'b06'), 'i4_i06': ('i4', 'i06'),
          'i8_b06': ('i8', 'b06'), 'b8_i06': ('b8', 'i06')}
 VERSION = 'qwen06_student_input_teacher_screen_v1'
 STOP_IDS = [151643, 151645]
+STUDENTS = ('b06', 'i06')
 
 
 def protocol():
@@ -36,7 +37,7 @@ def protocol():
 
 
 def main_views():
-    views = {f'{s}_{s}': dict(model=s, input=s) for s in ('b06', 'i06')}
+    views = {f'{s}_{s}': dict(model=s, input=s) for s in STUDENTS}
     views.update({p: dict(model=t, input=s) for p, (t, s) in PAIRS.items()})
     return views
 
@@ -84,7 +85,7 @@ def build_requests(selected, source_key, phase, tokenizer, student_rows=None):
         raise ValueError('Wrong frozen question coverage')
     prefixes = {}
     if phase == 'continuation':
-        if source_key not in ('b06', 'i06') or not student_rows:
+        if source_key not in STUDENTS or not student_rows:
             raise ValueError('Continuation requires original student direct outputs')
         old.validate_records(student_rows, build_requests(selected, source_key, 'direct', tokenizer),
                              'student', tokenizer)
@@ -218,7 +219,7 @@ def cell_requests(root, key, m, selected, tokens):
 
 
 def model_label(key):
-    return 'student' if key in ('b06', 'i06') else 'teacher'
+    return 'student' if key in STUDENTS else 'teacher'
 
 
 def read_cell(root, key, m, selected, tokens):
