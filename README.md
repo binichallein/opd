@@ -9,7 +9,7 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 已授权训练：4B-GRPO到1.7B-Base
+## 已启动队列：4B-GRPO到1.7B-Base
 
 教师能力筛选结果为证据不足；用户随后明确要求“这次不管了，启动训练吧，和上次一样”。
 [本轮完整对照方案](docs/plans/2026-09-23-qwen17-base-grpo-blockfirst.md)不修改原筛选结论，
@@ -18,6 +18,8 @@ reverse-KL 目标。
 两组seed21、DAPO文件及顺序相同，Base统一completion输入，保留全部恢复状态、rollout和诊断图。
 入口为`scripts/run_qwen17_base_grpo_pair.py`，运行目录为
 `runs/20260923v4_qwen17_base_grpo_blockfirst_seed21_ml2`。实际启动及进度以服务端状态为准。
+[启动记录及本地证据](docs/results/2026-09-23-qwen17-base-grpo-pair-startup.md)：19:28后台队列启动，
+输入、配对配置及Ray检查通过；正式训练须等待保存/恢复探针通过。
 
 ## 已完成能力测试：4B-GRPO到1.7B-Base
 
