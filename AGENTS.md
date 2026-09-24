@@ -1,5 +1,27 @@
 # Agent Instructions
 
+## Authorized Historical B/C Ablation (2026-09-24)
+
+- User authorizes only B and C on the OLD Qwen3-1.7B-Base/public4B-GRPO recipe.
+  Read `docs/plans/2026-09-24-historical17-component-ablation.md` before acting.
+- New controller `scripts/run_historical_component_ablation.py`; root
+  `runs/20260924v1_historical17_components_seed21_ml2`. Inspect LIVE state before
+  launch; never duplicate, overwrite, or retry a failed attempt silently. ml2 only.
+- B=`adv3`: shared mean advantage, token ratio and token reduction.
+  C=`joint3`: joint block ratio, one surrogate term per block / valid token count.
+  Original loss default remains unchanged. Both start from original historical
+  official student bytes, not trained weights. Only200steps each, seed21.
+- Intentionally reproduce think-required ChatML training / nonthinking chat eval,
+  repeated request seed21, legacy EOS mask. This explicit historical ablation is
+  an exception to new-protocol defaults, not a recommended new training recipe.
+- Keep50/100/150/200 complete state, every rollout, interval5 diagnostics/figures,
+  full per-benchmark n8 historical-grader eval200/150/100/50 after EACH arm.
+  Run B then C automatically; no A/D retraining or extra model pairs authorized.
+- Each arm needs its own save/resume probe. Existing A/D are historical controls;
+  old Step150 does not exist. Do not claim same-runtime four-arm replication.
+- At this note's creation code/tests are ready; deployment/startup is NOT yet
+  verified. Check live status rather than treating this as a launch record.
+
 ## Final Qwen Instruct Results (2026-09-22)
 
 - Recovery queue COMPLETE at20:29:47 Beijing. All9 model evaluations accepted:

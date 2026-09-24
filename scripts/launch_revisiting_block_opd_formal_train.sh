@@ -39,11 +39,14 @@ OPD_WINDOW_SEED="${OPD_WINDOW_SEED:-$((910000 + ENV_SEED))}"
 OPD_WINDOW_MODE=fixed
 OPD_BLOCK_SIZE=3
 OPD_BLOCK_ADVANTAGE_MODE=mean
+OPD_BLOCK_ABLATION=legacy
 case "${VARIANT}" in
   random3|sliding3) OPD_WINDOW_MODE="${VARIANT%3}" ;;
   token_opd) OPD_BLOCK_SIZE=1; OPD_BLOCK_ADVANTAGE_MODE=sum ;;
   block3_sum) OPD_BLOCK_ADVANTAGE_MODE=sum ;;
   block3_mean) ;;
+  adv3) OPD_BLOCK_ABLATION=adv_only ;;
+  joint3) OPD_BLOCK_ABLATION=joint_tokenmean ;;
   block5_mean) OPD_BLOCK_SIZE=5 ;;
   block10_mean) OPD_BLOCK_SIZE=10 ;;
   block3_mixed_lam05) OPD_BLOCK_ADVANTAGE_MODE=mixed ;;
@@ -211,6 +214,7 @@ cat > '${RUN_DIR}/run_card.json' <<JSON
   \"opd_block_size\": ${OPD_BLOCK_SIZE},
   \"opd_block_advantage_mode\": \"${OPD_BLOCK_ADVANTAGE_MODE}\",
   \"opd_window_mode\": \"${OPD_WINDOW_MODE}\",
+  \"opd_block_ablation\": \"${OPD_BLOCK_ABLATION}\",
   \"opd_window_seed\": ${OPD_WINDOW_SEED},
   \"ppo_epochs\": 1,
   \"window_supervision_sha256\": \"\${window_supervision_sha256}\",

@@ -172,7 +172,7 @@ index dcff326..5b1d392 100644
      invalid_action_penalty_coef: 0.1
      use_kl_loss: False # True for GRPO
 diff --git a/verl/trainer/ppo/core_algos.py b/verl/trainer/ppo/core_algos.py
-index f754f25..fbec0cb 100644
+index f754f25..c62b2b4 100644
 --- a/verl/trainer/ppo/core_algos.py
 +++ b/verl/trainer/ppo/core_algos.py
 @@ -428,6 +428,98 @@ def agg_loss(loss_mat: torch.Tensor, loss_mask: torch.Tensor, loss_agg_mode: str
@@ -274,7 +274,7 @@ index f754f25..fbec0cb 100644
  def compute_policy_loss(
      old_log_prob,
      log_prob,
-@@ -438,6 +530,11 @@ def compute_policy_loss(
+@@ -438,6 +530,12 @@ def compute_policy_loss(
      cliprange_high=None,
      clip_ratio_c=3.0,
      loss_agg_mode: str = "token-mean",
@@ -283,13 +283,33 @@ index f754f25..fbec0cb 100644
 +    opd_block_mix_lambda: float = 0.5,
 +    opd_window_mode: str = "fixed",
 +    opd_window_offset: int = 0,
++    opd_block_ablation: str = "legacy",
  ):
      """
      Compute the clipped policy objective and related metrics for PPO.
-@@ -467,8 +564,35 @@ def compute_policy_loss(
+@@ -467,8 +565,54 @@ def compute_policy_loss(
          loss_agg_mode (str, optional):
              Aggregation mode for `agg_loss`. Defaults to "token-mean".
      """
++    token_mask = response_mask
++    if opd_block_ablation != "legacy":
++        if opd_block_ablation not in {"adv_only", "joint_tokenmean"}:
++            raise ValueError("Unknown block ablation mode")
++        if (opd_window_mode != "fixed" or opd_block_advantage_mode != "mean"
++                or opd_block_size <= 1 or loss_agg_mode != "token-mean"):
++            raise ValueError("Block ablation requires fixed mean blocks and token-mean reduction")
++        valid = response_mask.bool()
++        old_log_prob = torch.where(valid, old_log_prob.detach(), torch.zeros_like(old_log_prob))
++        log_prob = torch.where(valid, log_prob, torch.zeros_like(log_prob))
++        advantages = torch.where(valid, advantages.detach(), torch.zeros_like(advantages))
++        if opd_block_ablation == "adv_only":
++            _, _, means, _ = aggregate_blockwise_policy_inputs(
++                old_log_prob, log_prob, advantages, response_mask,
++                block_size=opd_block_size, block_advantage_mode="mean",
++            )
++            advantages = means.repeat_interleave(opd_block_size, dim=-1)[..., :log_prob.size(-1)]
++            opd_block_size = 1
++
 +    if opd_window_mode != "fixed":
 +        from opd_ext.window_supervision import compute_window_policy_loss
 +
@@ -322,7 +342,21 @@ index f754f25..fbec0cb 100644
      negative_approx_kl = log_prob - old_log_prob
      ratio = torch.exp(negative_approx_kl)
      ppo_kl = verl_F.masked_mean(-negative_approx_kl, response_mask)
-@@ -502,6 +626,9 @@ def compute_policy_loss_gspo(
+@@ -487,7 +631,12 @@ def compute_policy_loss(
+     pg_clipfrac_lower = verl_F.masked_mean(torch.gt(clip_pg_losses1, pg_losses3) * (advantages < 0).float(), response_mask)
+ 
+     pg_losses = torch.where(advantages < 0, clip_pg_losses2, clip_pg_losses1)
+-    pg_loss = agg_loss(loss_mat=pg_losses, loss_mask=response_mask, loss_agg_mode=loss_agg_mode)
++    if opd_block_ablation == "joint_tokenmean":
++        # One joint-ratio term per nonempty block, divided by valid TOKEN count.
++        # This removes each block's n_j gradient multiplier, including short tails.
++        pg_loss = (pg_losses * response_mask.bool()).sum() / (token_mask.sum() + 1e-8)
++    else:
++        pg_loss = agg_loss(loss_mat=pg_losses, loss_mask=response_mask, loss_agg_mode=loss_agg_mode)
+ 
+     return pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower
+ 
+@@ -502,6 +651,9 @@ def compute_policy_loss_gspo(
      cliprange_high=None,
      clip_ratio_c=3.0,
      loss_agg_mode: str = "seq-mean-token-mean",
@@ -332,7 +366,7 @@ index f754f25..fbec0cb 100644
  ):
      """
      Compute the clipped policy objective and related metrics for GSPO.
-@@ -522,6 +649,11 @@ def compute_policy_loss_gspo(
+@@ -522,6 +674,11 @@ def compute_policy_loss_gspo(
      """
  
      assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
@@ -344,7 +378,7 @@ index f754f25..fbec0cb 100644
      if cliprange_low is None:
          cliprange_low = cliprange
      if cliprange_high is None:
-@@ -1048,4 +1180,3 @@ def compute_memory_efficient_kl(
+@@ -1048,4 +1205,3 @@ def compute_memory_efficient_kl(
  
      
      return L1, L2, not_in_topk_ratio
@@ -984,7 +1018,7 @@ index cbf1a4f..7368101 100644
                  if is_last_step:
                      pprint(f"Final validation metrics: {last_val_metrics}")
 diff --git a/verl/workers/actor/dp_actor.py b/verl/workers/actor/dp_actor.py
-index 5d6bab1..d2b33bd 100644
+index 5d6bab1..ded2a3a 100644
 --- a/verl/workers/actor/dp_actor.py
 +++ b/verl/workers/actor/dp_actor.py
 @@ -28,10 +28,11 @@ from torch import nn
@@ -1293,13 +1327,19 @@ index 5d6bab1..d2b33bd 100644
          for epoch in range(self.config.ppo_epochs):
              for batch_idx, data in enumerate(dataloader):
                  # split batch into micro_batches
-@@ -1276,6 +1403,14 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1276,6 +1403,20 @@ class DataParallelPPOActor(BasePPOActor):
                          policy_loss_fn = compute_policy_loss_gspo
                      else:
                          raise ValueError(f"Unsupported loss_mode: {loss_mode}")
 +                    opd_block_size = self.config.get("opd_block_size", 1)
 +                    opd_block_advantage_mode = self.config.get("opd_block_advantage_mode", "sum")
 +                    opd_block_mix_lambda = self.config.get("opd_block_mix_lambda", 0.5)
++                    ablation_kwargs = {}
++                    ablation_mode = self.config.get("opd_block_ablation", "legacy")
++                    if ablation_mode != "legacy":
++                        if loss_mode != "vanilla" or use_full_kl:
++                            raise ValueError("Block ablations require sampled-token vanilla PPO")
++                        ablation_kwargs["opd_block_ablation"] = ablation_mode
 +                    validate_block_opd_compatibility(
 +                        block_size=opd_block_size,
 +                        loss_mode=loss_mode,
@@ -1308,7 +1348,7 @@ index 5d6bab1..d2b33bd 100644
  
                      pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower = policy_loss_fn(
                          old_log_prob=old_log_prob,
-@@ -1288,6 +1423,10 @@ class DataParallelPPOActor(BasePPOActor):
+@@ -1288,6 +1429,11 @@ class DataParallelPPOActor(BasePPOActor):
                          cliprange_high=clip_ratio_high,
                          clip_ratio_c=clip_ratio_c,
                          loss_agg_mode=loss_agg_mode,
@@ -1316,6 +1356,7 @@ index 5d6bab1..d2b33bd 100644
 +                        opd_block_advantage_mode=opd_block_advantage_mode,
 +                        opd_block_mix_lambda=opd_block_mix_lambda,
 +                        **window_kwargs,
++                        **ablation_kwargs,
                      )
  
                      if entropy_coeff != 0:

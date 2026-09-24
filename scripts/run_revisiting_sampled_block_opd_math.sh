@@ -57,6 +57,7 @@ filter_overlong_prompts="${FILTER_OVERLONG_PROMPTS:-true}"
 resume_mode="${RESUME_MODE:-disable}"
 resume_from_path="${RESUME_FROM_PATH:-}"
 window_mode=fixed
+block_ablation=legacy
 window_seed="${OPD_WINDOW_SEED:-$((910000 + ${ENV_SEED:-21}))}"
 protocol_args=()
 if [[ "${OPD_PROMPT_PROTOCOL:-legacy}" == math_eval_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_nonthinking_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == llama32_historical17_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_historical17_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_completion_boxed_v1 || "${OPD_PROMPT_PROTOCOL:-legacy}" == qwen3_native_chat_no_thinking_boxed_v1 ]]; then
@@ -124,6 +125,18 @@ case "${VARIANT}" in
     block_mode=mean
     block_mix_lambda=0.5
     ;;
+  adv3)
+    block_size=3
+    block_mode=mean
+    block_mix_lambda=0.5
+    block_ablation=adv_only
+    ;;
+  joint3)
+    block_size=3
+    block_mode=mean
+    block_mix_lambda=0.5
+    block_ablation=joint_tokenmean
+    ;;
   random3|sliding3)
     block_size=3
     block_mode=mean
@@ -188,6 +201,7 @@ python3 -m verl.trainer.main_ppo_multitask \
     actor_rollout_ref.actor.opd_block_size="${block_size}" \
     actor_rollout_ref.actor.opd_block_advantage_mode="${block_mode}" \
     actor_rollout_ref.actor.opd_block_mix_lambda="${block_mix_lambda}" \
+    +actor_rollout_ref.actor.opd_block_ablation="${block_ablation}" \
     actor_rollout_ref.actor.opd_window_mode="${window_mode}" \
     actor_rollout_ref.actor.opd_window_seed="${window_seed}" \
     actor_rollout_ref.actor.ppo_epochs=1 \

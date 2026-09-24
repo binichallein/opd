@@ -33,6 +33,10 @@ TEACHER = assets.MODELS['instruct_teacher']['path']
 STUDENT_REVISION = assets.MODELS['instruct_student']['revision']
 TEACHER_REVISION = assets.MODELS['instruct_teacher']['revision']
 PROTOCOL = 'qwen3_native_chat_no_thinking_boxed_v1'
+EVALUATION_PROTOCOL = None  # None keeps the training protocol for existing adapters.
+TRAIN_EVAL_PROMPT_MATCH = True
+EXPECTED_EVAL_COUNT = 9
+ORDERING = 'Block3 probe/train/eval -> original student eval -> Token probe/train/eval'
 VARIANTS = ('block3_mean', 'token_opd')
 STEPS = (200, 150, 100, 50)
 SAVE_STEPS = '50,100,150,200'
@@ -172,7 +176,7 @@ def model_paths(root, name):
 def evaluation_command(runtime, model, output):
     cmd = jobs.eval_command(runtime, base.PYTHON, model, base.DATA/'eval_jsonl', output, STUDENT)
     cmd[cmd.index('--grader')+1] = 'external'
-    return cmd + ['--retain-rollouts','--prompt-protocol',PROTOCOL]
+    return cmd + ['--retain-rollouts','--prompt-protocol',EVALUATION_PROTOCOL or PROTOCOL]
 
 
 def audit_command(runtime, run, commit, probe_step=None):
@@ -391,14 +395,14 @@ def evaluate_model(root, name, runtime, commit, runner, protected):
         raise ValueError('Merged model tokenizer/template/EOS changed')
     jobs.write_json(folder/'eval_card.json',{**shared.EVAL_VALUES,'model':str(model),'role':name,
         'source_commit':commit,'tasks':shared.TASK_COUNTS,'retain_rollouts':True,
-        'prompt_protocol':PROTOCOL,'grader_sha256':shared.grading.HISTORICAL_GRADER_SHA256,
+        'prompt_protocol':EVALUATION_PROTOCOL or PROTOCOL,'grader_sha256':shared.grading.HISTORICAL_GRADER_SHA256,
         'reporting':'Each benchmark separately; no macro score'})
     runner(evaluation_command(runtime,model,folder/'outputs'),folder,gpu=True,
            pid_name='eval.pid',log_name='eval.log')
     shared.verify_hashes(hashes)
     shared.verify_hashes(protected)
     config=base.read_json(folder/'outputs/eval_config.json')
-    if config.get('prompt_protocol')!=PROTOCOL or config.get('retain_rollouts') is not True:
+    if config.get('prompt_protocol')!=(EVALUATION_PROTOCOL or PROTOCOL) or config.get('retain_rollouts') is not True:
         raise ValueError('Wrong full evaluation prompt/retention protocol')
     accepted=shared.audit_evaluation(folder/'outputs',base.DATA/'eval_jsonl',model)
     for task in shared.TASK_COUNTS:
@@ -407,7 +411,8 @@ def evaluate_model(root, name, runtime, commit, runner, protected):
             validate_eval_row(row,tokenizer)
         accepted['per_task'][task]['generated_think_tag_count']=sum(
             any(t in (151667,151668) for t in row['response_token_ids']) for row in rows)
-    accepted['train_eval_prompt_verified']=True
+    accepted['train_eval_prompt_verified']=TRAIN_EVAL_PROMPT_MATCH
+    accepted['evaluation_protocol_verified']=True
     return historical.accept_archive(folder,accepted)
 
 
@@ -485,7 +490,7 @@ def main():
             'student_revision':STUDENT_REVISION,'teacher_revision':TEACHER_REVISION,
             'variants':VARIANTS,'total_training_steps':200,'checkpoint_steps':sorted(STEPS),
             'eval_steps':STEPS,'eval_tasks':shared.TASK_COUNTS,'eval_values':shared.EVAL_VALUES,
-            'ordering':'Block3 probe/train/eval -> original student eval -> Token probe/train/eval',
+            'ordering':ORDERING,
             'retain_all_checkpoints':True,'retain_all_rollouts':True,'full_eval_autostart':True,
             'student_initialization':STUDENT_INITIALIZATION,
             'prompt_protocol':PROTOCOL,'request_seed_rule':SEED_RULE,'capability_gate_sha256':CAPABILITY_SHA,
@@ -545,7 +550,7 @@ def main():
             def evaluate(name):
                 result=evaluate_model(RUN_ROOT,name,runtime,commit,runner,protected)
                 results[name]=result
-                jobs.write_json(RUN_ROOT/'evaluation_acceptance.json',{'passed':True,'complete':len(results)==9,'models':results})
+                jobs.write_json(RUN_ROOT/'evaluation_acceptance.json',{'passed':True,'complete':len(results)==EXPECTED_EVAL_COUNT,'models':results})
                 jobs.write_json(RUN_ROOT/'per_benchmark_results.json',{
                     task:{n:r['per_task'][task] for n,r in results.items()} for task in shared.TASK_COUNTS})
                 print(json.dumps({'evaluated':name,'per_task':result['per_task']}),flush=True)
