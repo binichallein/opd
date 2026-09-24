@@ -8,11 +8,12 @@
   preserve all; evaluate100/75/50/25 after each arm. Latest user says original
   student is ALREADY evaluated: do NOT evaluate it again. Eight full n8
   historical-grader evaluations, four benchmarks reported separately.
-- New root `runs/20260925v3_historical17_pair_n1_step100_save25_seed21_ml2`;
+- New root `runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2`;
   controller `scripts/run_historical_pair_n1.py`. Inspect LIVE state before launch.
   v2 preparation below is superseded and must not launch; do not overwrite it.
-- Prepared v3 metadata originally included initial-student eval. Preserve that
-  snapshot; queue_manifest explicitly records the latest skip-initial amendment.
+- v3 stopped in CPU Ray socket-path precheck (109 bytes >107), before any GPU
+  training/probe. Preserve its failed record; v4 only shortens gate temp paths,
+  checks both gate/train socket paths, and explicitly excludes initial eval.
 - Keep100steps,32prompts x1response,PPOmini32,seed21/legacy request seeds, old
   train/eval prompts and mismatch, legacy masks, same DAPO/model bytes and7bf5420
   training runtime. Loss is FULL legacy Block3 versus Token, not B/C ablations.

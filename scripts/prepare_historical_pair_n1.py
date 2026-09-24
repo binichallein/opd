@@ -79,12 +79,11 @@ def main():
     paired_diff = {k for k in left.keys() | right.keys() if left.get(k) != right.get(k)}
     if paired_diff - allowed:
         raise ValueError(f'Paired configuration mismatch: {paired_diff}')
-    evaluation = dict(checkpoint_steps=list(reversed(SAVE_STEPS)), include_initial_student=True,
+    evaluation = dict(checkpoint_steps=list(reversed(SAVE_STEPS)), include_initial_student=False,
         tasks=run.shared.TASK_COUNTS, responses_per_problem=8, prompt_protocol=run.EVALUATION_PROTOCOL,
         grader_path=str(run.base.GRADER), grader_sha256=run.shared.grading.HISTORICAL_GRADER_SHA256,
         per_benchmark_metrics=['avg@8', 'pass@8'], retain_all_rollouts=True,
-        initial_student_command=list(map(str, run.evaluation_command(
-            args.runtime, run.STUDENT, args.run_root/'evaluations/initial_student'))))
+        values=run.shared.EVAL_VALUES, initial_student_note='Already evaluated; no new initial-student job')
     report = dict(prepared=True, training_started=False, launch_authorized=False,
         created_at=run.jobs.now(), source_commit=commit, preparer_sha256=run.assets.sha256(Path(__file__)),
         source_recipe_card=str(source_folder/'run_card.json'),

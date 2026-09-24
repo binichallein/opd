@@ -23,6 +23,10 @@ STEPS = tuple(reversed(preparation.SAVE_STEPS))
 CACHE = Path('/dev/shm/hp1')
 
 
+def ray_gate_cache(variant):
+    return CACHE / {'block3_mean': 'b', 'token_opd': 't'}[variant] / 'warm'
+
+
 def execute_ordered(train, evaluate):
     results = {}
     for variant in VARIANTS:
@@ -172,6 +176,7 @@ def preflight(recipe, run, runtime, root, source):
         raise ValueError('Missing/changed reviewed preparation')
     if (prepared['total_steps'] != 100 or set(prepared['cards']) != set(VARIANTS)
             or prepared['evaluation']['checkpoint_steps'] != list(STEPS)
+            or prepared['evaluation']['include_initial_student'] is not False
             or prepared['evaluation']['responses_per_problem'] != 8):
         raise ValueError('Wrong prepared scope')
     protected = {str(root/name): digest for name, digest in prepared['files'].items()}
@@ -260,11 +265,11 @@ def main():
     runtime, root = args.runtime, args.run_root
     recipe, run, commit = preparation.load_recipe(runtime)
     run.validate_host(socket.gethostname())
-    if root != recipe.ROOT/'runs/20260925v3_historical17_pair_n1_step100_save25_seed21_ml2':
+    if root != recipe.ROOT/'runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2':
         raise ValueError('Only the reviewed preparation is authorized')
     if args.ray_gate:
         import recover_qwen17_instruct_token as warmup
-        warmup.CACHE = CACHE/args.ray_gate/'warm'
+        warmup.CACHE = ray_gate_cache(args.ray_gate)
         warmup.ray_gate(root/f'{args.ray_gate}_ray_gate.json')
         return
     source = run.base.read_json(recipe.RUN_ROOT/'adv3/run_card.json')
@@ -302,6 +307,7 @@ def main():
             run.validate_cache_mount(*mount, shutil.disk_usage(CACHE).free)
             for variant in VARIANTS:
                 check_socket_budget(CACHE/variant/'train/tmp')
+                check_socket_budget(ray_gate_cache(variant)/'gate/tmp')
             env = dict(os.environ, PATH=str(run.base.PYTHON.parent)+':'+os.environ.get('PATH',''),
                 PYTHONPATH=f'{runtime}:{runtime}/external/revisiting_opd', CUDA_VISIBLE_DEVICES='0,1,2,3',
                 PYTHONUNBUFFERED='1', PYTHONDONTWRITEBYTECODE='1', TOKENIZERS_PARALLELISM='false',

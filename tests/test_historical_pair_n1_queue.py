@@ -33,6 +33,13 @@ def test_checkpoint_schedule_is_shared_with_preparer(module):
     assert module.STEPS == tuple(reversed(module.preparation.SAVE_STEPS))
 
 
+@pytest.mark.parametrize('variant', ['block3_mean', 'token_opd'])
+def test_nested_ray_gate_socket_stays_within_unix_limit(module, variant):
+    from recover_historical17_llama import check_socket_budget
+    check_socket_budget(module.ray_gate_cache(variant)/'gate/tmp')
+    check_socket_budget(module.CACHE/variant/'train/tmp')
+
+
 def test_eval_failure_prevents_token_training(module):
     trained = []
     with pytest.raises(ValueError):

@@ -66,10 +66,13 @@ Block3 Step25/50/75/100，共八个训练权重。
 
 - 准备器：`scripts/prepare_historical_pair_n1.py`，没有训练启动分支。
 - 自动队列：`scripts/run_historical_pair_n1.py`，服务器端nohup运行，不依赖本地连接。
-- ml2新目录：`runs/20260925v3_historical17_pair_n1_step100_save25_seed21_ml2`。
+- ml2新目录：`runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2`。
 - v2仅50/100的配置保留但不启动；新控制版本不修改冻结训练部署。
 - v3准备快照写于取消初始评测之前，保持原样；队列manifest单独记录取消初始评测的修订，
   实际自动顺序不包含原始学生。不能因旧准备快照写了include_initial而重复启动它。
+- v3在CPU Ray预检因嵌套socket路径109字节超过107限制停止，没有GPU训练/探针。
+  v4缩短Ray gate临时路径，添加回归测试及启动前检查；原v3全部记录保留不重跑。
+  v4准备记录也已取消初始评测；loss、模型、数据、prompt及所有训练超参数不变。
 - 只复用旧B run card中的非loss设置来约束差异，不复用其消融方法。
 - 两组实际run card只允许方法及输出标识不同；数据/运行代码manifest必须完全相同。
 - 旧Step50及独立恢复Step51不改动；此前32x1 B/C配置只添加被取代说明，不覆盖证据。
