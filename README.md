@@ -9,7 +9,16 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 当前状态：旧版 B/C 已停，新采样配置仅准备
+## 当前状态：Token / 完整 Block3，100步，仅准备
+
+用户已纠正范围：不是B/C消融，而是重做`Qwen3-1.7B-Base`学生与公开
+`Qwen3-4B-Base-GRPO`教师的Token OPD / 历史完整Block3 Mean对照。
+每组100步，每步32个prompt、每题1条，保存Step50/100；prompt、seed21及其余设置不变。
+[本轮方案](docs/plans/2026-09-25-historical17-pair-n1-step100.md)，
+准备器`scripts/prepare_historical_pair_n1.py`不启动训练或评测。
+下述旧B/C准备已被取代，保留证据但不要启动。
+
+## 历史记录：旧版 B/C 已停，单回答准备已被取代
 
 2026-09-25按用户要求停止旧版1.7B-Base / 4B-GRPO的B训练及自动队列，
 最后完成Step56，完整保存节点Step50，C未开始。

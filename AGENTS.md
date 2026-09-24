@@ -1,8 +1,28 @@
 # Agent Instructions
 
-## STOPPED: Historical B/C; n1 Preparation Only (2026-09-25)
+## CURRENT: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
 
-- Latest user instruction supersedes the automatic B/C authorization below:
+- User corrected scope: NOT B/C. Repeat original1.7B-Base / public4B-GRPO
+  Token OPD versus FULL historical Block3 Mean, each100steps,32prompts x1response,
+  PPOmini32. Prompt unchanged. Prior instruction says report first, do NOT launch.
+- `scripts/prepare_historical_pair_n1.py`; new root
+  `runs/20260925v2_historical17_pair_n1_step100_seed21_ml2` on ml2 only.
+  Never run old B/C commands. Old prepared B/C is superseded, not deleted.
+- Both methods MUST use `opd_block_ablation=legacy`; Token size1/sum, Block3 size3/mean.
+  Full Block3 includes joint PPO ratio and legacy block reduction, not adv_only
+  or joint_tokenmean. Keep original loss implementation and frozen runtime7bf5420.
+- Preserve old historical train/eval prompts and their intentional mismatch,
+  seed21/legacy request seeds, DAPO bytes, lr2e-6,16K, all diagnostics/rollouts.
+  Start both independently from original student, never B Step50 or each other.
+- Save50/100 complete states, no pruning. Planned full n8 historical-grader
+  per-benchmark evaluation: initial student and both methods50/100, no150/200.
+  Training and eval are NOT launched by the preparer; no GPU test in this turn.
+- Primary question is Block3 versus matched Token at50/100, not just gain over
+  initial student. Prompt exposure changed; not a strict replay of old4x8 runs.
+
+## SUPERSEDED: Historical B/C n1 Preparation (2026-09-25)
+
+- Earlier user instruction superseded the automatic B/C authorization below:
   verify Step50 resumability, stop the current training/queue, prepare200steps
   with32prompts x1response (PPOmini32), and REPORT BEFORE any new training.
 - Original B controller3519314/formal3548435 stopped by requested SIGTERM;
