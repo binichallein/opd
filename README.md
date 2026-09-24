@@ -9,6 +9,16 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
+## 当前状态：旧版 B/C 已停，新采样配置仅准备
+
+2026-09-25按用户要求停止旧版1.7B-Base / 4B-GRPO的B训练及自动队列，
+最后完成Step56，完整保存节点Step50，C未开始。
+[停止、恢复验收与新配置方案](docs/plans/2026-09-25-historical17-single-rollout.md)：
+新B/C仅把每步4题x8回答改为32题x1回答，仍200步、PPO batch32，
+seed21、旧prompt、loss、数据、checkpoint和观测配置不变。
+`scripts/prepare_historical_single_rollout.py`只生成配置，不启动训练或评测。
+等待用户明确启动；禁止沿用下方历史自动启动授权重启旧队列。
+
 ## 已完成对照：4B-GRPO到1.7B-Base
 
 2026-09-24 20:40北京时间，v5队列全部完成：两组各200步、八个训练权重及初始学生

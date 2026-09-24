@@ -1,5 +1,27 @@
 # Agent Instructions
 
+## STOPPED: Historical B/C; n1 Preparation Only (2026-09-25)
+
+- Latest user instruction supersedes the automatic B/C authorization below:
+  verify Step50 resumability, stop the current training/queue, prepare200steps
+  with32prompts x1response (PPOmini32), and REPORT BEFORE any new training.
+- Original B controller3519314/formal3548435 stopped by requested SIGTERM;
+  last completed update56, last resumable milestone50. Original queue error143
+  is intentional termination, not an observed training crash. Preserve evidence.
+- Only an isolated OLD4x8 Step50->51 recovery verification is permitted now,
+  using `scripts/verify_historical_step50_resume.py`. Check LIVE audit state at
+  `runs/20260925v1_historical17_step50_resume_audit_ml2`, never relaunch it blindly.
+- `scripts/prepare_historical_single_rollout.py` creates commands/cards ONLY,
+  root `runs/20260925v1_historical17_components_n1_batch32_seed21_ml2`.
+  It MUST NOT execute new training or evaluation; await explicit user start.
+  Keep seed21/legacy per-request seeds, old prompt/masks, loss definitions,
+  runtime7bf5420, lr, DAPO bytes, diagnostics/rollouts and full50/100/150/200.
+  The only semantic changes are train_batch_size4->32 and rollout_group_size8->1.
+- Prepare B and C independently from ORIGINAL student weights, not Step50.
+  Prompt exposure changes800->6400 over200steps; responses remain6400.
+  Do not claim an8x compute speedup, same prompt exposure, or a pure loss-only
+  comparison against old4x8 runs. C never started in the stopped old queue.
+
 ## Authorized Historical B/C Ablation (2026-09-24)
 
 - User authorizes only B and C on the OLD Qwen3-1.7B-Base/public4B-GRPO recipe.
