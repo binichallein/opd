@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "steps": [
+    {
+      "step": 1,
+      "count": 32,
+      "sha256": "5d94e432904b0de1e6ee36598f1ecc08d991d73422f10b9d6b3a4ade3724fb7d",
+      "paired_input_sha256": "77933c49a90c2ac980755302940e0746eb25c7daae96173737e9bde444608e96",
+      "length_stops": 8,
+      "generated_think_tags": 0,
+      "periodic_tails": 0,
+      "unique_response_count": 4
+    },
+    {
+      "step": 2,
+      "count": 32,
+      "sha256": "fe55507a79bdf6b6fb5d70cbf7f1dfe6ce96d20ce004b711ee32e2dcbd996097",
+      "paired_input_sha256": "7d2673a080ce3fa8b5503f96fe9c910dad10847acd47d4a907537a174d3dfb1f",
+      "length_stops": 16,
+      "generated_think_tags": 0,
+      "periodic_tails": 8,
+      "unique_response_count": 4
+    }
+  ],
+  "total_rollouts": 64
+}

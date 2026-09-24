@@ -27,6 +27,14 @@
   First prompt hash matches historical A/D; cap8/32,4unique outputs (intentional
   repeated-seed behavior), finite grad121.13. No benchmark gain evidence yet.
   Do not replace frozen runtime with later documentation commits or relaunch.
+- Supervision22:55: B save/resume gate and64raw trajectories passed; formal B
+  PID3548435 started22:43:28 from original weights (resume disabled), nowStep1/200.
+  Formal32responses/prompts/masks match probe1; grad121.1307 finite, cap8/32.
+  C still queued. Probe2 cap16/32 and periodic8/32 (4unique outputs, old repeated
+  seed), finite grad2.1099. Read `docs/results/2026-09-24-historical17-components-supervision.md`
+  and LIVE state; do not confuse probe steps with formal training progress.
+  No runtime change/restart. Formal post-update statistics are not bitwise equal
+  to probe; alignment claim is inputs/generated tokens, not all parameter updates.
 
 ## Final Qwen Instruct Results (2026-09-22)
 

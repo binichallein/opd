@@ -1,0 +1,16 @@
+{
+  "checkpoint_steps": [
+    1,
+    2
+  ],
+  "diagnostic_steps": [
+    1,
+    2
+  ],
+  "eval_steps": [],
+  "issues": [],
+  "passed": true,
+  "run_dir": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/probes/adv3",
+  "source_commit": "7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "warnings": []
+}
