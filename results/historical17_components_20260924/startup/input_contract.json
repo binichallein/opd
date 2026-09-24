@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "actual_collector_exercised": true,
+  "training_examples_checked": 643,
+  "training_prompt_ids_sha256": "a42178977fde12c7d1d5fc39c80cd60fa4ebf20a9bd664d870415a096433dd29",
+  "training_enable_thinking": null,
+  "evaluation": {
+    "passed": true,
+    "examples": 643,
+    "enable_thinking": false,
+    "rendered_input_sha256": "af456ee536c0c0f75eb23311ec94e33020c384074993a13ae302e6a11f57dac9",
+    "generation_input_type": "string",
+    "stop_token_ids": [
+      151645,
+      151643
+    ],
+    "historical_source_commit": "9b3b8b76bcdf02d0a4cfe4720cecb24bc7203977"
+  },
+  "train_eval_prompt_equal": false,
+  "intentional_historical_mismatch": true
+}

@@ -19,8 +19,14 @@
   Run B then C automatically; no A/D retraining or extra model pairs authorized.
 - Each arm needs its own save/resume probe. Existing A/D are historical controls;
   old Step150 does not exist. Do not claim same-runtime four-arm replication.
-- At this note's creation code/tests are ready; deployment/startup is NOT yet
-  verified. Check live status rather than treating this as a launch record.
+- Startup2026-09-24 22:29 Beijing: controller3519314 detached; immutable runtime
+  7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5. B probe1 passed actual update,
+  checkpoint, four-rank Adam and32rollout audits; B probe2 resume PID3536814.
+  Formal200 and C have NOT started at this snapshot. Read
+  `docs/results/2026-09-24-historical17-components-startup.md` and LIVE state.
+  First prompt hash matches historical A/D; cap8/32,4unique outputs (intentional
+  repeated-seed behavior), finite grad121.13. No benchmark gain evidence yet.
+  Do not replace frozen runtime with later documentation commits or relaunch.
 
 ## Final Qwen Instruct Results (2026-09-22)
 

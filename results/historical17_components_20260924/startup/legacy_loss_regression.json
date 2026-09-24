@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "cases": 24,
+  "loss_metrics_and_gradients_bitwise_equal": true,
+  "reference": "0f9161f02f08287fb07f0375ad0a6bda81133ff0",
+  "scope": "CPU sampled-logprob legacy loss only, not full training replay"
+}

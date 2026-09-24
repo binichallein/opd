@@ -1,0 +1,69 @@
+{
+  "source_commit": "7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "created_at": "2026-09-24T14:10:41.516729+00:00",
+  "student": "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base",
+  "teacher": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO",
+  "student_revision": "",
+  "teacher_revision": "",
+  "variants": [
+    "adv3",
+    "joint3"
+  ],
+  "total_training_steps": 200,
+  "checkpoint_steps": [
+    50,
+    100,
+    150,
+    200
+  ],
+  "eval_steps": [
+    200,
+    150,
+    100,
+    50
+  ],
+  "eval_tasks": {
+    "math500": 500,
+    "aime24": 30,
+    "aime25": 30,
+    "amc23": 83
+  },
+  "eval_values": {
+    "n": 8,
+    "temperature": 1.0,
+    "top_p": 0.9,
+    "max_tokens": 16384,
+    "eval_seed": 21,
+    "rollout_seeds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "grader": "external",
+    "enable_thinking": false
+  },
+  "ordering": "B probe/train/eval200,150,100,50 -> C probe/train/eval200,150,100,50",
+  "retain_all_checkpoints": true,
+  "retain_all_rollouts": true,
+  "full_eval_autostart": true,
+  "student_initialization": "same original official Qwen3-1.7B-Base bytes as July A/D, independently per arm",
+  "prompt_protocol": "qwen3_historical17_v1",
+  "request_seed_rule": "legacy",
+  "capability_gate_sha256": null,
+  "authorization": {
+    "user_instruction": "Run B and C on the old 1.7B Base / 4B GRPO setup.",
+    "scope": "Only B and C: 200 steps each, independent original initialization, full milestone evaluation.",
+    "historical_quirks_intentional": [
+      "think-required ChatML training versus nonthinking chat evaluation",
+      "constant request seed21",
+      "historical EOS-derived mask"
+    ],
+    "not_recommended_default": true,
+    "extra_observability": "Every raw rollout; same interval5 diagnostics; extra Step150 full checkpoint."
+  }
+}

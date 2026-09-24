@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "ranks": [
+    {
+      "rank": 0,
+      "states": 29,
+      "nonzero_moment_elements": 860286972,
+      "sha256": "c159709fdc43b4098774f059d5e400b7f7973cae305931f8511c0b1af8605d25"
+    },
+    {
+      "rank": 1,
+      "states": 29,
+      "nonzero_moment_elements": 860286670,
+      "sha256": "50b7322af49f12162db28bcc2513150924408cab2c2ebb6b109ed93585266fc3"
+    },
+    {
+      "rank": 2,
+      "states": 29,
+      "nonzero_moment_elements": 860285710,
+      "sha256": "2c9131bb009caa7d076c89fe1dbe2903360fce3b009a67d6ca2d0c512dc80034"
+    },
+    {
+      "rank": 3,
+      "states": 29,
+      "nonzero_moment_elements": 860286682,
+      "sha256": "6c33908ee00b5e72262b33dea03780a2400bc4a97461f967e98fe6424a0c7c7c"
+    }
+  ]
+}
