@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-09-24T18:25:40.492210+00:00",
+  "runtime": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/deployments/7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "source_commit": "7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "control_files": {
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/analysis_deployments/0baacaf3ec6c143f227e038f6d092a5b0f99d124/scripts/prepare_historical_pair_n1.py": "74a757eed70f2020eb4167e68b598b7722bdfb0b51dbbfbe97c2bfa0a8106d4b",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/analysis_deployments/0baacaf3ec6c143f227e038f6d092a5b0f99d124/scripts/prepare_historical_single_rollout.py": "77e402238de89eee4488ab55a386596bca332c1cff7a046af869f6354297a4ac",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/analysis_deployments/0baacaf3ec6c143f227e038f6d092a5b0f99d124/scripts/run_historical_pair_n1.py": "cb6db07b4d77cfcf2d272ba37d567f8c640840c01a2fc4bc26d7d6a92b1672bb"
+  },
+  "variants": [
+    "block3_mean",
+    "token_opd"
+  ],
+  "total_training_steps": 100,
+  "checkpoint_steps": [
+    25,
+    50,
+    75,
+    100
+  ],
+  "rollout_group_size": 1,
+  "train_batch_size": 32,
+  "initialization": "original student independently after own probe",
+  "authorization": "Start Block3 training and full eval, only then Token training and full eval",
+  "ordering": "Block3 probe/train/eval100,75,50,25 -> Token probe/train/eval100,75,50,25",
+  "preparation_amendment": "User cancels initial-student re-evaluation; existing result retained",
+  "initial_student_reevaluated": false,
+  "expected_evaluation_count": 8,
+  "no_automatic_retries": true,
+  "preserve_all_checkpoints": true,
+  "retain_all_rollouts": true,
+  "full_eval_autostart": true
+}

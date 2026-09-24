@@ -22,6 +22,8 @@ prompt、seed21及其余设置不变。先Block3训练及四个权重完整评�
 队列`scripts/run_historical_pair_n1.py`在各组保存/恢复验收后启动正式任务。
 当前目录`runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2`，以LIVE状态为准。
 v3在CPU阶段因Ray socket路径过长停止，未进行GPU训练；v4仅缩短临时目录，原记录保留。
+[启动验收及留存证据](docs/results/2026-09-25-historical17-n1-save25-startup.md)：
+Block3探针1状态及32条轨迹验收通过，探针2恢复测试已启动；此时正式100步尚未开始。
 旧B/C及v2仅保存50/100的准备均已被取代，保留证据但不要启动。
 
 ## 历史记录：旧版 B/C 已停，单回答准备已被取代

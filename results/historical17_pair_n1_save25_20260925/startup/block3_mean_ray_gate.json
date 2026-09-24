@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "ray_version": "2.55.1",
+  "modules": [
+    "AggregatorAgent",
+    "EventAgent",
+    "JobAgent",
+    "LogAgent",
+    "LogAgentV1Grpc",
+    "HealthzAgent",
+    "ReporterAgent"
+  ],
+  "import_seconds": 1.720042571425438,
+  "startup_and_worker_seconds": 18.71517238020897,
+  "limitation": "Import warmup reduces cold-start risk; it does not change the 15-second timeout"
+}

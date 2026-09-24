@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "created_at": "2026-09-24T18:25:03.953391+00:00",
+  "prepared_sha256": "dce9210264b0786f50e78cc80c0c140e0312f35725faca0af3f07ced82a96fb0",
+  "actual_cards_verified": true,
+  "paired_manifests_identical": true,
+  "command_syntax_verified": true,
+  "training_started": false,
+  "checkpoint_steps": [
+    25,
+    50,
+    75,
+    100
+  ]
+}

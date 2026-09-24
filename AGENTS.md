@@ -24,6 +24,12 @@
 - Start with server-side nohup and record controller/control hashes. No
   automatic retries, parameter changes or checkpoint pruning. Preparation is
   not proof that GPU gates or formal training have started; read live evidence.
+- Startup snapshot02:43 Beijing: v4 controller3640782 detached, control0baacaf,
+  training7bf5420 unchanged. Block3 probe1 passed complete state/optimizer/raw
+  audits (32x1,cap16/32,periodic10/32,finite grad62.191). Probe2 PID3655323
+  started from probe checkpoint1; formal100 has NOT started at this snapshot.
+  Read `docs/results/2026-09-25-historical17-n1-save25-startup.md` and LIVE state.
+  Initial cap/repetition precede the first update; not evidence of learned collapse.
 
 ## SUPERSEDED: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
 
