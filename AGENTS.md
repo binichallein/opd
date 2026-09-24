@@ -1,6 +1,27 @@
 # Agent Instructions
 
-## CURRENT: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
+## CURRENT: Authorized Block-First, 32x1, 100 Steps, Save Every25
+
+- Latest user authorizes starting full historical Block3 Mean, then its full
+  evaluation, then independent Token OPD and its full evaluation on ml2 only.
+- Latest checkpoint correction: save25/50/75/100 COMPLETE states for BOTH arms,
+  preserve all; evaluate100/75/50/25 after each arm plus original student once.
+  Nine full n8 historical-grader evaluations, four benchmarks reported separately.
+- New root `runs/20260925v3_historical17_pair_n1_step100_save25_seed21_ml2`;
+  controller `scripts/run_historical_pair_n1.py`. Inspect LIVE state before launch.
+  v2 preparation below is superseded and must not launch; do not overwrite it.
+- Keep100steps,32prompts x1response,PPOmini32,seed21/legacy request seeds, old
+  train/eval prompts and mismatch, legacy masks, same DAPO/model bytes and7bf5420
+  training runtime. Loss is FULL legacy Block3 versus Token, not B/C ablations.
+- Own save1/resume2 gate per arm,100-step scheduler horizon even in probes;
+  formal initialization from original student only. Keep all raw trajectories,
+  interval5 diagnostics and figures. Verify actual frozen sampler32x1 order for
+  every step and pairwise input equality. Failed job/audit stops the queue.
+- Start with server-side nohup and record controller/control hashes. No
+  automatic retries, parameter changes or checkpoint pruning. Preparation is
+  not proof that GPU gates or formal training have started; read live evidence.
+
+## SUPERSEDED: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
 
 - User corrected scope: NOT B/C. Repeat original1.7B-Base / public4B-GRPO
   Token OPD versus FULL historical Block3 Mean, each100steps,32prompts x1response,

@@ -26,7 +26,7 @@ def test_real_recipe_uses_requested_pair_and_budget(module, variant):
     assert env['ROLLOUT_GROUP_SIZE'] == '1'
     assert env['PPO_MINI_BATCH_SIZE'] == '32'
     assert env['TOTAL_TRAINING_STEPS'] == '100'
-    assert env['DIAGNOSTIC_SAVE_STEPS'] == '50,100'
+    assert env['DIAGNOSTIC_SAVE_STEPS'] == '25,50,75,100'
     assert env['STUDENT_MODEL'].endswith('/Qwen3-1.7B-Base')
     assert env['MATH_TEACHER'].endswith('/Qwen3-4B-Base-GRPO')
     assert env['OPD_PROMPT_PROTOCOL'] == 'qwen3_historical17_v1'
@@ -55,10 +55,11 @@ def test_full_legacy_loss_and_strict_pair_validation(module, variant, size, mode
     assert card['opd_block_ablation'] == 'legacy'
     assert card['opd_block_size'] == size and card['opd_block_advantage_mode'] == mode
     assert card['total_training_steps'] == 100
-    assert card['diagnostic_save_steps'] == '50,100'
+    assert card['diagnostic_save_steps'] == '25,50,75,100'
     module.validate_card(old, card, Path('/new'), variant)
     for changed in ({'opd_block_ablation': 'adv_only'}, {'seed': 42},
                     {'opd_prompt_protocol': 'qwen3_completion_boxed_v1'},
-                    {'total_training_steps': 200}, {'extra_configuration': 'changed'}):
+                    {'total_training_steps': 200}, {'diagnostic_save_steps': '50,100'},
+                    {'extra_configuration': 'changed'}):
         with pytest.raises(ValueError):
             module.validate_card(old, dict(card, **changed), Path('/new'), variant)
