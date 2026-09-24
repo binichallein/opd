@@ -74,6 +74,7 @@
 
 恢复验收、四rank优化器审计、64条轨迹审计、checkpoint验收、两步诊断分别保存在
 `results/historical17_components_20260924/resume_supervision/`。
+探针逐步诊断以 `probe_scalars.json` 保存，内容与本地原始 `scalars.jsonl` 逐项一致。
 相同五份文件本地备份目录：
 `/home/tyf/paper/outputs/historical17_components_20260924/supervision_20260924_2244`。
 本地/远端SHA256逐项相同。完整checkpoint和原始轨迹保留ml2，本次未复制权重到本地。
