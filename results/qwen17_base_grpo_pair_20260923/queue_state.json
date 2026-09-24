@@ -1,0 +1,26 @@
+{
+  "status": "complete",
+  "updated_at": "2026-09-24T12:40:00.747619+00:00",
+  "variants": [
+    "block3_mean",
+    "token_opd"
+  ],
+  "checkpoint_steps": [
+    50,
+    100,
+    150,
+    200
+  ],
+  "evaluation_models": [
+    "block3_mean_step200",
+    "block3_mean_step150",
+    "block3_mean_step100",
+    "block3_mean_step50",
+    "student_base",
+    "token_opd_step200",
+    "token_opd_step150",
+    "token_opd_step100",
+    "token_opd_step50"
+  ],
+  "protected_inputs_verified": true
+}

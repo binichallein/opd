@@ -9,7 +9,12 @@ reverse-KL 目标。
 同时，`external/revisiting_opd` 固定了公开 `revisiting_opd` codebase，
 用于后续论文级 baseline 与 DAPO-Math-17K 对齐实验。
 
-## 已启动队列：4B-GRPO到1.7B-Base
+## 已完成对照：4B-GRPO到1.7B-Base
+
+2026-09-24 20:40北京时间，v5队列全部完成：两组各200步、八个训练权重及初始学生
+共九次完整评测均验收通过。[完整结果与备份](docs/results/2026-09-24-qwen17-base-grpo-pair-final.md)。
+Step200的Block3相对Token在MATH500/AIME24/AIME25的Avg@8较低，AMC23较高；
+四榜Pass@8均较低。本轮不支持Block3普遍优于Token，不能仅凭初始学生对比宣称方法胜出。
 
 教师能力筛选结果为证据不足；用户随后明确要求“这次不管了，启动训练吧，和上次一样”。
 [本轮完整对照方案](docs/plans/2026-09-23-qwen17-base-grpo-blockfirst.md)不修改原筛选结论，
