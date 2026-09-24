@@ -1,0 +1,9 @@
+{
+  "control_commit": "6ab2b25f4724ea55627fd436d006c47bc2740bd2",
+  "training_commit": "7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "files": {
+    "prepare_historical_single_rollout.py": "77e402238de89eee4488ab55a386596bca332c1cff7a046af869f6354297a4ac",
+    "verify_historical_step50_resume.py": "43e7505cb69ce9857c850209009b4d98ecdc9dc9c41173b119e5110bae8fff5c"
+  },
+  "verified": true
+}

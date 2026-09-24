@@ -18,6 +18,8 @@ reverse-KL 目标。
 seed21、旧prompt、loss、数据、checkpoint和观测配置不变。
 `scripts/prepare_historical_single_rollout.py`只生成配置，不启动训练或评测。
 等待用户明确启动；禁止沿用下方历史自动启动授权重启旧队列。
+[最终验收与留存](docs/results/2026-09-25-historical17-stop-n1-prepared.md)：
+Step50实际恢复到51并保存/退出，原checkpoint全部22个文件SHA不变，四卡空闲。
 
 ## 已完成对照：4B-GRPO到1.7B-Base
 

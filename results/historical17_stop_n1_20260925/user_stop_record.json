@@ -1,0 +1,21 @@
+{
+  "status": "stopped_by_user",
+  "reason": "Verify Step50, stop current training, prepare 32x1 only; no new formal launch",
+  "terminated_at": "2026-09-24T17:10:25.255342+00:00",
+  "controller_pid": 3519314,
+  "training_pgid": 3548435,
+  "last_completed_step": 56,
+  "last_saved_milestone": 50,
+  "original_queue_status_preserved": {
+    "status": "failed",
+    "job": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3",
+    "pid": 3548435,
+    "updated_at": "2026-09-24T17:10:25.255342+00:00",
+    "error": "143"
+  },
+  "cpu_step50_optimizer_audit_passed": true,
+  "c_formal_started": false,
+  "recovery_audit_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_step50_resume_audit_ml2",
+  "new_prepared_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_components_n1_batch32_seed21_ml2",
+  "new_training_authorized": false
+}

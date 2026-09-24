@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "status": "complete",
+  "source_step": 50,
+  "resumed_step": 51,
+  "completed_at": "2026-09-24T17:29:32.359917+00:00",
+  "total_scheduler_horizon": 200,
+  "full_state_restored": true,
+  "original_next_batch_matches": true,
+  "raw_rollouts": 32,
+  "new_n1_training_started": false,
+  "verifier_sha256": "43e7505cb69ce9857c850209009b4d98ecdc9dc9c41173b119e5110bae8fff5c"
+}

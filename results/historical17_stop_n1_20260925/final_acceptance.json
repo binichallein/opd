@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "checked_at": "2026-09-24T17:30:58.439206+00:00",
+  "resume": {
+    "passed": true,
+    "status": "complete",
+    "source_step": 50,
+    "resumed_step": 51,
+    "completed_at": "2026-09-24T17:29:32.359917+00:00",
+    "total_scheduler_horizon": 200,
+    "full_state_restored": true,
+    "original_next_batch_matches": true,
+    "raw_rollouts": 32,
+    "new_n1_training_started": false,
+    "verifier_sha256": "43e7505cb69ce9857c850209009b4d98ecdc9dc9c41173b119e5110bae8fff5c"
+  },
+  "source_preservation": {
+    "passed": true,
+    "files": 22,
+    "checked_at": "2026-09-24T17:29:57.554632+00:00"
+  },
+  "load_log_evidence": [
+    "(WorkerDict pid=3630070) [rank-0]: Loading from /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/model_world_size_4_rank_0.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/optim_world_size_4_rank_0.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/extra_state_world_size_4_rank_0.pt",
+    "(WorkerDict pid=3630401) [rank-1]: Loading from /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/model_world_size_4_rank_1.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/optim_world_size_4_rank_1.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/extra_state_world_size_4_rank_1.pt",
+    "(WorkerDict pid=3630402) [rank-2]: Loading from /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/model_world_size_4_rank_2.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/optim_world_size_4_rank_2.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/extra_state_world_size_4_rank_2.pt",
+    "(WorkerDict pid=3630403) [rank-3]: Loading from /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/model_world_size_4_rank_3.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/optim_world_size_4_rank_3.pt and /limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50/actor/extra_state_world_size_4_rank_3.pt"
+  ],
+  "gpu_idle_snapshot": "0, 4, 0\n1, 4, 0\n2, 4, 0\n3, 4, 0\n",
+  "new_formal_training_started": false,
+  "old_and_probe_processes_exited": true,
+  "step51_log_metrics": [
+    "(TaskRunner pid=3628295) step:51 - rollout_archive/count:32.000 - rollout_archive/length_stop_rate:0.000 - rollout_archive/generated_think_tag_rate:0.000 - global_seqlen/min:2488.000 - global_seqlen/max:8592.000 - global_seqlen/minmax_diff:6104.000 - global_seqlen/balanced_min:6046.000 - global_seqlen/balanced_max:6046.000 - global_seqlen/mean:6046.000 - actor/entropy_loss:0.509 - training/rollout_probs_diff_max:0.072 - training/rollout_probs_diff_mean:0.003 - training/rollout_probs_diff_std:0.010 - actor/policy_loss:0.206 - actor/pg_loss:0.206 - actor/pg_clipfrac:0.001 - actor/ppo_kl:-0.001 - actor/pg_clipfrac_lower:0.000 - actor/grad_norm:8.629 - perf/mfu/actor:0.046 - perf/max_memory_allocated_gb:54.223 - perf/max_memory_reserved_gb:60.326 - perf/cpu_memory_used_gb:24.321 - actor/lr:0.000 - training/global_step:51.000 - training/epoch:0.000 - critic/score/mean:0.500 - critic/score/max:1.000 - critic/score/min:0.000 - critic/rewards/mean:-89.133 - critic/rewards/max:-54.664 - critic/rewards/min:-133.649 - critic/advantages/mean:-0.148 - critic/advantages/max:1.839 - critic/advantages/min:-13.579 - critic/returns/mean:-0.148 - critic/returns/max:1.839 - critic/returns/min:-13.579 - response_length/mean:603.000 - response_length/max:994.000 - response_length/min:190.000 - response_length/clip_ratio:0.000 - prompt_length/mean:152.750 - prompt_length/max:320.000 - prompt_length/min:80.000 - prompt_length/clip_ratio:0.000 - episode/reward/mean:0.500 - episode/reward/max:1.000 - episode/reward/min:0.000 - episode/length/mean:1.000 - episode/length/max:1.000 - episode/length/min:1.000 - episode/tool_call_count/mean:0.000 - timing_s/gen:11.522 - timing_s/lossless_rollout_archive:0.465 - timing_s/reward:0.012 - timing_s/old_log_prob:2.547 - timing_s/ref:9.644 - timing_s/adv:0.003 - timing_s/update_actor:6.414 - timing_s/step:30.625 - timing_per_token_ms/ref:0.399 - timing_per_token_ms/adv:0.000 - timing_per_token_ms/gen:0.597 - timing_per_token_ms/update_actor:0.265 - perf/total_num_tokens:24184.000 - perf/time_per_step:30.625 - perf/throughput:197.424"
+  ],
+  "retained_original_checkpoint": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/checkpoints/global_step_50",
+  "backup_files": {
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/user_stop_record.json": "6cd9360028ca5c9555d42db0d4022b7c708777efc1b4162b109973497f5c66e7",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/optimizer_inspection_step50.json": "d401fe37790a0ef3a8b443d0893d009d6033486e07b17a771901f4b2c479a6b3",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_components_n1_batch32_seed21_ml2/preparation.json": "53c079b472c618a13226d2a688537d90b7530b47495c93f88cc3fe72f875265d",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_step50_resume_audit_ml2/audit_state.json": "0a0318d51a0c739fd05400990e795ca8bb71dd4675a541627d64db18a4349d68",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_step50_resume_audit_ml2/source_preservation.json": "b320a7a8a54e94577e8e4bd05ed712f95a3e369595025f155ded47aeb590fe1a",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_step50_resume_audit_ml2/source_checkpoint_hashes.json": "aab6ab76a4fcd758bce5ec711fecee6acc3159df258944dbe2ba1c236d20815a",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_step50_resume_audit_ml2/adv3/optimizer_inspection_step51.json": "5df47e382766b9ca9427d575f43dcf695ae912ec8d850780a0464f21c7b1fe95",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_step50_resume_audit_ml2/adv3/rollouts/resume_step50_verification/step_000051/raw.jsonl.gz": "5323bd1ba5df676470ec0c3174e1f57c6f82eb08178d99e0bdd48c9f9ce24cc6",
+    "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/analysis_deployments/20260925_step50_stop_n1_prepare/control_provenance.json": "8ee94d0e7649f4f762dae40cca2644edb4a07e5c79b3e953d8af96edb195cae5"
+  }
+}

@@ -21,6 +21,12 @@
   Prompt exposure changes800->6400 over200steps; responses remain6400.
   Do not claim an8x compute speedup, same prompt exposure, or a pure loss-only
   comparison against old4x8 runs. C never started in the stopped old queue.
+- FINAL01:30 Beijing: Step50->51 GPU resume/save/exit and CPU state audit passed;
+  all22 original checkpoint hashes unchanged; optimizer/scheduler/dataloader51,
+  original next-batch match and32 raw trajectories verified. Old/probe processes
+  exited, all4 GPUs idle. NewB/C preparation passed, neither arm started.
+  Read `docs/results/2026-09-25-historical17-stop-n1-prepared.md` and LIVE state.
+  Control commit6ab2b25; immutable training runtime unchanged7bf5420.
 
 ## Authorized Historical B/C Ablation (2026-09-24)
 

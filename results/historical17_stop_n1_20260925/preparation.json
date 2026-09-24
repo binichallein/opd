@@ -1,0 +1,81 @@
+{
+  "prepared": true,
+  "training_started": false,
+  "launch_authorized": false,
+  "source_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2",
+  "runtime": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/deployments/7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "source_commit": "7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "preparer_sha256": "77e402238de89eee4488ab55a386596bca332c1cff7a046af869f6354297a4ac",
+  "variants": {
+    "adv3": {
+      "differences": {
+        "lossless_rollout_dir": {
+          "old": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/rollouts",
+          "new": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_components_n1_batch32_seed21_ml2/adv3/rollouts"
+        },
+        "diagnostic_output_dir": {
+          "old": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/adv3/diagnostics",
+          "new": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_components_n1_batch32_seed21_ml2/adv3/diagnostics"
+        },
+        "train_batch_size": {
+          "old": 4,
+          "new": 32
+        },
+        "rollout_group_size": {
+          "old": 8,
+          "new": 1
+        }
+      },
+      "files": {
+        "run_card.json": "1a54ab26460896e5226dd3029c8d8cd76788b3bbc1df02eb5e05445bd45fbee5",
+        "command.sh": "b03a33371cc72129283828e1096b5830cbfd9ac49d46d545d028a62606ea731e",
+        "env.txt": "86140bb4a4ed6c0f4c4980c452cf491f3ce44acabc465ddcd11a488846af3ba3",
+        "artifact_hashes.sha256": "010ace6dd19d212e853895ca899906e872857fb0d4e329f055282924e96f83dd",
+        "script_hashes.sha256": "8266068c38a9cf4ea4eccec40a080aa792aa843a2d95953c108a99c7d35561ec"
+      }
+    },
+    "joint3": {
+      "differences": {
+        "lossless_rollout_dir": {
+          "old": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/joint3/rollouts",
+          "new": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_components_n1_batch32_seed21_ml2/joint3/rollouts"
+        },
+        "diagnostic_output_dir": {
+          "old": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260924v1_historical17_components_seed21_ml2/joint3/diagnostics",
+          "new": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v1_historical17_components_n1_batch32_seed21_ml2/joint3/diagnostics"
+        },
+        "train_batch_size": {
+          "old": 4,
+          "new": 32
+        },
+        "rollout_group_size": {
+          "old": 8,
+          "new": 1
+        }
+      },
+      "files": {
+        "run_card.json": "ef9a74d829f46f8f4024a486bf2b7ad4ef3a52b1c139bcc5dd674ba09be9e0e8",
+        "command.sh": "3cdfbbe6b3e20d85af1fe5f756f7c03e93e77d35fadb8f93c9cca59aa032fd10",
+        "env.txt": "1db2681aad424c007ed2a4477c7dcaadf0f8df2dbcd12fa86f0ca156cef738be",
+        "artifact_hashes.sha256": "010ace6dd19d212e853895ca899906e872857fb0d4e329f055282924e96f83dd",
+        "script_hashes.sha256": "8266068c38a9cf4ea4eccec40a080aa792aa843a2d95953c108a99c7d35561ec"
+      }
+    }
+  },
+  "initialization": "Original student independently for each arm, not Step50",
+  "eval_changed": false,
+  "per_request_seed_changed": false,
+  "created_at": "2026-09-24T17:18:37.640097+00:00",
+  "total_steps": 200,
+  "prompts_per_step": 32,
+  "responses_per_prompt": 1,
+  "responses_per_step": 32,
+  "checkpoint_steps": [
+    50,
+    100,
+    150,
+    200
+  ],
+  "fresh_prompt_occurrences": 6400,
+  "limitation": "Prompt exposure increases versus old 4x8; no 8x speedup is guaranteed"
+}
