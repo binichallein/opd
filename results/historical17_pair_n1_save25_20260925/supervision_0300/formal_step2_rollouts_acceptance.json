@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "steps": [
+    {
+      "step": 1,
+      "count": 32,
+      "paired_input_sha256": "7f3b070c95863c33bda8aa74f4560de45b7a529a3bf791444bac039ad8314280",
+      "sha256": "05ace4232b283f5b415d4db2fea22ec533219d5d40b47063cb1574f0fef44efc",
+      "length_stops": 16,
+      "generated_think_tags": 0,
+      "periodic_tails": 10,
+      "unique_response_count": 31
+    },
+    {
+      "step": 2,
+      "count": 32,
+      "paired_input_sha256": "b60573b56e48ec69c647bdac4d391f144b3a77f417c4dc71b95aca3f63a58467",
+      "sha256": "80e40966afa36b26fcaa3018a41dbf09e44b1f33ef1a8d935eed3708bc72bc63",
+      "length_stops": 17,
+      "generated_think_tags": 0,
+      "periodic_tails": 13,
+      "unique_response_count": 32
+    }
+  ],
+  "total_rollouts": 64,
+  "created_at": "2026-09-24T19:14:14.166171+00:00",
+  "formal_console_metrics": [
+    {
+      "step": 1,
+      "precision": "console-rounded",
+      "actor/grad_norm": 62.191,
+      "actor/pg_loss": 0.497,
+      "response_length/clip_ratio": 0.5,
+      "timing_s/step": 247.133
+    },
+    {
+      "step": 2,
+      "precision": "console-rounded",
+      "actor/grad_norm": 23.988,
+      "actor/pg_loss": 0.246,
+      "response_length/clip_ratio": 0.531,
+      "timing_s/step": 197.168
+    }
+  ],
+  "fatal_log_patterns_found": [],
+  "checkpoint_steps": [
+    25,
+    50,
+    75,
+    100
+  ],
+  "note": "First two formal rollout archives; full distribution diagnostics at Step1 then every5 steps."
+}

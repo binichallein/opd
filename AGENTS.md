@@ -30,6 +30,16 @@
   started from probe checkpoint1; formal100 has NOT started at this snapshot.
   Read `docs/results/2026-09-25-historical17-n1-save25-startup.md` and LIVE state.
   Initial cap/repetition precede the first update; not evidence of learned collapse.
+- Supervision03:17 Beijing: Block3 save1/resume2 gate PASSED, all four ranks
+  optimizer/scheduler/RNG/data state verified. Formal PID3666134 started02:57:26
+  from original student (resume disabled), completed3/100; gradients62.191,
+  23.988,11.917 finite, cap50.0%,53.125%,40.6% (last console-rounded).
+  First64 formal raw trajectories audited and backed up locally, Step1 position
+  diagnostics verified. Initial32 prompt/response token sequences match probe1,
+  but post-update statistics are not bitwise equal. High cap/repetition remains;
+  do not call generation fully healthy. No parameter/runtime change or restart.
+  Formal save25/50/75/100 and eight evaluations remain pending; no initial eval.
+  Read LIVE state; these are startup observations, not benchmark evidence.
 
 ## SUPERSEDED: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
 
