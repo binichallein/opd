@@ -19,6 +19,10 @@
   Training and eval are NOT launched by the preparer; no GPU test in this turn.
 - Primary question is Block3 versus matched Token at50/100, not just gain over
   initial student. Prompt exposure changed; not a strict replay of old4x8 runs.
+- Preparation accepted2026-09-25 01:48 Beijing: both actual cards/commands and
+  shared input/runtime manifests verified,42 local tests passed, GPUs idle.
+  Control6dab418, training7bf5420. `preparation.json` and `preparation_acceptance.json`
+  in new root are evidence; old n1 B/C root has `superseded.json`. No new launch.
 
 ## SUPERSEDED: Historical B/C n1 Preparation (2026-09-25)
 

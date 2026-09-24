@@ -65,3 +65,15 @@ Please carefully reason through the math problem step by step and derive the cor
 - 两组实际run card只允许方法及输出标识不同；数据/运行代码manifest必须完全相同。
 - 旧Step50及独立恢复Step51不改动；此前32x1 B/C配置只添加被取代说明，不覆盖证据。
 - 正式启动前仍需适配新采样配置的输入/保存恢复验收，不能把旧B恢复探针当成新两组的验收。
+
+## 准备验收
+
+2026-09-25 01:48北京时间，ml2两份实际run card与命令核对通过，均100步、32x1、
+legacy loss；两组只有方法及输出标识不同，数据/代码manifest一致，bash语法检查通过。
+42项本地相关测试通过。四张GPU空闲，没有训练/评测进程启动，没有新增权重或rollout。
+控制脚本commit为`6dab418fc9fafbd443413ce31b984ce2a1355ef0`，训练部署仍为原7bf5420。
+旧单回答B/C目录已添加`superseded.json`，原文件未覆盖；旧checkpoint不改动。
+
+本地配置与验收备份：`/home/tyf/paper/outputs/historical17_pair_n1_step100_20260925`。
+Git精简备份：`results/historical17_pair_n1_step100_20260925/`。
+`preparation.json`记录实际配置和评测协议，`preparation_acceptance.json`记录校验及未启动状态。

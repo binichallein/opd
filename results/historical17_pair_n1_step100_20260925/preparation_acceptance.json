@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "checked_at": "2026-09-24T17:48:44.773442+00:00",
+  "control_commit": "6dab418fc9fafbd443413ce31b984ce2a1355ef0",
+  "training_commit": "7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "prepared_sha256": "a4bd458e1859621d36d88e70205fa4c4844487dcd03190deea7c59ec8be82eef",
+  "no_training_started": true,
+  "gpu_idle": "0, 4, 0\n1, 4, 0\n2, 4, 0\n3, 4, 0\n",
+  "old_checkpoints_untouched": true,
+  "scripts": {
+    "prepare_historical_pair_n1.py": "ff599f4d9f5f47e239632e9cc52a29877480539e444b259ed6015b14b0a8d5a4",
+    "prepare_historical_single_rollout.py": "77e402238de89eee4488ab55a386596bca332c1cff7a046af869f6354297a4ac"
+  }
+}
