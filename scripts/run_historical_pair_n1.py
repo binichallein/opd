@@ -29,8 +29,6 @@ def execute_ordered(train, evaluate):
         if train(variant).get('passed') is not True:
             raise ValueError(f'Training acceptance failed: {variant}')
         names = [f'{variant}_step{s}' for s in STEPS]
-        if variant == 'block3_mean':
-            names.append('student_base')
         for name in names:
             result = evaluate(name)
             if result.get('passed') is not True:
@@ -236,11 +234,12 @@ def train_variant(recipe, run, root, variant, runtime, commit, source, plan, run
 
 
 def write_comparison(run, root, results):
-    expected = {'student_base'} | {f'{v}_step{s}' for v in VARIANTS for s in STEPS}
+    expected = {f'{v}_step{s}' for v in VARIANTS for s in STEPS}
     if set(results) != expected or any(not r.get('passed') for r in results.values()):
-        raise ValueError('All nine full evaluations required')
+        raise ValueError('All eight checkpoint evaluations required')
     report = dict(training_protocol=run.PROTOCOL, evaluation_protocol='legacy', training_seed=21,
                   primary_checkpoint=100, total_steps=100, prompts_per_step=32, responses_per_prompt=1,
+                  initial_student_reevaluated=False,
                   per_benchmark={})
     for task in run.shared.TASK_COUNTS:
         values = {name: result['per_task'][task] for name, result in results.items()}
@@ -287,7 +286,9 @@ def main():
             checkpoint_steps=list(preparation.SAVE_STEPS), rollout_group_size=1, train_batch_size=32,
             initialization='original student independently after own probe',
             authorization='Start Block3 training and full eval, only then Token training and full eval',
-            ordering='Block3 probe/train/eval100,75,50,25 -> initial student eval -> Token probe/train/eval100,75,50,25',
+            ordering='Block3 probe/train/eval100,75,50,25 -> Token probe/train/eval100,75,50,25',
+            preparation_amendment='User cancels initial-student re-evaluation; existing result retained',
+            initial_student_reevaluated=False, expected_evaluation_count=8,
             no_automatic_retries=True, preserve_all_checkpoints=True, retain_all_rollouts=True,
             full_eval_autostart=True))
         try:
@@ -333,7 +334,7 @@ def main():
                 result = run.evaluate_model(root, name, runtime, commit, runner, protected)
                 results[name] = result
                 run.jobs.write_json(root/'evaluation_acceptance.json',
-                    dict(passed=True, complete=len(results)==9, models=results))
+                    dict(passed=True, complete=len(results)==8, models=results))
                 run.jobs.write_json(root/'per_benchmark_results.json', {
                     task:{n:r['per_task'][task] for n,r in results.items()} for task in run.shared.TASK_COUNTS})
                 print(json.dumps(dict(evaluated=name, per_task=result['per_task'])), flush=True)

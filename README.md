@@ -14,8 +14,9 @@ reverse-KL 目标。
 用户已纠正范围：不是B/C消融，而是重做`Qwen3-1.7B-Base`学生与公开
 `Qwen3-4B-Base-GRPO`教师的Token OPD / 历史完整Block3 Mean对照。
 每组100步，每步32个prompt、每题1条，保存Step25/50/75/100完整状态，不删除；
-prompt、seed21及其余设置不变。先Block3训练及四个权重完整评测，再初始学生评测，
-最后Token独立训练及四个权重完整评测，各benchmark单独计分。
+prompt、seed21及其余设置不变。先Block3训练及四个权重完整评测，
+再Token独立训练及四个权重完整评测，各benchmark单独计分。
+初始学生已经评测过，按最新要求不重复评测；本轮只新增八次权重评测。
 [本轮方案](docs/plans/2026-09-25-historical17-pair-n1-step100.md)，
 准备器`scripts/prepare_historical_pair_n1.py`生成配置，
 队列`scripts/run_historical_pair_n1.py`在各组保存/恢复验收后启动正式任务。

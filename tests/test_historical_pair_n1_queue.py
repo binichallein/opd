@@ -23,7 +23,7 @@ def test_exact_order(module):
                            lambda v: calls.append(('eval', v)) or {'passed': True})
     assert calls == [('train', 'block3_mean'), ('eval', 'block3_mean_step100'),
         ('eval', 'block3_mean_step75'), ('eval', 'block3_mean_step50'),
-        ('eval', 'block3_mean_step25'), ('eval', 'student_base'), ('train', 'token_opd'),
+        ('eval', 'block3_mean_step25'), ('train', 'token_opd'),
         ('eval', 'token_opd_step100'), ('eval', 'token_opd_step75'),
         ('eval', 'token_opd_step50'), ('eval', 'token_opd_step25')]
 

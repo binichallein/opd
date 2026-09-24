@@ -47,10 +47,11 @@ Please carefully reason through the math problem step by step and derive the cor
 
 ## 比较与评测
 
-完整评测原始学生、Token Step25/50/75/100、Block3 Step25/50/75/100，共九个模型状态。
+最新要求：原始学生已有评测，不重复评测。本轮仅完整评测Token Step25/50/75/100、
+Block3 Step25/50/75/100，共八个训练权重。
 沿用历史grader及相同采样/长度设置，每题8条；分别报告MATH500、AIME24、AIME25、AMC23
 的Avg@8和Pass@8，不混合题目计算总分。保留全部评测输出和格式/截断等健康指标。
-顺序：Block3独立保存/恢复探针 → 正式100步 → 评测100/75/50/25 → 原始学生评测
+顺序：Block3独立保存/恢复探针 → 正式100步 → 评测100/75/50/25
 → Token独立保存/恢复探针 → 原始学生初始化正式100步 → 评测100/75/50/25。
 任一步失败即停止，不自动跳过或改参重试。
 
@@ -67,6 +68,8 @@ Please carefully reason through the math problem step by step and derive the cor
 - 自动队列：`scripts/run_historical_pair_n1.py`，服务器端nohup运行，不依赖本地连接。
 - ml2新目录：`runs/20260925v3_historical17_pair_n1_step100_save25_seed21_ml2`。
 - v2仅50/100的配置保留但不启动；新控制版本不修改冻结训练部署。
+- v3准备快照写于取消初始评测之前，保持原样；队列manifest单独记录取消初始评测的修订，
+  实际自动顺序不包含原始学生。不能因旧准备快照写了include_initial而重复启动它。
 - 只复用旧B run card中的非loss设置来约束差异，不复用其消融方法。
 - 两组实际run card只允许方法及输出标识不同；数据/运行代码manifest必须完全相同。
 - 旧Step50及独立恢复Step51不改动；此前32x1 B/C配置只添加被取代说明，不覆盖证据。
