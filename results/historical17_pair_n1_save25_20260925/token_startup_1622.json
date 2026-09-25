@@ -1,0 +1,123 @@
+{
+  "observed_at": "2026-09-25T08:21:59.738582+00:00",
+  "run": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2",
+  "formal_pid": 3888905,
+  "diagnostic_issues": [],
+  "diagnostic_records": [
+    {
+      "actor/grad_norm": 27.061336517333984,
+      "actor/pg_clipfrac": 0.0004895561141893268,
+      "actor/pg_loss": 0.5052169224945828,
+      "block_ratio_definition": "post_update_policy_vs_behavior_policy",
+      "credit_definition": "fixed_block_shared_mean_advantage",
+      "diagnostics/block_advantage_max": 2.6827526092529297,
+      "diagnostics/block_advantage_mean": -0.015697205439209938,
+      "diagnostics/block_advantage_nonfinite_count": 0,
+      "diagnostics/block_advantage_p95": 0.0026702880859375,
+      "diagnostics/block_advantage_std": 0.36264342069625854,
+      "diagnostics/entropy_gap_absolute": 0.01891246810555458,
+      "diagnostics/entropy_gap_signed": -0.006746443919837475,
+      "diagnostics/leakage_magnitude": 0,
+      "diagnostics/normalized_leakage": 0,
+      "diagnostics/overlap_token_advantage": -0.0009939777664840221,
+      "diagnostics/post_update_block_log_ratio_abs_max": 0.4519500732421875,
+      "diagnostics/post_update_block_log_ratio_abs_mean": 0.0009377502137795091,
+      "diagnostics/post_update_block_log_ratio_abs_p95": 0.0004730224609375,
+      "diagnostics/post_update_block_ratio_max": 1.571373462677002,
+      "diagnostics/post_update_block_ratio_nonfinite_count": 0,
+      "diagnostics/post_update_block_ratio_outside_clip_fraction": 0.000428865198045969,
+      "diagnostics/post_update_block_ratio_overflow_count": 0,
+      "diagnostics/post_update_block_ratio_p95": 1.0001602172851562,
+      "diagnostics/post_update_block_ratio_underflow_count": 0,
+      "diagnostics/raw_token_advantage_max": 2.6827526092529297,
+      "diagnostics/raw_token_advantage_mean": -0.015697205439209938,
+      "diagnostics/raw_token_advantage_nonfinite_count": 0,
+      "diagnostics/raw_token_advantage_p95": 0.0026702880859375,
+      "diagnostics/raw_token_advantage_std": 0.36264342069625854,
+      "diagnostics/sign_flip_rate": 0,
+      "diagnostics/student_entropy": 0.047011204063892365,
+      "diagnostics/student_entropy_nonfinite_count": 0,
+      "diagnostics/student_overlap_mass": 0.9971903562545776,
+      "diagnostics/teacher_entropy": 0.040264762938022614,
+      "diagnostics/teacher_entropy_nonfinite_count": 0,
+      "diagnostics/teacher_overlap_mass": 0.9975938200950623,
+      "diagnostics/topk_overlap_ratio": 0.6350826621055603,
+      "diagnostics/weighted_sign_flip_rate": 0,
+      "effective_coefficient_definition": "phase_averaged_window_advantage_sum_before_clipping",
+      "gradient_diagnostic_space": "sampled_log_probs_not_model_parameters",
+      "position_bin": 128,
+      "position_stride": 1,
+      "prompt_batch_sha256": "533d7b16a9db41daef67cb99630aa1b5cb1c9da4a7c43bb75cef766012280ce7",
+      "response_length/clip_ratio": 0.5,
+      "response_length/max": 16384,
+      "response_length/mean": 8525.40625,
+      "rollout_archive/count": 32,
+      "rollout_archive/generated_think_tag_rate": 0,
+      "rollout_archive/length_stop_rate": 0.5,
+      "sign_epsilon": 0.0001,
+      "step": 1,
+      "topk": 16,
+      "window_mode": "fixed",
+      "window_offset": 0
+    }
+  ],
+  "rollout_steps": [
+    {
+      "step": 1,
+      "count": 32,
+      "batch_order_matches_plan": true,
+      "matched_block3_inputs": {
+        "source_extra_info": true,
+        "prompt_token_ids": true,
+        "sampling": true
+      },
+      "paired_input_sha256": "7f3b070c95863c33bda8aa74f4560de45b7a529a3bf791444bac039ad8314280",
+      "archive_sha256": "e7baf99d512346780950531df810bad8633085b0a62b2abe3032030607122fe8",
+      "length_stops": 16,
+      "periodic_tails": 10,
+      "generated_think_tags": 0,
+      "mean_response_length": 8525.40625,
+      "response_tokens_match_block3_before_first_update": true
+    },
+    {
+      "step": 2,
+      "count": 32,
+      "batch_order_matches_plan": true,
+      "matched_block3_inputs": {
+        "source_extra_info": true,
+        "prompt_token_ids": true,
+        "sampling": true
+      },
+      "paired_input_sha256": "b60573b56e48ec69c647bdac4d391f144b3a77f417c4dc71b95aca3f63a58467",
+      "archive_sha256": "6ca92b81c709adc313eb5e114b2b3eb26a1a4fab87bf35470af32b250ff1945e",
+      "length_stops": 14,
+      "periodic_tails": 8,
+      "generated_think_tags": 0,
+      "mean_response_length": 7672.65625
+    }
+  ],
+  "console": [
+    {
+      "step": "1",
+      "actor/grad_norm": "27.061",
+      "actor/pg_loss": "0.505",
+      "response_length/clip_ratio": "0.500",
+      "response_length/mean": "8525.406",
+      "timing_s/step": "246.024"
+    },
+    {
+      "step": "2",
+      "actor/grad_norm": "21.436",
+      "actor/pg_loss": "0.233",
+      "response_length/clip_ratio": "0.438",
+      "response_length/mean": "7672.656",
+      "timing_s/step": "198.088"
+    }
+  ],
+  "queue": {
+    "status": "running",
+    "job": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/token_opd",
+    "pid": 3888905,
+    "updated_at": "2026-09-25T08:06:25.775395+00:00"
+  }
+}

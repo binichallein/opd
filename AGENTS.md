@@ -59,6 +59,14 @@
   at this snapshot. Read LIVE state and the block3-complete-token-startup note.
   Teardown DataLoader warning occurred after successful probe save/exit; do not
   confuse it with a failed update. No runtime/config change or restart.
+- Supervision16:22: Token save1/resume2 gate PASSED; formal PID3888905 started
+  16:06:25 from original weights, resume disabled, now2/100. First64 formal
+  trajectories match Block3 paired inputs and planned order, backed up locally;
+  gradients27.061/21.436 finite, cap16/32 and14/32, periodic10/32 and8/32.
+  Step1 full diagnostics passed; Step2 has console/raw only (interval5 snapshots).
+  Probe/formal updates are not bitwise identical; never substitute probeStep2
+  for formalStep2. Full Token training/eval remain pending. Read LIVE state and
+  results/historical17_pair_n1_save25_20260925/token_startup_1622.json.
 
 ## SUPERSEDED: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
 
