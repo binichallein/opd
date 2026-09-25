@@ -1,0 +1,112 @@
+{
+  "observed_at": "2026-09-25T20:36:53.488958+00:00",
+  "run_root": "/mnt/afs/202609/tyf-qwen-opd/runs/20260926v1_qwen8_to17_instruct_n1_step100_seed21_acp",
+  "source_commit": "1867093b21799c36be22bb2fd167c87e5aaa039e",
+  "queue_state": {
+    "status": "running",
+    "job": "/mnt/afs/202609/tyf-qwen-opd/runs/20260926v1_qwen8_to17_instruct_n1_step100_seed21_acp/block3_mean",
+    "pid": 29063,
+    "updated_at": "2026-09-25T20:35:45.068129+00:00"
+  },
+  "controller_pid": 6152,
+  "formal_started_at": "2026-09-25T20:35:45+00:00",
+  "formal_completed_step": 0,
+  "formal_stage": "initializing_no_formal_metrics_yet",
+  "block3_resume_gate": {
+    "passed": true,
+    "states": [
+      {
+        "step": 1,
+        "rank": 0,
+        "scheduler_step": 1
+      },
+      {
+        "step": 1,
+        "rank": 1,
+        "scheduler_step": 1
+      },
+      {
+        "step": 1,
+        "rank": 2,
+        "scheduler_step": 1
+      },
+      {
+        "step": 1,
+        "rank": 3,
+        "scheduler_step": 1
+      },
+      {
+        "step": 2,
+        "rank": 0,
+        "scheduler_step": 2
+      },
+      {
+        "step": 2,
+        "rank": 1,
+        "scheduler_step": 2
+      },
+      {
+        "step": 2,
+        "rank": 2,
+        "scheduler_step": 2
+      },
+      {
+        "step": 2,
+        "rank": 3,
+        "scheduler_step": 2
+      }
+    ],
+    "limitation": "Checks saved rank RNG and restored training state, not bitwise vLLM replay"
+  },
+  "probe_rollouts": {
+    "passed": true,
+    "steps": [
+      {
+        "step": 1,
+        "count": 32,
+        "paired_input_sha256": "54caf08d105333c5b9b54bc57a3e4552a40226d840f72351528816309033b8f3",
+        "sha256": "b571c095619c9c24511c85f9312087632bd60d404d101ddd532a63069b1bc713",
+        "length_stops": 0,
+        "generated_think_tags": 0,
+        "periodic_tails": 0
+      },
+      {
+        "step": 2,
+        "count": 32,
+        "paired_input_sha256": "56b88eff41f69c2ed28286e0fa5959bca6f9933496027d6df23de1947aaf018c",
+        "sha256": "0ded5c588dde0a9287b2dffe5f694d762058474b15365eb2690195fcbd91f32b",
+        "length_stops": 0,
+        "generated_think_tags": 0,
+        "periodic_tails": 0
+      }
+    ],
+    "total_rollouts": 64
+  },
+  "probe_metrics": [
+    {
+      "step": 1,
+      "actor/grad_norm": 2.2891433238983154,
+      "diagnostics/student_entropy": 0.25022652745246887,
+      "diagnostics/teacher_entropy": 0.3138403594493866,
+      "diagnostics/topk_overlap_ratio": 0.7454674243927002,
+      "response_length/clip_ratio": 0.0,
+      "rollout_archive/generated_think_tag_rate": 0.0
+    },
+    {
+      "step": 2,
+      "actor/grad_norm": 2.7662882804870605,
+      "diagnostics/student_entropy": 0.3100551664829254,
+      "diagnostics/teacher_entropy": 0.38322898745536804,
+      "diagnostics/topk_overlap_ratio": 0.7370543479919434,
+      "response_length/clip_ratio": 0.0,
+      "rollout_archive/generated_think_tag_rate": 0.0
+    }
+  ],
+  "process_state": "    PID    PPID     SID    PGID STAT     ELAPSED COMMAND\n      1       0       1       1 Ss      01:49:02 sshd: /usr/sbin/sshd -D -e -f /workspace/acp-ssh/sshd_config [listener] 0 of 10-100 startups\n   6152       1    6152    6152 Ssl        52:59 /mnt/afs/202609/tyf-qwen-opd/envs/verl-cu128-v1/bin/python -u /mnt/afs/202609/tyf-qwen-opd/deployments/1867093b21799c36be22bb2fd167c87e5aaa039e/scripts/run_acp_qwen17_n1.py\n  29063    6152   29063   29063 Ss         01:08 bash /mnt/afs/202609/tyf-qwen-opd/runs/20260926v1_qwen8_to17_instruct_n1_step100_seed21_acp/block3_mean/command.sh\n",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "limitations": [
+    "Probe is not formal training or benchmark evidence",
+    "Complete state resume does not imply bitwise vLLM replay",
+    "Detached from SSH, not immune to ACP termination"
+  ]
+}

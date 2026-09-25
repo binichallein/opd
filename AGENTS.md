@@ -18,8 +18,17 @@
 - Pinned ModelScope models, exact old DAPO/eval data/grader bytes. H100 hardware
   and32CPU quota differ from ml2; document environment and sampling differences
   from old4x8 instruct runs. No private models, hot-editing deployments or auto retries.
-- At preparation time no ACP formal training has started. Read LIVE state before
+- Startup04:36 Beijing: Block3 save1/resume2 gate PASSED, all four ranks'
+  Adam/scheduler/RNG/data offset and64 raw trajectories accepted, both exit0.
+  Probe gradients2.289/2.766 finite; both batches cap0/32, think0/32, periodic0/32.
+  Original Step1 hashes unchanged; this is not a bitwise vLLM replay guarantee.
+- Formal Block3 PID29063 started04:35:45 from original student, resume disabled,
+  controller6152 detached. At04:36 still initializing, ZERO formal updates;
+  do not substitute probe metrics for formal progress. Read LIVE state before
   reporting or launching. Detached jobs survive SSH, not ACP platform termination.
+- Frozen running commit1867093, documentation commits do not redeploy it.
+  Evidence: `results/qwen17_instruct_n1_acp_20260926/startup_0436.json` and
+  preparation JSON. Full formal training/evaluations and Token are pending.
 
 ## CURRENT: Authorized Block-First, 32x1, 100 Steps, Save Every25
 
