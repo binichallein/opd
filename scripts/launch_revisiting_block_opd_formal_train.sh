@@ -92,9 +92,11 @@ run_on_target() {
   case "${LAUNCH_TRANSPORT:-ssh}" in
     ssh) ssh "${REMOTE}" "$1" ;;
     local)
-      if [[ "${REMOTE}" != ml2 || "${PREPARE_ONLY}" != true ||
-            ! "${REMOTE_ROOT}" =~ ^/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/deployments/[0-9a-f]{40}$ ]]; then
-        echo 'local transport requires approved ml2 runtime and PREPARE_ONLY=true' >&2
+      if [[ "${PREPARE_ONLY}" != true ]] || ! {
+          [[ "${REMOTE}" == ml2 && "${REMOTE_ROOT}" =~ ^/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/deployments/[0-9a-f]{40}$ ]] ||
+          [[ "${REMOTE}" == acp && "${REMOTE_ROOT}" =~ ^/mnt/afs/202609/tyf-qwen-opd/deployments/[0-9a-f]{40}$ ]];
+      }; then
+        echo 'local transport requires an approved immutable runtime and PREPARE_ONLY=true' >&2
         exit 2
       fi
       bash -c "$1"

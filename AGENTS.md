@@ -1,5 +1,26 @@
 # Agent Instructions
 
+## NEW: ACP H100 Instruct 8B -> 1.7B, 32x1, 100 Steps (2026-09-26)
+
+- User now authorizes `ssh acp`, replacing old train2 access, for the previously
+  requested official Qwen3-8B -> Qwen3-1.7B Instruct pair. Read
+  `docs/plans/2026-09-26-acp-qwen17-n1.md`; ml2's running queue is unaffected.
+- All durable assets and outputs MUST be below `/mnt/afs/202609/tyf-qwen-opd`.
+  `/workspace` is disposable. Do not stop sshd (ACP's PID1). Verify host keys
+  after platform recreation; never disable SSH host-key checking.
+- Native chat + explicit nonthinking, matching train/eval prompt; 100steps,
+  32prompts x1response, seed21/legacy request seeds, save25/50/75/100 COMPLETE
+  states, no pruning. Original full Block3 then its full eval, then Token/eval.
+  Skip original-student reevaluation. Each method initializes independently.
+- New `scripts/run_acp_qwen17_n1.py` fails closed. Each arm requires its own
+  save1/resume2 GPU test with100-step scheduler horizon. Keep every raw rollout,
+  interval5 full diagnostics/heatmaps, and eight full historical-grader n8 evals.
+- Pinned ModelScope models, exact old DAPO/eval data/grader bytes. H100 hardware
+  and32CPU quota differ from ml2; document environment and sampling differences
+  from old4x8 instruct runs. No private models, hot-editing deployments or auto retries.
+- At preparation time no ACP formal training has started. Read LIVE state before
+  reporting or launching. Detached jobs survive SSH, not ACP platform termination.
+
 ## CURRENT: Authorized Block-First, 32x1, 100 Steps, Save Every25
 
 - Latest user authorizes starting full historical Block3 Mean, then its full
