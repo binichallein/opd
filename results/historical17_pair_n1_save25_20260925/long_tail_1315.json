@@ -1,0 +1,2712 @@
+{
+  "created_at": "2026-09-25T05:15:35.701621+00:00",
+  "source": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2",
+  "note": "Completed 500-row MATH500 rollout archives only; no generation or model changes.",
+  "cells": [
+    {
+      "step": 50,
+      "rollout_id": 0,
+      "seed": 21,
+      "gpu_slot": 0,
+      "rows": 500,
+      "counts": {
+        "stop": 442,
+        "periodic_tail": 44,
+        "periodic_and_capped": 43,
+        "tail_4gram_repeated_95": 44,
+        "eos_present": 442,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 432,
+        "length": 58
+      },
+      "mean_tokens": 2740.384,
+      "median_tokens": 625.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1370192,
+      "first_tokens": [
+        [
+          71703,
+          491
+        ],
+        [
+          120890,
+          5
+        ],
+        [
+          12012,
+          3
+        ],
+        [
+          56,
+          1
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            594,
+            17847,
+            71703,
+            271,
+            71703,
+            71703,
+            71703,
+            71703,
+            21388,
+            71703,
+            21388,
+            71703,
+            71703,
+            21388,
+            21388
+          ],
+          30
+        ],
+        [
+          [
+            71703,
+            510,
+            95456,
+            0,
+            6771,
+            594,
+            2874,
+            1526,
+            419,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            16,
+            13
+          ],
+          20
+        ]
+      ],
+      "tail_periods": {
+        "1": 11,
+        "2": 2,
+        "6": 15,
+        "7": 4,
+        "9": 2,
+        "14": 3,
+        "15": 2,
+        "24": 1,
+        "53": 1,
+        "75": 1,
+        "101": 1,
+        "120": 1,
+        "None": 456
+      },
+      "unique_responses": 490,
+      "max_identical_response_count": 3,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step50/outputs/rollout_archive/math500/rollout_0.jsonl",
+      "bytes": 25735524,
+      "mtime_utc": "2026-09-25T03:25:33.356950+00:00",
+      "sha256": "f43a43fa6fabdd7ceb5e6e006da29d4f03330cc8139f72a208902a583587c596"
+    },
+    {
+      "step": 50,
+      "rollout_id": 1,
+      "seed": 22,
+      "gpu_slot": 1,
+      "rows": 500,
+      "counts": {
+        "length": 424,
+        "periodic_tail": 419,
+        "periodic_and_capped": 419,
+        "tail_4gram_repeated_95": 418,
+        "eos_present": 76,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 74,
+        "stop": 76
+      },
+      "mean_tokens": 14131.824,
+      "median_tokens": 16384,
+      "p95_tokens": 16384,
+      "total_tokens": 7065912,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            17847,
+            77091,
+            198,
+            71703,
+            17847,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            198,
+            71703,
+            77091,
+            77091,
+            77091
+          ],
+          193
+        ],
+        [
+          [
+            71703,
+            17847,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091,
+            77091
+          ],
+          153
+        ]
+      ],
+      "tail_periods": {
+        "1": 417,
+        "9": 1,
+        "103": 1,
+        "None": 81
+      },
+      "unique_responses": 88,
+      "max_identical_response_count": 193,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step50/outputs/rollout_archive/math500/rollout_1.jsonl",
+      "bytes": 175166566,
+      "mtime_utc": "2026-09-25T04:41:56.854997+00:00",
+      "sha256": "0477195ceaba944d9dcbe4bb6d01f7e4f222ffd03f144b4dec5a77a760c43d8f"
+    },
+    {
+      "step": 50,
+      "rollout_id": 2,
+      "seed": 23,
+      "gpu_slot": 2,
+      "rows": 500,
+      "counts": {
+        "length": 138,
+        "periodic_tail": 125,
+        "periodic_and_capped": 120,
+        "tail_4gram_repeated_95": 127,
+        "eos_present": 362,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 320,
+        "stop": 362
+      },
+      "mean_tokens": 5345.978,
+      "median_tokens": 977,
+      "p95_tokens": 16384,
+      "total_tokens": 2672989,
+      "first_tokens": [
+        [
+          71703,
+          271
+        ],
+        [
+          43062,
+          168
+        ],
+        [
+          139681,
+          61
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            43062,
+            198,
+            43062,
+            198,
+            43062,
+            367,
+            271,
+            43062,
+            198,
+            43062,
+            271,
+            43062,
+            367,
+            1406,
+            43062,
+            367
+          ],
+          92
+        ],
+        [
+          [
+            71703,
+            25,
+            22555,
+            0,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            31198,
+            21756
+          ],
+          24
+        ]
+      ],
+      "tail_periods": {
+        "1": 40,
+        "3": 67,
+        "4": 2,
+        "5": 7,
+        "14": 1,
+        "15": 1,
+        "17": 1,
+        "18": 1,
+        "20": 1,
+        "27": 1,
+        "32": 1,
+        "45": 1,
+        "53": 1,
+        "None": 375
+      },
+      "unique_responses": 423,
+      "max_identical_response_count": 60,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step50/outputs/rollout_archive/math500/rollout_2.jsonl",
+      "bytes": 39320195,
+      "mtime_utc": "2026-09-25T03:42:37.684483+00:00",
+      "sha256": "1e548f80cbca985a77db331f6565d3ac1c9e10e4f92fb96ffe5d6e310b61a877"
+    },
+    {
+      "step": 50,
+      "rollout_id": 3,
+      "seed": 24,
+      "gpu_slot": 3,
+      "rows": 500,
+      "counts": {
+        "length": 86,
+        "periodic_tail": 65,
+        "periodic_and_capped": 64,
+        "tail_4gram_repeated_95": 67,
+        "eos_present": 414,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 326,
+        "stop": 414
+      },
+      "mean_tokens": 3569.46,
+      "median_tokens": 766.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1784730,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            198,
+            104886,
+            271,
+            104542,
+            198,
+            106981,
+            198,
+            104542,
+            198,
+            30918,
+            271,
+            20755,
+            271,
+            99430,
+            271
+          ],
+          106
+        ],
+        [
+          [
+            71703,
+            198,
+            20920,
+            271,
+            20920,
+            198,
+            20920,
+            198,
+            20920,
+            198,
+            20920,
+            271,
+            20920,
+            198,
+            20920,
+            271
+          ],
+          19
+        ]
+      ],
+      "tail_periods": {
+        "1": 5,
+        "2": 19,
+        "3": 2,
+        "4": 8,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 2,
+        "9": 1,
+        "13": 1,
+        "14": 3,
+        "15": 2,
+        "16": 1,
+        "18": 1,
+        "19": 1,
+        "22": 2,
+        "27": 1,
+        "28": 1,
+        "29": 1,
+        "35": 1,
+        "41": 1,
+        "44": 1,
+        "51": 1,
+        "60": 1,
+        "78": 1,
+        "90": 1,
+        "94": 1,
+        "95": 1,
+        "102": 1,
+        "124": 1,
+        "None": 435
+      },
+      "unique_responses": 455,
+      "max_identical_response_count": 18,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step50/outputs/rollout_archive/math500/rollout_3.jsonl",
+      "bytes": 26024002,
+      "mtime_utc": "2026-09-25T03:31:00.908645+00:00",
+      "sha256": "dc136fbaf4c2f2db80d860340bfd81af136c4442bbde36d08b878195f0a0dc3b"
+    },
+    {
+      "step": 50,
+      "rollout_id": 4,
+      "seed": 25,
+      "gpu_slot": 0,
+      "rows": 500,
+      "counts": {
+        "stop": 456,
+        "periodic_tail": 31,
+        "periodic_and_capped": 31,
+        "tail_4gram_repeated_95": 31,
+        "eos_present": 456,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 422,
+        "length": 44
+      },
+      "mean_tokens": 2454.548,
+      "median_tokens": 691.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1227274,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            1438,
+            1495,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            311,
+            1477,
+            279,
+            897,
+            315
+          ],
+          23
+        ],
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            1438,
+            1495,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            311,
+            1477,
+            279,
+            1372,
+            315
+          ],
+          14
+        ]
+      ],
+      "tail_periods": {
+        "1": 26,
+        "7": 2,
+        "9": 1,
+        "118": 1,
+        "119": 1,
+        "None": 469
+      },
+      "unique_responses": 463,
+      "max_identical_response_count": 13,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step50/outputs/rollout_archive/math500/rollout_4.jsonl",
+      "bytes": 20961032,
+      "mtime_utc": "2026-09-25T03:37:20.123598+00:00",
+      "sha256": "50f8b65771cd91ff69979a258ff9c60f4e67ae3b103a6bc8d8b69b94cbe5cac8"
+    },
+    {
+      "step": 50,
+      "rollout_id": 6,
+      "seed": 27,
+      "gpu_slot": 2,
+      "rows": 500,
+      "counts": {
+        "stop": 444,
+        "periodic_tail": 37,
+        "periodic_and_capped": 35,
+        "tail_4gram_repeated_95": 38,
+        "eos_present": 444,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 371,
+        "length": 56
+      },
+      "mean_tokens": 2516.084,
+      "median_tokens": 589,
+      "p95_tokens": 16384,
+      "total_tokens": 1258042,
+      "first_tokens": [
+        [
+          71703,
+          305
+        ],
+        [
+          71619,
+          153
+        ],
+        [
+          2679,
+          41
+        ],
+        [
+          94456,
+          1
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            49434,
+            103,
+            1293,
+            5114,
+            2041,
+            10916,
+            2971,
+            369,
+            308,
+            858,
+            4156,
+            1988,
+            9658,
+            582
+          ],
+          49
+        ],
+        [
+          [
+            71703,
+            25,
+            49434,
+            103,
+            1293,
+            5114,
+            2041,
+            10916,
+            2971,
+            369,
+            308,
+            858,
+            4156,
+            1988,
+            9658,
+            57960
+          ],
+          25
+        ]
+      ],
+      "tail_periods": {
+        "1": 6,
+        "2": 4,
+        "3": 3,
+        "4": 1,
+        "5": 2,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "13": 1,
+        "15": 1,
+        "19": 1,
+        "21": 1,
+        "23": 1,
+        "25": 1,
+        "26": 1,
+        "28": 1,
+        "35": 1,
+        "47": 1,
+        "64": 1,
+        "65": 1,
+        "102": 1,
+        "None": 463
+      },
+      "unique_responses": 485,
+      "max_identical_response_count": 11,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step50/outputs/rollout_archive/math500/rollout_6.jsonl",
+      "bytes": 16114295,
+      "mtime_utc": "2026-09-25T03:56:10.873219+00:00",
+      "sha256": "69fe2b3614c982e90281bd75d085b71e59551c0bbbd60e261a3cef9a62d04e25"
+    },
+    {
+      "step": 50,
+      "rollout_id": 7,
+      "seed": 28,
+      "gpu_slot": 3,
+      "rows": 500,
+      "counts": {
+        "stop": 475,
+        "periodic_tail": 8,
+        "periodic_and_capped": 8,
+        "tail_4gram_repeated_95": 9,
+        "eos_present": 475,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 460,
+        "length": 25
+      },
+      "mean_tokens": 1771.132,
+      "median_tokens": 617.5,
+      "p95_tokens": 16147,
+      "total_tokens": 885566,
+      "first_tokens": [
+        [
+          71703,
+          447
+        ],
+        [
+          641,
+          27
+        ],
+        [
+          53422,
+          24
+        ],
+        [
+          12204,
+          2
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            22043,
+            25,
+            1019,
+            12
+          ],
+          23
+        ],
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            31198,
+            21756,
+            25,
+            1019
+          ],
+          13
+        ]
+      ],
+      "tail_periods": {
+        "1": 1,
+        "4": 1,
+        "10": 1,
+        "14": 1,
+        "51": 1,
+        "72": 1,
+        "87": 1,
+        "117": 1,
+        "None": 492
+      },
+      "unique_responses": 497,
+      "max_identical_response_count": 4,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step50/outputs/rollout_archive/math500/rollout_7.jsonl",
+      "bytes": 11368455,
+      "mtime_utc": "2026-09-25T03:39:48.183324+00:00",
+      "sha256": "d9bc885b48aff09af319fb87eb58488f2d552ca9425a15fbbadf31c17951ce83"
+    },
+    {
+      "step": 75,
+      "rollout_id": 0,
+      "seed": 21,
+      "gpu_slot": 0,
+      "rows": 500,
+      "counts": {
+        "stop": 450,
+        "periodic_tail": 34,
+        "periodic_and_capped": 34,
+        "tail_4gram_repeated_95": 35,
+        "eos_present": 450,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 438,
+        "length": 50
+      },
+      "mean_tokens": 2395.632,
+      "median_tokens": 619.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1197816,
+      "first_tokens": [
+        [
+          71703,
+          473
+        ],
+        [
+          120890,
+          23
+        ],
+        [
+          12012,
+          3
+        ],
+        [
+          56,
+          1
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            510,
+            95456,
+            0,
+            6771,
+            594,
+            2874,
+            1526,
+            419,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            16,
+            13
+          ],
+          19
+        ],
+        [
+          [
+            71703,
+            13,
+            91511,
+            139972,
+            271,
+            126409,
+            124015,
+            8407,
+            29713,
+            705,
+            8987,
+            697,
+            20517,
+            17059,
+            3311,
+            3056
+          ],
+          15
+        ]
+      ],
+      "tail_periods": {
+        "1": 19,
+        "2": 4,
+        "4": 2,
+        "6": 1,
+        "8": 1,
+        "9": 1,
+        "14": 2,
+        "15": 1,
+        "29": 1,
+        "47": 1,
+        "87": 1,
+        "None": 466
+      },
+      "unique_responses": 498,
+      "max_identical_response_count": 2,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_0.jsonl",
+      "bytes": 17249874,
+      "mtime_utc": "2026-09-25T00:58:30.362375+00:00",
+      "sha256": "15c58885ae8a5eed17ede2266e348e47db1add7513a47d3f21c2c7cdd2c39746"
+    },
+    {
+      "step": 75,
+      "rollout_id": 1,
+      "seed": 22,
+      "gpu_slot": 1,
+      "rows": 500,
+      "counts": {
+        "length": 348,
+        "periodic_tail": 347,
+        "periodic_and_capped": 345,
+        "tail_4gram_repeated_95": 347,
+        "eos_present": 152,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 128,
+        "stop": 152
+      },
+      "mean_tokens": 11814.908,
+      "median_tokens": 16384,
+      "p95_tokens": 16384,
+      "total_tokens": 5907454,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            17847,
+            77091,
+            24968,
+            106287,
+            3837,
+            104198,
+            112102,
+            9370,
+            26850,
+            71703,
+            271,
+            71703,
+            77091,
+            77091,
+            24968
+          ],
+          205
+        ],
+        [
+          [
+            71703,
+            17847,
+            77091,
+            24968,
+            106287,
+            3837,
+            104198,
+            112102,
+            9370,
+            103924,
+            11319,
+            71703,
+            71703,
+            77091,
+            77091,
+            77091
+          ],
+          68
+        ]
+      ],
+      "tail_periods": {
+        "1": 304,
+        "2": 12,
+        "3": 6,
+        "4": 1,
+        "5": 1,
+        "7": 1,
+        "9": 1,
+        "12": 12,
+        "29": 1,
+        "32": 1,
+        "33": 1,
+        "35": 2,
+        "36": 1,
+        "58": 1,
+        "59": 1,
+        "66": 1,
+        "None": 153
+      },
+      "unique_responses": 233,
+      "max_identical_response_count": 68,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_1.jsonl",
+      "bytes": 143782197,
+      "mtime_utc": "2026-09-25T02:01:38.006867+00:00",
+      "sha256": "2fddc986c7e25bc22019d522dfae76d77dd830c51cfd78233fbe4f68f0d3a859"
+    },
+    {
+      "step": 75,
+      "rollout_id": 2,
+      "seed": 23,
+      "gpu_slot": 2,
+      "rows": 500,
+      "counts": {
+        "stop": 436,
+        "periodic_tail": 47,
+        "periodic_and_capped": 47,
+        "tail_4gram_repeated_95": 47,
+        "eos_present": 436,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 361,
+        "length": 64
+      },
+      "mean_tokens": 3136.336,
+      "median_tokens": 835.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1568168,
+      "first_tokens": [
+        [
+          71703,
+          335
+        ],
+        [
+          43062,
+          83
+        ],
+        [
+          105396,
+          74
+        ],
+        [
+          139681,
+          3
+        ],
+        [
+          6641,
+          3
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            43062,
+            3232,
+            2426,
+            436,
+            14212,
+            367,
+            16330,
+            271,
+            580,
+            29738,
+            1751,
+            395,
+            1783,
+            1406,
+            41120,
+            86
+          ],
+          43
+        ],
+        [
+          [
+            105396,
+            101059,
+            99348,
+            57218,
+            100377,
+            13343,
+            36993,
+            11622,
+            26939,
+            99774,
+            99791,
+            110376,
+            3837,
+            29524,
+            2130,
+            8997
+          ],
+          40
+        ]
+      ],
+      "tail_periods": {
+        "1": 10,
+        "2": 6,
+        "3": 5,
+        "4": 1,
+        "5": 2,
+        "6": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+        "12": 1,
+        "15": 1,
+        "17": 3,
+        "26": 3,
+        "28": 1,
+        "30": 2,
+        "32": 1,
+        "34": 1,
+        "36": 1,
+        "50": 1,
+        "53": 1,
+        "94": 1,
+        "115": 1,
+        "117": 1,
+        "None": 453
+      },
+      "unique_responses": 496,
+      "max_identical_response_count": 2,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_2.jsonl",
+      "bytes": 22899319,
+      "mtime_utc": "2026-09-25T01:02:05.421100+00:00",
+      "sha256": "2b613080d73e01f46f1d5b6084401fa5dccbaed457890fdbe55a1f17ccab7d3a"
+    },
+    {
+      "step": 75,
+      "rollout_id": 3,
+      "seed": 24,
+      "gpu_slot": 3,
+      "rows": 500,
+      "counts": {
+        "stop": 465,
+        "periodic_tail": 20,
+        "periodic_and_capped": 18,
+        "tail_4gram_repeated_95": 22,
+        "eos_present": 465,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 438,
+        "length": 35
+      },
+      "mean_tokens": 1901.446,
+      "median_tokens": 587.5,
+      "p95_tokens": 16384,
+      "total_tokens": 950723,
+      "first_tokens": [
+        [
+          71703,
+          483
+        ],
+        [
+          92721,
+          16
+        ],
+        [
+          20532,
+          1
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            198,
+            20920,
+            271,
+            20920,
+            198,
+            7771,
+            3405,
+            374,
+            14400,
+            24416,
+            11,
+            714,
+            358,
+            4700,
+            14198
+          ],
+          120
+        ],
+        [
+          [
+            71703,
+            198,
+            20920,
+            271,
+            20920,
+            198,
+            7771,
+            3405,
+            374,
+            14400,
+            24416,
+            11,
+            714,
+            358,
+            4700,
+            1430
+          ],
+          11
+        ]
+      ],
+      "tail_periods": {
+        "1": 8,
+        "2": 1,
+        "4": 1,
+        "8": 1,
+        "15": 1,
+        "23": 1,
+        "34": 1,
+        "44": 1,
+        "55": 1,
+        "64": 1,
+        "84": 1,
+        "108": 1,
+        "124": 1,
+        "None": 480
+      },
+      "unique_responses": 499,
+      "max_identical_response_count": 2,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_3.jsonl",
+      "bytes": 12176286,
+      "mtime_utc": "2026-09-25T00:56:06.196717+00:00",
+      "sha256": "1b99c95248b349875a256a8ffc66622121bd9a76b2b1847eeb80995e1c9ea84b"
+    },
+    {
+      "step": 75,
+      "rollout_id": 4,
+      "seed": 25,
+      "gpu_slot": 0,
+      "rows": 500,
+      "counts": {
+        "stop": 471,
+        "periodic_tail": 14,
+        "periodic_and_capped": 13,
+        "tail_4gram_repeated_95": 16,
+        "eos_present": 471,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 438,
+        "length": 29
+      },
+      "mean_tokens": 1934.44,
+      "median_tokens": 698,
+      "p95_tokens": 16384,
+      "total_tokens": 967220,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            1438,
+            1495,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            311,
+            1477,
+            279,
+            897,
+            315
+          ],
+          15
+        ],
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            1438,
+            1495,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            311,
+            1477,
+            279,
+            18927,
+            429
+          ],
+          10
+        ]
+      ],
+      "tail_periods": {
+        "1": 7,
+        "2": 1,
+        "5": 2,
+        "28": 1,
+        "30": 1,
+        "70": 1,
+        "89": 1,
+        "None": 486
+      },
+      "unique_responses": 494,
+      "max_identical_response_count": 5,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_4.jsonl",
+      "bytes": 12985562,
+      "mtime_utc": "2026-09-25T01:07:46.306651+00:00",
+      "sha256": "e8643049ec4e39e37b7d9f09a0bce1c8f5c4f28f333ca040fb21d51abeaf6ab1"
+    },
+    {
+      "step": 75,
+      "rollout_id": 5,
+      "seed": 26,
+      "gpu_slot": 1,
+      "rows": 500,
+      "counts": {
+        "stop": 390,
+        "periodic_tail": 93,
+        "periodic_and_capped": 92,
+        "tail_4gram_repeated_95": 96,
+        "eos_present": 390,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 329,
+        "length": 110
+      },
+      "mean_tokens": 4840.31,
+      "median_tokens": 1260,
+      "p95_tokens": 16384,
+      "total_tokens": 2420155,
+      "first_tokens": [
+        [
+          142346,
+          250
+        ],
+        [
+          71703,
+          250
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            142346,
+            121588,
+            271,
+            1474,
+            12906,
+            198,
+            10234,
+            374,
+            279,
+            3405,
+            8454,
+            3403,
+            15114,
+            30,
+            16141,
+            3403
+          ],
+          25
+        ],
+        [
+          [
+            142346,
+            121588,
+            271,
+            1474,
+            12906,
+            198,
+            10234,
+            990,
+            279,
+            81203,
+            1714,
+            30,
+            2619,
+            525,
+            902,
+            52263
+          ],
+          15
+        ]
+      ],
+      "tail_periods": {
+        "1": 43,
+        "2": 15,
+        "3": 2,
+        "4": 5,
+        "5": 6,
+        "6": 1,
+        "7": 2,
+        "10": 3,
+        "11": 1,
+        "12": 1,
+        "18": 1,
+        "20": 1,
+        "22": 2,
+        "26": 1,
+        "36": 1,
+        "39": 1,
+        "44": 2,
+        "75": 1,
+        "77": 1,
+        "105": 1,
+        "106": 1,
+        "122": 1,
+        "None": 407
+      },
+      "unique_responses": 492,
+      "max_identical_response_count": 5,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_5.jsonl",
+      "bytes": 37272186,
+      "mtime_utc": "2026-09-25T02:28:10.225230+00:00",
+      "sha256": "7cad0db67231714019496b8e34b06aa038a56c8b88c2e76e35f6675f9fbc1c2d"
+    },
+    {
+      "step": 75,
+      "rollout_id": 6,
+      "seed": 27,
+      "gpu_slot": 2,
+      "rows": 500,
+      "counts": {
+        "stop": 458,
+        "periodic_tail": 29,
+        "periodic_and_capped": 29,
+        "tail_4gram_repeated_95": 28,
+        "eos_present": 458,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 363,
+        "length": 42
+      },
+      "mean_tokens": 2165.426,
+      "median_tokens": 626.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1082713,
+      "first_tokens": [
+        [
+          71619,
+          432
+        ],
+        [
+          2679,
+          35
+        ],
+        [
+          71703,
+          33
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71619,
+            148125,
+            146711,
+            146026,
+            105558,
+            147475,
+            101553,
+            56007,
+            56568,
+            7771,
+            308,
+            858,
+            90450,
+            1988,
+            1581,
+            15432
+          ],
+          66
+        ],
+        [
+          [
+            71619,
+            148125,
+            146711,
+            146026,
+            148156,
+            147475,
+            146415,
+            148584,
+            271,
+            7771,
+            1946,
+            13230,
+            429,
+            498,
+            2299,
+            14550
+          ],
+          48
+        ]
+      ],
+      "tail_periods": {
+        "1": 14,
+        "2": 1,
+        "4": 1,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "18": 1,
+        "25": 1,
+        "48": 1,
+        "53": 1,
+        "66": 1,
+        "81": 1,
+        "124": 1,
+        "125": 1,
+        "None": 471
+      },
+      "unique_responses": 496,
+      "max_identical_response_count": 4,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_6.jsonl",
+      "bytes": 14507051,
+      "mtime_utc": "2026-09-25T01:12:28.704125+00:00",
+      "sha256": "9dd076e3b68db1b20c2596ab9b172695ae06a7fba149b1fac2693192a1d5d2e7"
+    },
+    {
+      "step": 75,
+      "rollout_id": 7,
+      "seed": 28,
+      "gpu_slot": 3,
+      "rows": 500,
+      "counts": {
+        "stop": 473,
+        "periodic_tail": 8,
+        "periodic_and_capped": 8,
+        "tail_4gram_repeated_95": 11,
+        "eos_present": 473,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 431,
+        "length": 27
+      },
+      "mean_tokens": 1788.236,
+      "median_tokens": 637,
+      "p95_tokens": 16384,
+      "total_tokens": 894118,
+      "first_tokens": [
+        [
+          71703,
+          423
+        ],
+        [
+          53422,
+          42
+        ],
+        [
+          641,
+          32
+        ],
+        [
+          12204,
+          2
+        ],
+        [
+          66588,
+          1
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            53422,
+            198,
+            95480,
+            872,
+            395,
+            271,
+            71703,
+            1203,
+            100638,
+            33872,
+            33447,
+            100278,
+            29077,
+            99796,
+            3721,
+            559
+          ],
+          11
+        ],
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            22043,
+            25,
+            1019,
+            12
+          ],
+          9
+        ]
+      ],
+      "tail_periods": {
+        "1": 1,
+        "3": 1,
+        "8": 1,
+        "30": 1,
+        "32": 1,
+        "38": 1,
+        "41": 1,
+        "125": 1,
+        "None": 492
+      },
+      "unique_responses": 493,
+      "max_identical_response_count": 3,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step75/outputs/rollout_archive/math500/rollout_7.jsonl",
+      "bytes": 11432637,
+      "mtime_utc": "2026-09-25T01:05:09.636694+00:00",
+      "sha256": "a0189bb95411cfb03ac0485d1e9dd8d99b4a718362fa118761088cf32baaf510"
+    },
+    {
+      "step": 100,
+      "rollout_id": 0,
+      "seed": 21,
+      "gpu_slot": 0,
+      "rows": 500,
+      "counts": {
+        "stop": 484,
+        "periodic_tail": 2,
+        "periodic_and_capped": 2,
+        "tail_4gram_repeated_95": 1,
+        "eos_present": 484,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 477,
+        "length": 16
+      },
+      "mean_tokens": 1737.702,
+      "median_tokens": 692.5,
+      "p95_tokens": 6864,
+      "total_tokens": 868851,
+      "first_tokens": [
+        [
+          71703,
+          498
+        ],
+        [
+          12012,
+          2
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            52366,
+            0,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            31198,
+            21756
+          ],
+          21
+        ],
+        [
+          [
+            71703,
+            25,
+            52366,
+            0,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            22043,
+            25
+          ],
+          13
+        ]
+      ],
+      "tail_periods": {
+        "1": 1,
+        "125": 1,
+        "None": 498
+      },
+      "unique_responses": 498,
+      "max_identical_response_count": 3,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_0.jsonl",
+      "bytes": 11340450,
+      "mtime_utc": "2026-09-24T23:52:33.857659+00:00",
+      "sha256": "da49b12d93a3ea9785412ec9d16836fbc998ccf9defd288ee1c65ac9ef534ac6"
+    },
+    {
+      "step": 100,
+      "rollout_id": 1,
+      "seed": 22,
+      "gpu_slot": 1,
+      "rows": 500,
+      "counts": {
+        "stop": 436,
+        "periodic_tail": 46,
+        "periodic_and_capped": 46,
+        "tail_4gram_repeated_95": 47,
+        "eos_present": 436,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 436,
+        "length": 64
+      },
+      "mean_tokens": 3152.644,
+      "median_tokens": 764.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1576322,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            17847,
+            77091,
+            24968,
+            106287,
+            3837,
+            104198,
+            112102,
+            9370,
+            110498,
+            11319,
+            71703,
+            71703,
+            77091,
+            71703,
+            77091
+          ],
+          36
+        ],
+        [
+          [
+            71703,
+            25,
+            97593,
+            11,
+            358,
+            614,
+            419,
+            17047,
+            3491,
+            304,
+            4065,
+            315,
+            752,
+            11,
+            323,
+            358
+          ],
+          6
+        ]
+      ],
+      "tail_periods": {
+        "1": 41,
+        "33": 1,
+        "39": 1,
+        "48": 1,
+        "70": 1,
+        "94": 1,
+        "None": 454
+      },
+      "unique_responses": 464,
+      "max_identical_response_count": 34,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_1.jsonl",
+      "bytes": 28385511,
+      "mtime_utc": "2026-09-25T00:02:25.649536+00:00",
+      "sha256": "798484014474cef0f2af97c2b2e110741c63f761cdbfbb1524fef17be5ff080a"
+    },
+    {
+      "step": 100,
+      "rollout_id": 2,
+      "seed": 23,
+      "gpu_slot": 2,
+      "rows": 500,
+      "counts": {
+        "stop": 445,
+        "periodic_tail": 19,
+        "periodic_and_capped": 19,
+        "tail_4gram_repeated_95": 19,
+        "eos_present": 445,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 320,
+        "length": 55
+      },
+      "mean_tokens": 3331.686,
+      "median_tokens": 944,
+      "p95_tokens": 16384,
+      "total_tokens": 1665843,
+      "first_tokens": [
+        [
+          71703,
+          314
+        ],
+        [
+          105396,
+          185
+        ],
+        [
+          43062,
+          1
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            105396,
+            101059,
+            99348,
+            57218,
+            100377,
+            13343,
+            36993,
+            11622,
+            26939,
+            99774,
+            99791,
+            110376,
+            3837,
+            29524,
+            2130,
+            8997
+          ],
+          81
+        ],
+        [
+          [
+            105396,
+            101059,
+            99348,
+            57218,
+            100377,
+            13343,
+            36993,
+            109741,
+            99245,
+            11319,
+            42822,
+            110498,
+            3837,
+            112720,
+            101131,
+            102104
+          ],
+          24
+        ]
+      ],
+      "tail_periods": {
+        "1": 9,
+        "2": 1,
+        "4": 1,
+        "5": 1,
+        "12": 2,
+        "18": 1,
+        "20": 1,
+        "40": 1,
+        "47": 1,
+        "89": 1,
+        "None": 481
+      },
+      "unique_responses": 500,
+      "max_identical_response_count": 1,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_2.jsonl",
+      "bytes": 23564437,
+      "mtime_utc": "2026-09-25T00:02:02.645452+00:00",
+      "sha256": "9b5bf927ccd7ff0de8b878dbc8dc8cb6c787b874f403ad94bdc00b64948c4780"
+    },
+    {
+      "step": 100,
+      "rollout_id": 3,
+      "seed": 24,
+      "gpu_slot": 3,
+      "rows": 500,
+      "counts": {
+        "stop": 475,
+        "periodic_tail": 7,
+        "periodic_and_capped": 7,
+        "tail_4gram_repeated_95": 8,
+        "eos_present": 475,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 475,
+        "length": 25
+      },
+      "mean_tokens": 1724.924,
+      "median_tokens": 656.5,
+      "p95_tokens": 14198,
+      "total_tokens": 862462,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            198,
+            104886,
+            271,
+            104542,
+            198,
+            8304,
+            553,
+            3019,
+            369,
+            419,
+            11,
+            30540,
+            97639,
+            99430,
+            1030
+          ],
+          3
+        ],
+        [
+          [
+            71703,
+            25,
+            2014,
+            11625,
+            279,
+            3491,
+            11,
+            1077,
+            594,
+            1438,
+            432,
+            1495,
+            3019,
+            553,
+            3019,
+            382
+          ],
+          3
+        ]
+      ],
+      "tail_periods": {
+        "1": 1,
+        "12": 1,
+        "15": 1,
+        "17": 1,
+        "26": 1,
+        "47": 1,
+        "90": 1,
+        "None": 493
+      },
+      "unique_responses": 500,
+      "max_identical_response_count": 1,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_3.jsonl",
+      "bytes": 10801558,
+      "mtime_utc": "2026-09-24T23:53:35.470581+00:00",
+      "sha256": "aa338d2c746134d2e40033edace0962dfdb01722384359115914ba021be1e5e9"
+    },
+    {
+      "step": 100,
+      "rollout_id": 4,
+      "seed": 25,
+      "gpu_slot": 0,
+      "rows": 500,
+      "counts": {
+        "stop": 480,
+        "periodic_tail": 5,
+        "periodic_and_capped": 5,
+        "tail_4gram_repeated_95": 5,
+        "eos_present": 480,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 465,
+        "length": 20
+      },
+      "mean_tokens": 1638.948,
+      "median_tokens": 665.5,
+      "p95_tokens": 6344,
+      "total_tokens": 819474,
+      "first_tokens": [
+        [
+          71703,
+          500
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            1438,
+            1495,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            311,
+            1477,
+            279,
+            897,
+            315
+          ],
+          19
+        ],
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            1438,
+            1495,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            311,
+            1477,
+            279,
+            1372,
+            315
+          ],
+          13
+        ]
+      ],
+      "tail_periods": {
+        "19": 1,
+        "20": 1,
+        "40": 1,
+        "48": 1,
+        "63": 1,
+        "None": 495
+      },
+      "unique_responses": 495,
+      "max_identical_response_count": 6,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_4.jsonl",
+      "bytes": 10260894,
+      "mtime_utc": "2026-09-24T23:59:10.322987+00:00",
+      "sha256": "7616280b15c202852ddf08859ba831903f7e71adf2972d4e905bdf1320a7608e"
+    },
+    {
+      "step": 100,
+      "rollout_id": 5,
+      "seed": 26,
+      "gpu_slot": 1,
+      "rows": 500,
+      "counts": {
+        "stop": 473,
+        "periodic_tail": 5,
+        "periodic_and_capped": 5,
+        "tail_4gram_repeated_95": 5,
+        "eos_present": 473,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 459,
+        "length": 27
+      },
+      "mean_tokens": 2100.096,
+      "median_tokens": 755.5,
+      "p95_tokens": 16384,
+      "total_tokens": 1050048,
+      "first_tokens": [
+        [
+          71703,
+          463
+        ],
+        [
+          142346,
+          37
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            31198,
+            21756,
+            25,
+            1019
+          ],
+          24
+        ],
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            22043,
+            25,
+            1019,
+            12
+          ],
+          17
+        ]
+      ],
+      "tail_periods": {
+        "1": 5,
+        "None": 495
+      },
+      "unique_responses": 498,
+      "max_identical_response_count": 3,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_5.jsonl",
+      "bytes": 14482754,
+      "mtime_utc": "2026-09-25T00:11:28.855668+00:00",
+      "sha256": "5c054332320c3035aa78c37d59b4144274e73528429b4ac267deb6e45a72cab2"
+    },
+    {
+      "step": 100,
+      "rollout_id": 6,
+      "seed": 27,
+      "gpu_slot": 2,
+      "rows": 500,
+      "counts": {
+        "stop": 479,
+        "periodic_tail": 7,
+        "periodic_and_capped": 6,
+        "tail_4gram_repeated_95": 8,
+        "eos_present": 479,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 387,
+        "length": 21
+      },
+      "mean_tokens": 1665.594,
+      "median_tokens": 663,
+      "p95_tokens": 11307,
+      "total_tokens": 832797,
+      "first_tokens": [
+        [
+          71619,
+          426
+        ],
+        [
+          71703,
+          55
+        ],
+        [
+          2679,
+          19
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71619,
+            6771,
+            594,
+            2874,
+            1526,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            14374,
+            3070,
+            22043,
+            25,
+            1019
+          ],
+          43
+        ],
+        [
+          [
+            71619,
+            6771,
+            594,
+            2874,
+            1526,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            14374,
+            3070,
+            31198,
+            21756,
+            1019
+          ],
+          32
+        ]
+      ],
+      "tail_periods": {
+        "1": 3,
+        "9": 1,
+        "23": 1,
+        "29": 1,
+        "118": 1,
+        "None": 493
+      },
+      "unique_responses": 496,
+      "max_identical_response_count": 5,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_6.jsonl",
+      "bytes": 10715407,
+      "mtime_utc": "2026-09-25T00:09:10.380488+00:00",
+      "sha256": "3e28c62a4d7c4d1e9be2c01b8bab4766e9b599b2a94c7c2f4c3bf12b8a8b7c85"
+    },
+    {
+      "step": 100,
+      "rollout_id": 7,
+      "seed": 28,
+      "gpu_slot": 3,
+      "rows": 500,
+      "counts": {
+        "stop": 477,
+        "periodic_tail": 8,
+        "periodic_and_capped": 8,
+        "tail_4gram_repeated_95": 9,
+        "eos_present": 477,
+        "im_end_present": 0,
+        "stop_token_before_last": 0,
+        "boxed_present": 456,
+        "length": 23
+      },
+      "mean_tokens": 1736.276,
+      "median_tokens": 677,
+      "p95_tokens": 9864,
+      "total_tokens": 868138,
+      "first_tokens": [
+        [
+          71703,
+          429
+        ],
+        [
+          66588,
+          45
+        ],
+        [
+          641,
+          25
+        ],
+        [
+          12204,
+          1
+        ]
+      ],
+      "top_first16": [
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            11625,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            31198,
+            21756,
+            25,
+            1019
+          ],
+          65
+        ],
+        [
+          [
+            71703,
+            25,
+            6771,
+            594,
+            1438,
+            1495,
+            279,
+            3491,
+            3019,
+            553,
+            3019,
+            382,
+            334,
+            31198,
+            21756,
+            25
+          ],
+          35
+        ]
+      ],
+      "tail_periods": {
+        "1": 1,
+        "2": 3,
+        "17": 1,
+        "45": 1,
+        "66": 1,
+        "81": 1,
+        "None": 492
+      },
+      "unique_responses": 499,
+      "max_identical_response_count": 2,
+      "prompt_fingerprint": "6a3951d0a03195ec39c3a828cc5a9a811c5485e2437726c595df890d7c986880",
+      "sampling_without_seed": [
+        "{\"best_of\": null, \"detokenize\": true, \"frequency_penalty\": 0.0, \"ignore_eos\": false, \"include_stop_str_in_output\": false, \"logprobs\": null, \"max_tokens\": 16384, \"min_p\": 0.0, \"min_tokens\": 0, \"n\": 1, \"presence_penalty\": 0.0, \"prompt_logprobs\": null, \"repetition_penalty\": 1.0, \"skip_special_tokens\": true, \"spaces_between_special_tokens\": true, \"stop\": [], \"stop_token_ids\": [151645, 151643], \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.9, \"truncate_prompt_tokens\": null}"
+      ],
+      "file": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2/evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_7.jsonl",
+      "bytes": 11238171,
+      "mtime_utc": "2026-09-25T00:00:55.155210+00:00",
+      "sha256": "5edd02677155a269ad7d357fc66e6b8da758b0117d2a73cab1dadfc37a546b36"
+    }
+  ],
+  "examples": [
+    {
+      "example_id": "math500/test/0",
+      "length": 16384,
+      "finish_reason": "length",
+      "period": 1,
+      "head_ids": [
+        71703,
+        17847,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "tail_ids": [
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "head_text": "Assistant assistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistanta",
+      "tail_text": "sistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistant"
+    },
+    {
+      "example_id": "math500/test/1",
+      "length": 16384,
+      "finish_reason": "length",
+      "period": 1,
+      "head_ids": [
+        71703,
+        17847,
+        77091,
+        198,
+        71703,
+        17847,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        198,
+        71703,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "tail_ids": [
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "head_text": "Assistant assistantassistant\nAssistant assistantassistantassistantassistantassistantassistant\nAssistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassista",
+      "tail_text": "sistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistant"
+    },
+    {
+      "example_id": "math500/test/2",
+      "length": 16384,
+      "finish_reason": "length",
+      "period": 1,
+      "head_ids": [
+        71703,
+        17847,
+        77091,
+        198,
+        71703,
+        17847,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        198,
+        71703,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "tail_ids": [
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "head_text": "Assistant assistantassistant\nAssistant assistantassistantassistantassistantassistantassistant\nAssistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassista",
+      "tail_text": "sistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistant"
+    },
+    {
+      "example_id": "math500/test/3",
+      "length": 16384,
+      "finish_reason": "length",
+      "period": 1,
+      "head_ids": [
+        71703,
+        17847,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "tail_ids": [
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "head_text": "Assistant assistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistanta",
+      "tail_text": "sistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistant"
+    },
+    {
+      "example_id": "math500/test/5",
+      "length": 16384,
+      "finish_reason": "length",
+      "period": 1,
+      "head_ids": [
+        71703,
+        17847,
+        77091,
+        198,
+        71703,
+        17847,
+        77091,
+        77091,
+        77091,
+        77091,
+        271,
+        71703,
+        71703,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "tail_ids": [
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091,
+        77091
+      ],
+      "head_text": "Assistant assistantassistant\nAssistant assistantassistantassistantassistantassistant\n\nAssistantAssistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassist",
+      "tail_text": "sistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistantassistant"
+    }
+  ],
+  "all_cell_prompt_tokens_identical": true,
+  "audit_details": {
+    "verified_read_only": true,
+    "model_generation_launched": false,
+    "queue_restarted": false,
+    "runtime_modified": false,
+    "complete_archives": 23,
+    "complete_rows": 11500,
+    "pending": {
+      "step": 50,
+      "rollout_id": 5,
+      "seed": 26,
+      "rows": 0,
+      "status": "generate() has not returned the batch as of 2026-09-25T13:17:56+08:00; live token progress not instrumented"
+    },
+    "seed22_step50_distinct_input_check": {
+      "records": 500,
+      "unique_questions": 500,
+      "unique_prompt_tokens": 500,
+      "identical_output_group": 193,
+      "unique_prompts_in_identical_group": 193
+    },
+    "periodic_definition": "Native last2048 tokens, offsets1..128, at least256 tokens and >=0.99 shifted-token match; existing diagnose_token_truncation.analyze_tokens.",
+    "evaluator_sha256": "b68041bf6224a38563d207c47914de9ee1b6d791e6e7496710544e3e7c1c022e",
+    "tokenizer_sha256_same_at_50_75_100": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "queue": {
+      "controller_pid": 3640782,
+      "eval_pid": 3834384,
+      "engine_pid": 3834480,
+      "engine_gpu": 1
+    },
+    "evidence_vs_inference": {
+      "observed": [
+        "Step50 seed22 424/500 length stops;419/500 periodic tails;193 distinct prompts yield identical full response tokens.",
+        "Identical prompts across seed/cell comparisons;500 distinct prompts within the slow completed batch.",
+        "gpu1 handles rollouts[1,5]; other GPUs finish their fixed assigned pairs; parent waits for all four futures.",
+        "Same per-request seed across500 prompts in a rollout; vLLM creates separately seeded per-request generators.",
+        "Configured stop IDs151645/151643, ignore_eos=false; no stop tokens before last position in completed archives.",
+        "Same seed22/GPU1 and tokenizer: cap348/500 atStep75 and64/500 atStep100.",
+        "GPU1 observed96%utilization with engine active; current batch has no incremental token/timing counters."
+      ],
+      "inferred": [
+        "Checkpoint-dependent degeneration plus correlated sampling can concentrate very long outputs in one fixed GPU assignment.",
+        "Static whole-rollout partitioning amplifies workload imbalance; no work stealing.",
+        "Finite KV capacity and native seeded sampler may contribute to cost; no profiler or live preemption counters collected."
+      ],
+      "not_established": [
+        "Exact seed-vs-GPU-vs-weight causal contributions; no crossed replay performed.",
+        "Attribution of model degeneration to Block3 instead of legacy Base prompting or other training factors; matched n1 Token is not run yet.",
+        "Exact remaining duration or progress of the current incomplete500-row batch.",
+        "Guaranteed speedup or unchanged outputs from a different scheduling/seed policy."
+      ]
+    }
+  }
+}

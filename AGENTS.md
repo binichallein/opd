@@ -40,6 +40,17 @@
   do not call generation fully healthy. No parameter/runtime change or restart.
   Formal save25/50/75/100 and eight evaluations remain pending; no initial eval.
   Read LIVE state; these are startup observations, not benchmark evidence.
+- Read-only long-tail audit13:18: formal Block3 completed100, all4 states and
+  3200rollouts accepted, figures generated; eval100/75 passed, eval50 MATH500
+  pending seed26 (last500-row batch), Token not started. Same v4 queue/PIDs.
+  Step50 seed22: cap424/500, periodic419/500,193 distinct prompts with identical
+  full response tokens. Same-seed request RNG plus static whole-rollout GPU
+  assignment amplifies long-tail workload; do not drop samples/change seeds
+  or decoding mid-comparison. Tokenizer/actual prompts identical at50/75/100,
+  no stop-token-before-end evidence. Final500-row batch has no live token
+  counters; high GPU utilization alone does not prove forward progress.
+  Read docs/results/2026-09-25-historical17-n1-eval-long-tail.md; frozen runtime
+  unchanged, no new inference launched. Report causal limits, not Block3 blame.
 
 ## SUPERSEDED: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
 
