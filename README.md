@@ -32,6 +32,11 @@ v3在CPU阶段因Ray socket路径过长停止，未进行GPU训练；v4仅缩短
 正在Step50评测，Token尚未开始。[长尾排查](docs/results/2026-09-25-historical17-n1-eval-long-tail.md)
 确认重复生成集中于部分评测seed，静态整轮分片放大等待；未更改本轮seed或停止条件。
 
+15:52更新：[Block3完整评测与Token启动监督](docs/results/2026-09-25-historical17-n1-block3-complete-token-startup.md)。
+Block3四个权重均完成完整评测，Step100四榜Avg@8为56.40/8.33/5.83/26.51，分榜详见记录。
+Token保存Step1预检已验收，正在恢复至Step2，正式100步尚未开始；本轮没有更改参数或重启。
+首批16/32截断与Block3首次更新前轨迹逐条一致；不能把数值有限写成生成健康。
+
 ## 历史记录：旧版 B/C 已停，单回答准备已被取代
 
 2026-09-25按用户要求停止旧版1.7B-Base / 4B-GRPO的B训练及自动队列，

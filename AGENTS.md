@@ -51,6 +51,14 @@
   counters; high GPU utilization alone does not prove forward progress.
   Read docs/results/2026-09-25-historical17-n1-eval-long-tail.md; frozen runtime
   unchanged, no new inference launched. Report causal limits, not Block3 blame.
+- Supervision15:52 Beijing: all FOUR Block3 evaluations passed. Per-benchmark
+  results in results/historical17_pair_n1_save25_20260925/block3_complete.json.
+  Token probe1 passed complete state/optimizer/raw audits, exit0; grad27.0606,
+  cap16/32, first32 prompt/response/sampling/mask match formal Block3 Step1.
+  Probe2 PID3878075 started15:51:36 from checkpoint1; formal Token NOT started
+  at this snapshot. Read LIVE state and the block3-complete-token-startup note.
+  Teardown DataLoader warning occurred after successful probe save/exit; do not
+  confuse it with a failed update. No runtime/config change or restart.
 
 ## SUPERSEDED: Token/Legacy Block3, 32x1, 100 Steps; Prepare Only
 
