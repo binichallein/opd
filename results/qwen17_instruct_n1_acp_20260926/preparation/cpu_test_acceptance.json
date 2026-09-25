@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "count": 134,
+  "seconds": 30.77,
+  "source_commit": "1867093b21799c36be22bb2fd167c87e5aaa039e",
+  "host": "pt-5a50d1567d77437c94035024288a327f-worker-0",
+  "real_tokenizer": "/mnt/afs/202609/tyf-qwen-opd/models/Qwen3-1.7B",
+  "tests": [
+    "test_acp_qwen17_n1",
+    "test_historical_pair_n1_queue",
+    "test_historical_pair_n1_preparation",
+    "test_qwen17_instruct_pair",
+    "test_block_supervision",
+    "test_revisiting_opd_block_policy_loss",
+    "test_opd_diagnostics",
+    "test_qwen17_instruct_protocol"
+  ],
+  "recorded_at": "2026-09-25T19:37:12.446409+00:00"
+}

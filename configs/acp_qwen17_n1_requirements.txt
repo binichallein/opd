@@ -1,4 +1,4 @@
-# Match the ml2 numerical/model stack; FlashAttention is installed separately.
+# Match the ml2 numerical/model stack; install kernel requirements afterward.
 torch==2.8.0
 torchvision==0.23.0
 torchaudio==2.8.0

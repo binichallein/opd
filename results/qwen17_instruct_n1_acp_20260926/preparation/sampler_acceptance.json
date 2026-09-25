@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "flashinfer": "0.3.1",
+  "selected_branch": "forward_cuda",
+  "fixed_request_seed_native_fallback_verified": true,
+  "example_token_ids": [
+    56,
+    69,
+    56,
+    93
+  ]
+}

@@ -1,0 +1,9 @@
+# Install after acp_qwen17_n1_requirements.txt with --no-build-isolation --no-deps.
+# Do not build against a newer Torch in pip's isolated environment.
+flash-attn==2.8.3
+flashinfer-python==0.3.1
+nvidia-cudnn-frontend==1.24.0
+nvidia-ml-py==13.610.43
+tabulate==0.10.0
+# Match ml2's real pynvml module provider. Legacy flashinfer metadata still asks
+# for the deprecated pynvml distribution, whose v12 conflicts with NVML v13.

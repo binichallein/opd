@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "cells": {
+    "smoke/student": 4,
+    "smoke/teacher": 4,
+    "direct/student": 128,
+    "direct/teacher": 128,
+    "continuation/student": 64,
+    "continuation/teacher": 64
+  },
+  "num_records": 392
+}

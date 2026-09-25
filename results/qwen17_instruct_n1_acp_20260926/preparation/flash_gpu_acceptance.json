@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "version": "2.8.3",
+  "forward_backward_finite": true,
+  "gpu": "NVIDIA H100 80GB HBM3"
+}

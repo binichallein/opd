@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "torch": "2.8.0+cu128",
+  "cuda": "12.8",
+  "devices": [
+    {
+      "gpu": 0,
+      "name": "NVIDIA H100 80GB HBM3",
+      "passed": true
+    },
+    {
+      "gpu": 1,
+      "name": "NVIDIA H100 80GB HBM3",
+      "passed": true
+    },
+    {
+      "gpu": 2,
+      "name": "NVIDIA H100 80GB HBM3",
+      "passed": true
+    },
+    {
+      "gpu": 3,
+      "name": "NVIDIA H100 80GB HBM3",
+      "passed": true
+    }
+  ]
+}
