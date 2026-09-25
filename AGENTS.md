@@ -29,6 +29,14 @@
 - Frozen running commit1867093, documentation commits do not redeploy it.
   Evidence: `results/qwen17_instruct_n1_acp_20260926/startup_0436.json` and
   preparation JSON. Full formal training/evaluations and Token are pending.
+- Supervision04:46 Beijing: formal Block3 completed4/100. First64 actual
+  trajectories match planned inputs; Step1 position diagnostics passed. Step
+  times47.449/31.094/77.929/29.775s; Step3 has ONE16K capped periodic digit9
+  response, other first4 batches have no caps/repeated tails. Aggregate1/128,
+  generated think0/128. Do not describe generation as entirely healthy or
+  infer collapse from this one sample. No restart/config/runtime change.
+  Evidence: `first2_formal.json`, `startup_raw_0447.json` in the ACP results
+  directory. Early ETA applies ONLY to Block3 training, not its eval/Token.
 
 ## CURRENT: Authorized Block-First, 32x1, 100 Steps, Save Every25
 
