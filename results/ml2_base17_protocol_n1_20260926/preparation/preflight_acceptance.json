@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "source_commit": "3316918c4ef5488d4ca4b5100c62b831eede979d",
+  "protected_file_count": 38,
+  "input_contract": {
+    "passed": true,
+    "actual_collector_exercised": true,
+    "questions_checked": {
+      "qualification": 64,
+      "math500": 500,
+      "aime24": 30,
+      "aime25": 30,
+      "amc23": 83
+    },
+    "protocol": "qwen3_completion_boxed_v1",
+    "enable_thinking": false,
+    "chat_template_used": false,
+    "eos_token_id": 151643,
+    "stop_token_ids": [],
+    "prompt_ids_sha256": "dd35d3858931b1c9c893dabf9cffd9be2c06d612ecce1701203c2b1b219154fd"
+  },
+  "formal_training_started": false
+}

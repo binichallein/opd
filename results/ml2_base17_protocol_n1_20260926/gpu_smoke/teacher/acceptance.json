@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "num_rollouts": 4,
+  "chat_template_used": false,
+  "enable_thinking": false,
+  "eos_token_id": 151643,
+  "stop_token_ids": [],
+  "generated_think_tags": 0
+}

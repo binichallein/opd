@@ -1,0 +1,35 @@
+{
+  "source_commit": "3316918c4ef5488d4ca4b5100c62b831eede979d",
+  "created_at": "2026-09-26T08:31:03.761554+00:00",
+  "host": "di-20260407234928-vrvxk",
+  "hardware": "4xA100-80GB; 64 Ray CPUs",
+  "total_training_steps": 100,
+  "train_batch_size": 32,
+  "rollout_group_size": 1,
+  "seed": 21,
+  "request_seed_rule": "legacy",
+  "student": "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/models/Qwen3-1.7B-Base",
+  "teacher": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/models/Qwen3-4B-Base-GRPO",
+  "prompt_protocol": "qwen3_completion_boxed_v1",
+  "checkpoint_steps": [
+    25,
+    50,
+    75,
+    100
+  ],
+  "evaluation_steps": [
+    100,
+    75,
+    50,
+    25
+  ],
+  "initial_student_reevaluated": false,
+  "ordering": "Block3 probe/train/eval100,75,50,25 -> Token probe/train/eval100,75,50,25",
+  "independent_original_initialization": true,
+  "retain_all_checkpoints": true,
+  "retain_all_rollouts": true,
+  "no_automatic_retries": true,
+  "full_eval_autostart": true,
+  "environment": "/limx_embap/tos/user/Yaleon/opd_paper_sft_then_opd_qwen3_1p7b_to_4b_20260606/envs/verl",
+  "lifetime": "Detached from SSH; not immune to host/platform termination"
+}

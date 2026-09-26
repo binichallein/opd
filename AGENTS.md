@@ -17,7 +17,22 @@
   comparison, not a new loss, seed experiment or prompt-only causal claim.
 - Entry `scripts/run_ml2_base17_protocol_n1.py`, root
   `runs/20260926v1_qwen17_base_grpo_protocol_n1_seed21_ml2` under ml2 OPD root.
-  At preparation time118 local tests passed; no ml2 GPU startup verified yet.
+  Frozen runtime3316918, detached controller4142950;119 local tests and250
+  remote runtime tests passed,707 actual collector inputs and both GPU smokes
+  accepted. At17:06 Beijing the Block3 save1/resume2 gate PASSED: all four
+  ranks' optimizer/scheduler/RNG/data states and64 raw trajectories accepted.
+  Probe caps1/32 and3/32; periodic tails1/32 and2/32; think tags0. Gradients
+  16.6153/2.0454 finite. Do not substitute these probe metrics for formal data.
+  Formal Block3 PID4169228 started17:06:22 from original student with resume
+  disabled. At17:23 Step5 verified: first160 trajectories match planned
+  sources/order/sampling; cap6/160, periodic tails2/160, think tags0. Formal
+  gradients16.617/3.134/3.012/2.186/2.469 finite; Step1/5 scalar and16K position
+  audits passed. Old matched Block3 first160 cap64/160; early protocol evidence,
+  not a benchmark result. Formal/probe Step2 differ; no bitwise replay claim.
+  Token's own gate/training and all eight evaluations remain queued. No restart,
+  hyperparameter/loss/runtime change, or ACP modification during supervision.
+  Startup evidence: `results/ml2_base17_protocol_n1_20260926/`. Read LIVE state
+  before reporting or relaunching; never modify the frozen deployment.
   Teacher screen remains inconclusive; user authorizes training, not a rewrite
   of screening results. No automatic retries or unapproved parameter changes.
 

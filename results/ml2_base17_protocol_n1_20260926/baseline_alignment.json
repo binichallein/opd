@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "baseline_root": "/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd/runs/20260925v4_historical17_pair_n1_step100_save25_seed21_ml2",
+  "baseline_commit": "7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5",
+  "same_input_plan": true,
+  "same_model_runtime_bytes": true,
+  "model_file_scope": {
+    "b17": {
+      "verified": [
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model.safetensors",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "repository_metadata_not_used": [
+        ".gitattributes",
+        "LICENSE",
+        "README.md",
+        "configuration.json"
+      ]
+    },
+    "g4": {
+      "verified": [
+        "added_tokens.json",
+        "chat_template.jinja",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model-00001-of-00002.safetensors",
+        "model-00002-of-00002.safetensors",
+        "model.safetensors.index.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "repository_metadata_not_used": [
+        ".gitattributes",
+        "README.md",
+        "grpo.sh"
+      ]
+    }
+  },
+  "matched_environment_fields": [
+    "python",
+    "torch",
+    "transformers",
+    "vllm",
+    "tokenizers"
+  ],
+  "request_seed_rule": "legacy",
+  "seed": 21,
+  "comparison": "Whole generation protocol, not a prompt-only causal claim",
+  "historical_training_protocol": "qwen3_historical17_v1",
+  "historical_evaluation_protocol": "legacy",
+  "new_training_and_evaluation_protocol": "qwen3_completion_boxed_v1",
+  "teacher_screen_status": "inconclusive",
+  "training_authorized_despite_screen": true
+}

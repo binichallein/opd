@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "steps": [
+    {
+      "step": 1,
+      "count": 32,
+      "paired_input_sha256": "739599de745216815bb2c03712823878df0f102a0aaf58abe47f4151e390b192",
+      "sha256": "9fce9d8100b2b0d8b2624e450a78131e380907a5e2a6c0c7672fb2c636e4bacf",
+      "length_stops": 1,
+      "generated_think_tags": 0,
+      "periodic_tails": 1
+    }
+  ],
+  "total_rollouts": 32
+}

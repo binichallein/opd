@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "checkpoint_steps": [
+    1,
+    2
+  ],
+  "diagnostic_steps": [
+    1,
+    2
+  ],
+  "states": [
+    {
+      "step": 1,
+      "rank": 0,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 1,
+      "rank": 1,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 1,
+      "rank": 2,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 1,
+      "rank": 3,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 2,
+      "rank": 0,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 2,
+      "rank": 1,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 2,
+      "rank": 2,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 2,
+      "rank": 3,
+      "rng_scheduler_sampler_valid": true
+    }
+  ]
+}
