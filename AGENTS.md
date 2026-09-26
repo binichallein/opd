@@ -1,5 +1,21 @@
 # Agent Instructions
 
+## Status Check 2026-09-26 13:51 Beijing
+
+- ml2 historical17 n1/save25 queue COMPLETE at10:47:43 Beijing. Both methods
+  trained100steps, all25/50/75/100 complete states and6400 total training
+  rollouts accepted; all EIGHT full n8 evaluations accepted. GPUs idle when
+  checked. Do not relaunch this completed queue.
+- Final raw JSON summaries now under
+  `results/historical17_pair_n1_save25_20260925/`: queue_state,
+  per_benchmark_results, paired_comparison, evaluation_acceptance and
+  paired_rollout_acceptance. Report each benchmark separately, not a macro.
+- ACP latest state UNKNOWN: three SSH attempts failed in proxy/banner exchange.
+  Local1231 SOCKS listener exists, but this does not prove the tunnel/ACP path
+  is healthy. Last verified ACP state was04:48 formal Block3 step6, not current.
+  Do not infer training stopped, overwrite the run, or bypass host-key checks.
+  User asked for ACP console task state. No remote processes/configs changed.
+
 ## NEW: ACP H100 Instruct 8B -> 1.7B, 32x1, 100 Steps (2026-09-26)
 
 - User now authorizes `ssh acp`, replacing old train2 access, for the previously
