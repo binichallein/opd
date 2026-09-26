@@ -104,8 +104,15 @@ PPO裁剪可以处于激活状态，因为它已包含在每个$L_r$内部；之
 
 \section{历史证据及协议边界}
 \label{app:history}
+\begin{table}[htbp]
+\centering\small
+\caption{完整历史Step200 Avg@8对照（\%）。保留原始prompt和协议，仅在每个学生分层内比较方法；这些不是两组完整留存对照的额外训练seed。}
+\label{tab:historyendpointsfull}
+\input{generated/history_endpoints}
+\end{table}
 \input{history_notes_zh}
-历史终点对比见表~\ref{tab:historyendpoints}，以下图表保留全部checkpoint变化。
+表~\ref{tab:historyendpointsfull}保留全部四组历史终点对照，主文表~\ref{tab:historyendpoints}选取其中两组Avg@8正向案例。
+以下图表保留全部checkpoint变化。
 \begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/history_20260921/history_avg_at_8.pdf}

@@ -1,5 +1,9 @@
 \paragraph{模型与训练数据。}
-我们在Qwen、DeepSeek和Llama师生对上研究推理迁移。历史对照包括公开Qwen3-4B-Base-GRPO教师
+Qwen3-4B-Base-GRPO教师来自\emph{Rethinking On-Policy Distillation of Large Language Models: Phenomenology, Mechanism, and Recipe}\citep{rethinking}的配套公开checkpoint。
+该模型由Qwen3-4B-Base在DAPO-Math-17k-Processed上经GRPO训练得到，不是Qwen官方指令版。
+\footnote{模型卡：\url{https://huggingface.co/Thinking-Space/Qwen3-4B-Base-GRPO}。
+历史仓库ID为\texttt{lllyx/Qwen3-4B-Base-GRPO}，保留revision见附录\ref{app:config}。}
+我们在Qwen、DeepSeek和Llama师生对上研究推理迁移。历史对照包括该GRPO教师
 指导Qwen3-1.7B-Base和Qwen3-0.6B-Base学生、DeepSeek/JustRL 1.5B设置，以及Llama-3.2-3B-Instruct指导
 Llama-3.2-1B-Instruct。另有两组完整留存的对照：公开GRPO教师指导Qwen3-4B-Base，
 以及官方Qwen3-8B指导Qwen3-1.7B指令模型\citep{qwen3,llama3,llama32}。

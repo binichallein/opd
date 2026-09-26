@@ -118,11 +118,16 @@ def archive_tex(rows, series, lang):
     return '\n'.join(output) + '\n'
 
 
-def endpoint_table(rows):
+def endpoint_table(rows, *, series_ids=None):
     pairs = [('qwen17_ml2', 'historical_external_audited', 'Qwen 1.7B'),
              ('deepseek_justrl', 'historical_external', 'DeepSeek 1.5B'),
              ('qwen06_nonthinking', 'historical_external', 'Qwen 0.6B'),
              ('llama_historical', 'historical_external', 'Llama 1B')]
+    if series_ids is not None:
+        unknown = set(series_ids) - {pair[0] for pair in pairs}
+        if unknown:
+            raise ValueError(f'Unknown endpoint series: {sorted(unknown)}')
+        pairs = [pair for pair in pairs if pair[0] in series_ids]
     lines = [r'\begin{tabular}{@{}llrrrr@{}}', r'\toprule',
              r'Student & Method & MATH500 & AIME24 & AIME25 & AMC23 \\', r'\midrule']
     for series, view, label in pairs:
@@ -200,6 +205,8 @@ def main():
     for lang in ('en', 'zh'):
         (generated / f'history_all_{lang}.tex').write_text(archive_tex(rows, evidence['series'], lang))
     (generated / 'history_endpoints.tex').write_text(endpoint_table(rows))
+    (generated / 'history_highlights.tex').write_text(
+        endpoint_table(rows, series_ids=('qwen17_ml2', 'deepseek_justrl')))
     (generated / 'history_probes.tex').write_text(probe_tex(probes))
     collapse_lines = [r'\begin{tabular}{@{}lrrrrrr@{}}', r'\toprule',
                       r'Hardware & $H_S$ & $H_T$ & Overlap & $M_S$ & $M_T$ & Max. grad \\', r'\midrule']

@@ -1,22 +1,19 @@
 \paragraph{不同师生对上的推理迁移。}
-表~\ref{tab:historyendpoints}汇总历史Step200对照。
-Qwen3-1.7B-Base学生与公开GRPO教师配对时，Block3的四项Avg@8均高于Token：
+表~\ref{tab:historyendpoints}展示两组Step200 Avg@8差值为正的历史案例。
+Qwen3-1.7B-Base学生与Rethinking OPD\citep{rethinking}发布的公开GRPO教师配对时，Block3的四项Avg@8均高于Token：
 MATH500从45.85升至54.75，AIME24从5.42升至8.75，AIME25从2.50升至5.42，
 AMC23从21.84升至27.26。这些观察推动我们进一步研究超出逐token更新的局部反馈共享。
 DeepSeek/JustRL 1.5B对照的终点差值也为正，MATH500和AMC23的变化小于AIME。
 
-同一表格也表明，这一模式并非适用于所有师生对。
-历史非thinking Qwen3-0.6B-Base的Block3几乎失去全部被测数学准确率，而Token相对原始学生有所提升；
-Llama同样更有利于Token。
-这些比较保留原有协议，教师适配、prompt、seed处理与实现版本存在差异，
-不能据此分离学生规模的因果作用。
-附录\ref{app:history}给出全部checkpoint结果及实验目录。
+这两组是正向案例展示，不是全部跨模型对照；其他历史师生对存在更有利于Token的结果。
+附录\ref{app:history}表~\ref{tab:historyendpointsfull}保留完整四组终点对照及协议背景，
+随后给出全部checkpoint结果。
 
 \begin{table}[htbp]
 \centering\small
-\caption{历史Step200 Avg@8（\%）。仅在每个学生分层内比较，保留原始prompt和协议；这些不是两组匹配对照的额外训练seed。}
+\caption{选取的历史Step200 Avg@8正向案例（\%）。仅在每个学生分层内比较方法；包括负结果的完整对照见表~\ref{tab:historyendpointsfull}。}
 \label{tab:historyendpoints}
-\input{generated/history_endpoints}
+\input{generated/history_highlights}
 \end{table}
 
 \paragraph{官方Qwen3-8B到1.7B指令版。}

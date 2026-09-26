@@ -1,13 +1,13 @@
 \paragraph{Reasoning transfer across teacher--student pairs.}
-Table~\ref{tab:historyendpoints} summarizes the historical Step200 comparisons. With Qwen3-1.7B-Base and the public GRPO teacher, Block3 improves Avg@8 on all four benchmarks: MATH500 rises from 45.85 to 54.75, AIME24 from 5.42 to 8.75, AIME25 from 2.50 to 5.42, and AMC23 from 21.84 to 27.26. These observations motivate local feedback sharing. DeepSeek/JustRL 1.5B also has positive endpoint differences, smaller on MATH500 and AMC23 than on AIME.
+Table~\ref{tab:historyendpoints} illustrates two historical settings with positive Step200 Avg@8 differences. With Qwen3-1.7B-Base and the public GRPO teacher from Rethinking OPD \citep{rethinking}, Block3 improves Avg@8 on all four benchmarks: MATH500 rises from 45.85 to 54.75, AIME24 from 5.42 to 8.75, AIME25 from 2.50 to 5.42, and AMC23 from 21.84 to 27.26. These observations motivate local feedback sharing. DeepSeek/JustRL 1.5B also has positive endpoint differences, smaller on MATH500 and AMC23 than on AIME.
 
-This pattern does not hold for every pair. The historical non-thinking Qwen3-0.6B-Base Block3 run nearly loses all measured accuracy, while Token improves over the original student. Llama also favors Token. Teacher adaptation, prompting, seed handling and implementation versions differ between these original protocols; they do not isolate student-size effects. Appendix~\ref{app:history} gives complete checkpoint results and the experiment inventory.
+These are illustrative positive cases, not an exhaustive cross-model comparison. Other historical pairs favor Token; Table~\ref{tab:historyendpointsfull} in Appendix~\ref{app:history} retains all four endpoint comparisons and their protocol context, followed by every checkpoint result.
 
 \begin{table}[htbp]
 \centering\small
-\caption{Historical Step200 Avg@8 (\%). Rows are comparable only within each student stratum; original prompts and protocols are retained. These are not extra training seeds of either matched comparison.}
+\caption{Selected positive historical Step200 Avg@8 examples (\%). Compare methods only within each student stratum. The complete comparison, including negative outcomes, appears in Table~\ref{tab:historyendpointsfull}.}
 \label{tab:historyendpoints}
-\input{generated/history_endpoints}
+\input{generated/history_highlights}
 \end{table}
 
 \paragraph{Official Qwen3-8B to 1.7B Instruct.}

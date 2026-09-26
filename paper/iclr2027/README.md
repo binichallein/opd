@@ -35,6 +35,12 @@ Step200四项Avg@8差值为正，但配对题目区间均包含零，Pass@8有�
 逐字prompt、运行审计、详细限制等放在对应附录。官方模板已重新下载并核对一致，
 核验来源和hash见`internal/compliance.md`。
 
+同日补充教师来源：正文首次介绍4B GRPO时引用Rethinking OPD（2604.13016），
+并链接现有`Thinking-Space/Qwen3-4B-Base-GRPO`模型卡；附录保留原`lllyx`仓库ID和下载revision。
+主文历史表改为明确标注的两组正向Avg@8案例，0.6B与Llama结果不再占据该主表；
+完整四组终点表、所有checkpoint、负结果和协议说明仍在附录E，不以结果好坏删除记录。
+`history_highlights.tex`与完整`history_endpoints.tex`由同一生成器、同一数据生成。
+
 ## 构建
 
 在仓库根目录运行：

@@ -80,8 +80,14 @@ For $N>0$ and matching phase-zero partitions, $L_{\mathrm{hist}}=N L_0/(N+k\eta)
 
 \section{Historical Evidence and Protocol Boundaries}
 \label{app:history}
+\begin{table}[htbp]
+\centering\small
+\caption{Complete historical Step200 Avg@8 comparison (\%). Original prompts and protocols are retained; compare methods only within each student stratum. These are not extra training seeds of the two fully retained comparisons.}
+\label{tab:historyendpointsfull}
+\input{generated/history_endpoints}
+\end{table}
 \input{history_notes_en}
-The historical endpoint comparison is reported in Table~\ref{tab:historyendpoints}; the following figures and tables retain the complete checkpoint trajectories.
+Table~\ref{tab:historyendpointsfull} includes all four historical endpoint comparisons; Table~\ref{tab:historyendpoints} selects two positive Avg@8 examples for the main text. The following figures and tables retain the complete checkpoint trajectories.
 \begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/history_20260921/history_avg_at_8.pdf}
