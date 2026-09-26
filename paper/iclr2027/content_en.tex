@@ -5,7 +5,7 @@
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{study_overview.png}
-\caption{Conceptual overview. The implemented block intervention changes three linked components; evaluation must preserve protocol boundaries. The diagram is illustrative and contains no measured performance.}
+\caption{\textbf{From token-level to block-level updates.} The student generates a response and the frozen teacher scores the same prefixes. Token OPD keeps each token's feedback separate; Block3 Mean averages feedback within three adjacent tokens and shares it across the block. The implemented method also uses a joint block ratio and valid-length-weighted block loss. The two rows are alternative training runs, not summed objectives. Teacher feedback and old-policy probabilities are detached; only the current student receives gradients. A full three-token block is illustrated; masked tails use their valid length $n_j$. Both methods sample complete trajectories before updating.}
 \label{fig:overview}
 \end{figure}
 

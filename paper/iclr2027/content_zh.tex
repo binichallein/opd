@@ -5,7 +5,7 @@
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{study_overview.png}
-\caption{研究概览：实际block实现同时改变三个关联成分，评测必须保留协议边界。该图仅为概念示意，不包含实测性能。}
+\caption{\textbf{从逐token反馈到block级更新。}学生生成响应，冻结教师在相同前缀上打分。Token OPD让每个token保留自己的反馈；Block3 Mean对三个相邻token的反馈求均值并共享，同时使用联合block ratio和按有效长度加权的block loss。上下两行是独立训练的对照方案，不是相加的两个目标。教师反馈与旧策略概率均停止梯度，仅更新当前学生。图示完整三token块；不足三token的尾块按有效长度$n_j$处理。两种方法均先采样完整轨迹再更新。}
 \label{fig:overview}
 \end{figure}
 
