@@ -12,7 +12,7 @@ Group consecutive response tensor positions into disjoint blocks $B_j$ of width 
  \mathcal L_{\mathrm{block}}&=-\frac1T\sum_{j:n_j>0}n_j\mathcal C(R_j,\sg(\bar a_j)),
  &\mathcal L_{\mathrm{token}}&=-\frac1T\sum_{t=1}^T\mathcal C(r_t,\sg(a_t)).\label{eq:loss}
 \end{align}
-\method{} uses $k=3$. Its joint ratio $R_j=\prod_{t\in B_j}r_t$ measures the product of policy changes across the sampled block, rather than their average. Valid-length weighting gives a two-token tail weight $2/3$ relative to a full block. The code implements the same reduction using fractional block masks $n_j/k$; Appendix~\ref{app:proofs} gives the exact stabilized denominator and micro-batch convention.
+\method{} uses $k=3$, retained after the exploratory $k\in\{1,3,5,10\}$ comparison described in Section~\ref{sec:blockchoice}. Its joint ratio $R_j=\prod_{t\in B_j}r_t$ measures the product of policy changes across the sampled block, rather than their average. Valid-length weighting gives a two-token tail weight $2/3$ relative to a full block. The code implements the same reduction using fractional block masks $n_j/k$; Appendix~\ref{app:proofs} gives the exact stabilized denominator and micro-batch convention.
 
 \paragraph{Optimization.}
 Each collected batch supplies shared advantages and current-to-old block ratios for the clipped update. This uses sampled blocks, not enumeration of a $|V|^k$ distribution or optimizer steps after every three tokens. Relative to Token OPD, the intervention changes advantage sharing, ratio granularity and loss reduction together.
