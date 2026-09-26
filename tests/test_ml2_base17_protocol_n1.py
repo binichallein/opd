@@ -121,3 +121,13 @@ def test_literal_prompt_has_no_chat_or_think(module):
     prompt = completion_math_prompt('What is 1+1?')
     assert 'What is 1+1?' in prompt and 'boxed' in prompt and prompt.endswith('Solution:\n')
     assert '<|im_start|>' not in prompt and '<think>' not in prompt
+
+
+def test_model_identity_pins_runtime_files_not_repository_docs(module):
+    files = {name:{'Sha256':name} for name in ('.gitattributes','README.md','LICENSE',
+        'model-00001-of-00002.safetensors','model.safetensors.index.json','config.json',
+        'generation_config.json','tokenizer.json','tokenizer_config.json','merges.txt',
+        'vocab.json','special_tokens_map.json','added_tokens.json','chat_template.jinja','modeling_qwen.py')}
+    selected = module.model_runtime_files({'files':files})
+    assert set(selected) == set(files)-{'.gitattributes','README.md','LICENSE'}
+    assert all(selected[k] is files[k] for k in selected)

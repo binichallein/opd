@@ -60,6 +60,15 @@ def validate_baseline_card(expected, actual):
     original.require_equal_card({k:v for k,v in expected.items() if k not in allowed}, actual)
 
 
+def model_runtime_files(spec):
+    # Historical downloads may contain different repository docs, never different model bytes.
+    names = {'config.json','generation_config.json','model.safetensors.index.json',
+             'tokenizer.json','tokenizer_config.json','merges.txt','vocab.json',
+             'special_tokens_map.json','added_tokens.json','chat_template.jinja'}
+    return {name:record for name,record in spec['files'].items()
+            if name in names or name.endswith(('.safetensors','.py'))}
+
+
 def validate_rollout(row, prompt_ids, step):
     expected = dict(temperature=1.,top_p=.9,top_k=-1,max_tokens=16384,n=1,
                     ignore_eos=False,stop_token_ids=[],seed=21)
@@ -112,8 +121,12 @@ def preflight(run, runtime):
     if run.n1.input_plan(q) != q.base.read_json(BASELINE_ROOT/'input_plan.json'):
         raise ValueError('Historical physical-row input plan differs')
     qualifier = base_pair.qualification.configured_qualifier()
+    model_file_scope = {}
     for key, path in (('b17',STUDENT),('g4',TEACHER)):
-        protected.update(qualifier.assets.verify_files(path,qualifier.assets.specifications()[key]['files']))
+        spec = qualifier.assets.specifications()[key]
+        selected = model_runtime_files(spec)
+        protected.update(qualifier.assets.verify_files(path,selected))
+        model_file_scope[key] = dict(verified=sorted(selected),repository_metadata_not_used=sorted(set(spec['files'])-set(selected)))
     summary = qualifier.old.read_sealed(base_pair.QUALIFICATION/'pair_summary.json')
     base_pair.validate_screen(summary, q.assets.sha256(base_pair.QUALIFICATION/'pair_summary.json'))
     paths.append(base_pair.QUALIFICATION/'pair_summary.json')
@@ -126,7 +139,8 @@ def preflight(run, runtime):
     q.shared.verify_hashes(protected)
     q.jobs.write_json(RUN_ROOT/'baseline_alignment.json',dict(passed=True,
         baseline_root=str(BASELINE_ROOT),baseline_commit=BASELINE_COMMIT,same_input_plan=True,
-        same_model_bytes=True,matched_environment_fields=['python','torch','transformers','vllm','tokenizers'],
+        same_model_runtime_bytes=True,model_file_scope=model_file_scope,
+        matched_environment_fields=['python','torch','transformers','vllm','tokenizers'],
         request_seed_rule='legacy',seed=21,
         comparison='Whole generation protocol, not a prompt-only causal claim',
         historical_training_protocol='qwen3_historical17_v1',historical_evaluation_protocol='legacy',
