@@ -1,0 +1,14 @@
+{
+  "pid": 351590,
+  "run": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp",
+  "command": [
+    "nohup",
+    "/mnt/afs/202609/tyf-qwen-opd/envs/verl-cu128-base17-migration-v1/bin/python",
+    "-u",
+    "/mnt/afs/202609/tyf-qwen-opd/deployments/781df3021f8b84936921e068aa2251e38e686bfd/scripts/run_acp_base17_migration.py"
+  ],
+  "runtime": "/mnt/afs/202609/tyf-qwen-opd/deployments/781df3021f8b84936921e068aa2251e38e686bfd",
+  "started_at": "2026-09-26T18:45:32.395291+00:00",
+  "preserved_failed_attempt": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v1_base17_grpo_migrated_n1_seed21_acp",
+  "recovery_scope": "Hydra snapshot inventory only; no algorithm/data/optimizer changes"
+}

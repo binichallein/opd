@@ -1,5 +1,24 @@
 # Agent Instructions
 
+## NEW: ACP Migration Preflight Recovery (2026-09-27 02:45 Beijing)
+
+- Transfer COMPLETE at02:13:29:2355files/101849693103bytes all hash-verified.
+- v1 failed02:22 before any GPU evaluation/training: source inventory incorrectly
+  included9 generated Hydra YAML snapshots under the source deployment's dated
+  `external/revisiting_opd/outputs/.../.hydra/` directories. Shared source bytes
+  matched exactly; no checkpoint/model corruption. Preserve v1 and all imports.
+- Fix781df3021f8b84936921e068aa2251e38e686bfd excludes ONLY the three named YAML
+  snapshots in dated Hydra output paths from algorithm inventory. Transfer hashes
+  still cover those source artifacts; real source additions/changes remain rejected.
+- New detached controller351590 launched02:45:32 into
+  `runs/20260927v2_base17_grpo_migrated_n1_seed21_acp` under AFS. New frozen
+  deployment781df30, same isolated venv/import/models/data/protocol and job order.
+  It is redoing full preflight; do NOT claim GPU evaluation or Token has started
+  without live evidence. No automatic retries; no completed Block3 retraining.
+- Actual ACP174 tests passed; real source comparison and full deployment hashes
+  passed. Local65 focused tests passed. Evidence at
+  `imports/20260927_ml2_base17_protocol/recovery_{tests,launch}_781df30.json`.
+
 ## NEW: Remaining Base1.7 Work Migrated to ACP (2026-09-27)
 
 - User moves all remaining ml2 protocol-repeat evaluations and Token training/evaluation
