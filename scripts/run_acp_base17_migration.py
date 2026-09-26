@@ -31,7 +31,7 @@ import run_ml2_base17_protocol_n1 as ml2
 ROOT = acp.ROOT
 HOST = acp.HOST
 VENV = ROOT / 'envs/verl-cu128-base17-migration-v1'
-RUN_ROOT = ROOT / 'runs/20260927v1_base17_grpo_migrated_n1_seed21_acp'
+RUN_ROOT = ROOT / 'runs/20260927v2_base17_grpo_migrated_n1_seed21_acp'
 IMPORT_ROOT = ROOT / 'imports/20260927_ml2_base17_protocol'
 SOURCE_RUN = ml2.RUN_ROOT
 SOURCE_HOST = 'di-20260407234928-vrvxk'
@@ -193,9 +193,13 @@ def verify_frozen_source(runtime):
     names = set(FROZEN_SCRIPTS)
     for tree in ('opd_ext', 'external/revisiting_opd'):
         def files(root):
+            # Hydra snapshots are run evidence, already covered by transfer hashes.
+            generated = re.compile(r'external/revisiting_opd/outputs/\d{4}-\d{2}-\d{2}/'
+                                   r'\d{2}-\d{2}-\d{2}/\.hydra/(config|hydra|overrides)\.yaml')
             return {p.relative_to(root).as_posix() for p in (root / tree).rglob('*')
                     if p.is_file() and p.suffix in ('.py', '.sh', '.yaml', '.yml', '.json')
-                    and '.git' not in p.parts}
+                    and '.git' not in p.parts
+                    and not generated.fullmatch(p.relative_to(root).as_posix())}
         reference, actual = files(REFERENCE), files(runtime)
         if not reference or reference != actual:
             raise ValueError(f'Frozen algorithm source inventory changed: {tree}')

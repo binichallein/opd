@@ -313,6 +313,34 @@ def test_frozen_source_rejects_algorithm_or_eval_changes(module, monkeypatch, tm
         module.verify_frozen_source(runtime)
 
 
+@pytest.mark.parametrize('extra', [None, 'outputs/2026-09-26/08-39-42/.hydra/loss.py',
+                                  'outputs/config.yaml', 'verl/trainer/config/ppo_trainer.yaml'])
+def test_frozen_source_distinguishes_generated_hydra_snapshots(module, monkeypatch, tmp_path, extra):
+    reference, runtime = tmp_path / 'reference', tmp_path / 'runtime'
+    monkeypatch.setattr(module, 'REFERENCE', reference)
+    monkeypatch.setattr(module, 'FROZEN_SCRIPTS', ())
+    for root in (reference, runtime):
+        for name in ('opd_ext/loss.py', 'external/revisiting_opd/sampler.py'):
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('unchanged')
+        (root / 'DEPLOYED_COMMIT').write_text(module.SOURCE_COMMIT)
+    for root, date in ((reference, '2026-09-26/08-39-42'), (runtime, '2026-09-27/03-00-00')):
+        folder = root / 'external/revisiting_opd/outputs' / date / '.hydra'
+        folder.mkdir(parents=True)
+        for name in ('config.yaml', 'hydra.yaml', 'overrides.yaml'):
+            (folder / name).write_text('generated runtime snapshot')
+    if extra is None:
+        protected = module.verify_frozen_source(runtime)
+        assert str(runtime / 'external/revisiting_opd/sampler.py') in protected
+    else:
+        path = reference / 'external/revisiting_opd' / extra
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('unmatched source')
+        with pytest.raises(ValueError, match='inventory changed'):
+            module.verify_frozen_source(runtime)
+
+
 def test_environment_only_explicit_patch_and_cuda_build_differences(module):
     source = dict(python='3.12.13 source build', packages=dict(torch='2.8.0', vllm='0.11.0',
         transformers='4.57.6', tokenizers='0.22.2'), pip_freeze='sympy==1.14.0\nnumpy==1.26.4\n')
