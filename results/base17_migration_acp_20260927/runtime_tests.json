@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "exit_code": 0,
+  "command": [
+    "/mnt/afs/202609/tyf-qwen-opd/envs/verl-cu128-base17-migration-v1/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--tb=short",
+    "tests/test_acp_base17_migration.py",
+    "tests/test_wait_for_verified_migration.py",
+    "tests/test_ml2_base17_protocol_n1.py",
+    "tests/test_acp_qwen17_n1.py",
+    "tests/test_acp_component_ablation.py",
+    "tests/test_historical_pair_n1_queue.py",
+    "tests/test_qwen17_base_grpo_pair.py",
+    "tests/test_qwen17_instruct_pair.py"
+  ],
+  "source_commit": "e07997afe6cb65b803de46486d1482ffe0d3e38d",
+  "completed_at": "2026-09-26T17:10:28.405638+00:00"
+}

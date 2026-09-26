@@ -24,9 +24,10 @@
 1. [x] Read live source failure and verify completed Block3 state, rollouts and idle ACP GPUs.
 2. [ ] Transfer models, source evidence, diagnostics and four evaluable checkpoints with source/destination hashes; retain all source artifacts. Do not copy private SSH keys.
 3. [x] Add `scripts/run_acp_base17_migration.py` and focused tests for import-only Block3, loss/config alignment, fail-closed gates, complete evaluation and independent Token initialization. Start with failing tests. Dedicated migration/waiter61 tests pass; broader CPU-only local suite148 passes. Spec and code-quality reviews completed.
-4. [ ] Verify plotting dependency, actual collector inputs, historical grader, source hashes, and runtime regressions on ACP before GPU evaluation.
-5. [ ] Freeze deployment, launch detached queue to AFS, verify first evaluation actually starts. Token save1/resume2 gate must pass before formal training.
-6. [ ] Save migration manifest, live startup evidence and Chinese status locally/GitHub. Do not alter submitted paper or existing ACP experiments.
+4. [x] Verify isolated environment and plotting dependency;170 runtime tests pass on ACP. Source-aligned math/data packages pass the actual environment comparison. Imported full-file hashes/707 actual collector inputs/historical grader are mandatory deferred gates before GPU evaluation.
+5. [x] Freeze e07997a deployment and launch detached AFS waiter339663, verified PPID1. Transfer receiver336441 also PPID1; no local SSH dependency after authentication.
+6. [ ] Complete transfer, audit imported checkpoints/inputs, verify first GPU evaluation actually starts. Token save1/resume2 gate must pass before formal training. At01:12 Beijing only the transfer and waiter are running.
+7. [x] Save migration manifest, live startup evidence and Chinese status locally/GitHub. Submitted paper and existing ACP experiments unchanged.
 
 ## Acceptance
 

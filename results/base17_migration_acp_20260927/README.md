@@ -51,3 +51,14 @@ ACP另建 `envs/verl-cu128-base17-migration-v1`，不修改已有指令版实验
 `transfer_state_v2.json`、新run的`migration_wait_state.json`、`queue_state.json`
 及`evaluation_acceptance.json`为准。迁移开始时，ml2只有Block3训练完成，尚无本轮benchmark分数。
 已提交的论文与已有ACP实验均未修改。
+
+## 01:12 北京时间启动验收
+
+- 冻结版本：`e07997afe6cb65b803de46486d1482ffe0d3e38d`。
+- ACP实际环境170项测试通过；本地迁移与等待专项61项通过，扩展不依赖Torch的测试148项通过。
+  本地默认Conda的Torch库存在`iJIT_NotifyEvent`导入问题，因此相关13项测试转到ACP实际环境验证，全部通过。
+- ACP独立新环境16项数学/数据/Ray依赖与ml2匹配，绘图可导入；旧ACP环境保持原样。
+- 接收PID336441，等待队列PID339663，均PPID1；建立传输时用的本地临时SSH agent已经退出。
+- 已校验25549594264字节（含ACP已有且哈希匹配的数据文件），总清单101849693103字节。
+  此时**传输未完成，GPU评测尚未开始**，不把等待队列启动说成评测启动。
+- `startup_20260927.json`、`environment_preparation.json`和`runtime_tests.json/.log`保留实际验收证据。

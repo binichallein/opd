@@ -1,5 +1,41 @@
 # Agent Instructions
 
+## NEW: Remaining Base1.7 Work Migrated to ACP (2026-09-27)
+
+- User moves all remaining ml2 protocol-repeat evaluations and Token training/evaluation
+  to ACP. Do NOT restart the old ml2 queue or retrain its completed Block3.
+- Source `20260926v1_qwen17_base_grpo_protocol_n1_seed21_ml2` completed Block3
+  100steps with25/50/75/100 full states and3200 raw rollouts. It stopped21:32
+  Beijing at plotting because matplotlib was absent; no evaluations or Token started.
+- New immutable ACP runtime `e07997afe6cb65b803de46486d1482ffe0d3e38d` and run
+  `/mnt/afs/202609/tyf-qwen-opd/runs/20260927v1_base17_grpo_migrated_n1_seed21_acp`.
+  At01:12 Beijing detached receiver336441 and waiter339663 both PPID1.
+  Transfer2355files/101849693103bytes is STILL IN PROGRESS,25.5GB verified at that
+  snapshot. Full queue/GPU evaluation had NOT started. Always read live state.
+- Import directory `imports/20260927_ml2_base17_protocol` under AFS contains
+  `transfer_state_v2.json`, then `transfer_acceptance.json` after all hashes pass.
+  New run `migration_wait_state.json` reports waiting; waiter automatically execs
+  `scripts/run_acp_base17_migration.py` after complete verified transfer.
+- Order: imported Block3 full eval100/75/50/25, independent Token save1/resume2
+  gate, Token100steps/full states25/50/75/100, then full eval100/75/50/25.
+  No initial-student eval. Same public Base1.7/GRPO4 model bytes/data schedule,
+  completion prompt/native EOS151643/no ChatML,32x1,seed21/legacy request seed,
+  lr2e-6, historical grader, separate benchmarks, all rollouts/diagnostics retained.
+- Explicitly mixed training hardware: Block3 A100/ml2, Token H100/ACP. ACP32 CPU
+  quota vsml2 Ray64; Python3.12.3 vs3.12.13. Both Torch2.8.0+cu128/CUDA12.8.
+  Never claim this is a same-hardware causal comparison or bitwise replay.
+- Isolated environment `envs/verl-cu128-base17-migration-v1` matches ml2 math/data
+  packages inclantlr4-runtime4.7.2/mathruler0.1.0. Existing ACP environment untouched.
+  Actual ACP170 CPU/runtime tests passed, plotting dependency imports passed.
+- Read plan `docs/plans/2026-09-27-acp-base17-migration.md` and evidence
+  `results/base17_migration_acp_20260927/`. Original source files/full states remain.
+  First SCP transfer was deliberately stopped; its `.migration_part` is incomplete
+  preserved evidence, not accepted weights. Active single-SSH stream is autonomous
+  on servers; temporary local SSH agent was terminated after authentication.
+- No auto retry or pruning. Do not hot-edit frozen deployment, alter submitted
+  paper, or restart completed ACP ablations. Spec/code reviews passed; real imported
+  checkpoint audit,707 input gate, GPU eval and Token resume gate run after transfer.
+
 ## NEW: ml2 Base1.7 / GRPO4 Protocol Comparison Authorized (2026-09-26)
 
 - User now explicitly authorizes the other recommended task on ml2. Read

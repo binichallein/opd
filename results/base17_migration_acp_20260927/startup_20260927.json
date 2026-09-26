@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-09-26T17:12:26.890005+00:00",
+  "source_commit": "e07997afe6cb65b803de46486d1482ffe0d3e38d",
+  "transfer": {
+    "status": "receiving",
+    "files_verified": 41,
+    "total_files": 2355,
+    "verified_bytes": 25549594264,
+    "file": "/mnt/afs/202609/tyf-qwen-opd/imports/20260927_ml2_base17_protocol/block3_mean/checkpoints/global_step_25/actor/model_world_size_4_rank_1.pt",
+    "source_connection_authenticated": true,
+    "elapsed_seconds": 1187.180942392908
+  },
+  "waiter": {
+    "pid": 339663,
+    "source_commit": "e07997afe6cb65b803de46486d1482ffe0d3e38d",
+    "status": "waiting_for_verified_transfer",
+    "started_at_epoch": 1790442707.8930154
+  },
+  "processes": "    PID    PPID     ELAPSED COMMAND\n 336441       1       21:13 python3 -u /mnt/afs/202609/tyf-qwen-opd/imports/20260927_ml2_base17_protocol/stream_transfer.py receive\n 339663       1       00:39 /mnt/afs/202609/tyf-qwen-opd/envs/verl-cu128-base17-migration-v1/bin/python -u /mnt/afs/202609/tyf-qwen-opd/deployments/e07997afe6cb65b803de46486d1482ffe0d3e38d/scripts/wait_for_verified_migration.py\n",
+  "gpu": "0, 0 %, 0 MiB\n1, 0 %, 0 MiB\n2, 0 %, 0 MiB\n3, 0 %, 0 MiB\n",
+  "gpu_evaluation_started": false,
+  "full_queue_started": false
+}
