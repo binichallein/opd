@@ -34,6 +34,9 @@ ENTRYPOINT = Path(__file__).resolve()
 LOSS_OVERRIDES = {}
 ORDERING = 'Block3 probe/train/eval100,75,50,25 -> Token probe/train/eval100,75,50,25'
 write_comparison = n1.write_comparison
+HARDWARE = '4xH100-80GB; 32 cgroup CPUs'
+LIFETIME = 'Detached from SSH; not immune to ACP scheduling/runtime expiry'
+DISPLAY_PREFIX = 'ACP Qwen1.7 Instruct n1'
 
 
 def validate_location(host, root, fstype):
@@ -219,7 +222,7 @@ def train_variant(root, variant, runtime, commit, runner, protected, plan):
         q.jobs.write_json(root / 'paired_rollout_acceptance.json', n1.validate_paired_rollouts(
             q.base.read_json(root / VARIANTS[0] / 'rollout_acceptance.json'), result))
     runner([q.base.PYTHON, runtime / 'scripts/analyze_single_opd_diagnostics.py', '--run-dir', folder,
-            '--output-dir', folder / 'figures', '--label', f'ACP Qwen1.7 Instruct n1 {variant} seed21'],
+            '--output-dir', folder / 'figures', '--label', f'{DISPLAY_PREFIX} {variant} seed21'],
            root / f'queue_jobs/{variant}_figures', job_env={'CUDA_VISIBLE_DEVICES':''})
     return dict(passed=True, steps=100, variant=variant)
 
@@ -236,7 +239,7 @@ def main():
     runtime = ENTRYPOINT.parents[1]
     commit = (runtime / 'DEPLOYED_COMMIT').read_text().strip()
     if runtime != ROOT / 'deployments' / commit:
-        raise ValueError('An immutable AFS deployment is required')
+        raise ValueError('An immutable deployment is required')
     sys.path.insert(0, str(runtime / 'external/revisiting_opd'))
     root = RUN_ROOT
     if args.ray_gate:
@@ -259,14 +262,14 @@ def main():
             raise FileExistsError('Existing attempt; recovery needs explicit verified state, never restart blindly')
         (root / 'queue.pid').write_text(str(os.getpid())+'\n')
         q.jobs.write_json(root / 'queue_manifest.json', dict(source_commit=commit, created_at=q.jobs.now(),
-            host=HOST, hardware='4xH100-80GB; 32 cgroup CPUs', total_training_steps=100,
+            host=HOST, hardware=HARDWARE, total_training_steps=100,
             train_batch_size=32, rollout_group_size=1, seed=21, request_seed_rule='legacy',
             student=str(q.STUDENT), teacher=str(q.TEACHER), prompt_protocol=PROTOCOL,
             checkpoint_steps=sorted(STEPS), evaluation_steps=STEPS, initial_student_reevaluated=False,
             ordering=ORDERING,
             independent_original_initialization=True, retain_all_checkpoints=True, retain_all_rollouts=True,
             no_automatic_retries=True, full_eval_autostart=True, environment=str(VENV),
-            lifetime='Detached from SSH; not immune to ACP scheduling/runtime expiry'))
+            lifetime=LIFETIME))
         try:
             q.jobs.wait_for_idle()
             if shutil.disk_usage(ROOT).free < 1_000_000_000_000:

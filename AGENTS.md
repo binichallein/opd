@@ -1,5 +1,26 @@
 # Agent Instructions
 
+## NEW: ml2 Base1.7 / GRPO4 Protocol Comparison Authorized (2026-09-26)
+
+- User now explicitly authorizes the other recommended task on ml2. Read
+  `docs/plans/2026-09-26-ml2-base17-protocol-n1.md`; do not alter ACP's running
+  ba83e69 ablation deployment/controller155322.
+- Same historical Qwen3-1.7B-Base and public Qwen3-4B-Base-GRPO bytes, new
+  matched completion protocol (bare problem + boxed + Solution), no ChatML.
+  Native EOS151643, no extra chat stops, explicit actual-length/EOS mask checks.
+- Keep legacy per-request seed21, same32x1/100steps, four full checkpoints
+  25/50/75/100 and all raw trajectories. Full legacy Block3 first, then its
+  full n8 eval100/75/50/25, then independently initialized Token/train/eval.
+  Skip initial-student re-evaluation. Each arm needs save1/resume2 gate.
+- Compare with completed ml2 `20260925v4_historical17_pair_n1_step100_save25_seed21_ml2`;
+  do not overwrite it or rerun its historical protocol. This is a whole-protocol
+  comparison, not a new loss, seed experiment or prompt-only causal claim.
+- Entry `scripts/run_ml2_base17_protocol_n1.py`, root
+  `runs/20260926v1_qwen17_base_grpo_protocol_n1_seed21_ml2` under ml2 OPD root.
+  At preparation time118 local tests passed; no ml2 GPU startup verified yet.
+  Teacher screen remains inconclusive; user authorizes training, not a rewrite
+  of screening results. No automatic retries or unapproved parameter changes.
+
 ## NEW: ACP Component Ablations Authorized (2026-09-26)
 
 - User authorizes two loss-only ablations on ACP, not new ml2 jobs. Read
