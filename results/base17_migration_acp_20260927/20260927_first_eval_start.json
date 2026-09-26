@@ -1,0 +1,122 @@
+{
+  "checked_at": "2026-09-26T19:15:31.913996+00:00",
+  "run": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp",
+  "runtime": "781df3021f8b84936921e068aa2251e38e686bfd",
+  "queue": {
+    "status": "running",
+    "job": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/evaluations/block3_mean_step100",
+    "pid": 355094,
+    "updated_at": "2026-09-26T19:09:16.620005+00:00"
+  },
+  "controller_pid": 351590,
+  "evaluation_pid": 355094,
+  "import_acceptance": {
+    "passed": true,
+    "checkpoint_steps": [
+      25,
+      50,
+      75,
+      100
+    ],
+    "rank_states": 16,
+    "training_rollouts": 3200
+  },
+  "input_contract": {
+    "passed": true,
+    "actual_collector_exercised": true,
+    "questions_checked": {
+      "qualification": 64,
+      "math500": 500,
+      "aime24": 30,
+      "aime25": 30,
+      "amc23": 83
+    },
+    "protocol": "qwen3_completion_boxed_v1",
+    "enable_thinking": false,
+    "chat_template_used": false,
+    "eos_token_id": 151643,
+    "stop_token_ids": [],
+    "prompt_ids_sha256": "dd35d3858931b1c9c893dabf9cffd9be2c06d612ecce1701203c2b1b219154fd"
+  },
+  "grader_acceptance": {
+    "passed": true,
+    "grader_sha256": "04f7a0328be18409b55836f7a794dd31fbc982d5870bc542a8fe7c91f9490d7f",
+    "scope": "Exact historical grader bytes; no new grader"
+  },
+  "merged_tokenizer_actual_inputs": {
+    "passed": true,
+    "counts": {
+      "math500": 500,
+      "aime24": 30,
+      "aime25": 30,
+      "amc23": 83
+    },
+    "differences": [],
+    "eos_ids": [
+      151643,
+      151643
+    ],
+    "scope": "All643 benchmark completion prompts; no universal tokenization equivalence claim"
+  },
+  "evaluation_config": {
+    "model_path": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/merged/block3_mean_step100",
+    "eval_jsonl_dir": "/mnt/afs/202609/tyf-qwen-opd/data/math_opd_dapo17k_hf_full_eval4/eval_jsonl",
+    "tasks": [
+      "math500",
+      "aime24",
+      "aime25",
+      "amc23"
+    ],
+    "n": 8,
+    "temperature": 1.0,
+    "top_p": 0.9,
+    "max_tokens": 16384,
+    "gpus": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "eval_seed": 21,
+    "rollout_seeds": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "grader": "external",
+    "enable_thinking": false,
+    "prompt_protocol": "qwen3_completion_boxed_v1",
+    "retain_rollouts": true,
+    "rollout_archive_dir": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/evaluations/block3_mean_step100/outputs/rollout_archive"
+  },
+  "engine_initializations_finished": 4,
+  "fatal_log_lines": [],
+  "gpu": "0, 91 %, 75779 MiB\n1, 90 %, 75819 MiB\n2, 91 %, 75767 MiB\n3, 91 %, 75819 MiB\n",
+  "memory_events": "low 0\nhigh 0\nmax 221\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "rollout_archive_files": [
+    {
+      "path": "evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_0.jsonl",
+      "bytes": 0
+    },
+    {
+      "path": "evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_1.jsonl",
+      "bytes": 0
+    },
+    {
+      "path": "evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_2.jsonl",
+      "bytes": 0
+    },
+    {
+      "path": "evaluations/block3_mean_step100/outputs/rollout_archive/math500/rollout_3.jsonl",
+      "bytes": 0
+    }
+  ],
+  "token_training_started": false,
+  "complete_evaluation_accepted": false,
+  "configuration_modified_during_supervision": false
+}

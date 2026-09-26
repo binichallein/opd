@@ -1,5 +1,28 @@
 # Agent Instructions
 
+## NEW: Migrated Block3 Step100 Evaluation Running (2026-09-27 03:14 Beijing)
+
+- Supervised v2 through full preflight, import audit, merge, and actual four-GPU
+  inference. Controller351590 remains PPID1; evaluation355094 started03:09:16.
+- All25/50/75/100 complete states (16rank states) and3200 source training
+  trajectories accepted unchanged.707 actual input checks and historical grader
+  hash passed. No source/runtime/config edits or restarts during supervision.
+- Step100 merged tokenizer produced identical completion input IDs to original
+  student on all643 benchmark questions,EOS151643. JSON serialization changes
+  and the existing regex warning are not grounds to alter the frozen tokenizer.
+- All4 vLLM engines initialized by03:13:54. At03:14:29 H100 utilization83-85%,
+  memory~75.8GB each, MATH500 generating. No OOM/traceback observed. Raw rollout
+  archive files created, initially empty until each500-question generation batch
+  returns. Do not report completed questions or scores from GPU activity alone.
+- Token has NOT started; it remains after all four imported Block3 evaluations.
+  Each evaluation is full643x8, historical grader, four benchmarks separately,
+  completion prompt/no thinking. Initial-student evaluation remains skipped.
+- Preflight took~18min and eval preparation several more due repeated AFS hashes
+  and optimizer tensor inspection, not a hung plotting job. queue_state retains
+  the previous completed subjob during in-process audits; inspect live PID/I/O.
+- Read live state and `results/base17_migration_acp_20260927/` evidence before
+  reporting. Runtime781df30 and runv2 remain frozen; no automatic retry/pruning.
+
 ## NEW: ACP Migration Preflight Recovery (2026-09-27 02:45 Beijing)
 
 - Transfer COMPLETE at02:13:29:2355files/101849693103bytes all hash-verified.
