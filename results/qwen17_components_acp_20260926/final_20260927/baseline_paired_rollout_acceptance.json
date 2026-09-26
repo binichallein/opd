@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "comparisons": {
+    "adv3_vs_block3_mean": {
+      "passed": true,
+      "steps": 100,
+      "trajectories_per_arm": 3200
+    },
+    "adv3_vs_token_opd": {
+      "passed": true,
+      "steps": 100,
+      "trajectories_per_arm": 3200
+    },
+    "scale3_vs_block3_mean": {
+      "passed": true,
+      "steps": 100,
+      "trajectories_per_arm": 3200
+    },
+    "scale3_vs_token_opd": {
+      "passed": true,
+      "steps": 100,
+      "trajectories_per_arm": 3200
+    }
+  }
+}

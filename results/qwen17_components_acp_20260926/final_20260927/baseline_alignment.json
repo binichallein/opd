@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "baseline_root": "/mnt/afs/202609/tyf-qwen-opd/runs/20260926v1_qwen8_to17_instruct_n1_step100_seed21_acp",
+  "baseline_commit": "1867093b21799c36be22bb2fd167c87e5aaa039e",
+  "same_hardware_environment": true,
+  "same_input_plan": true,
+  "new_methods": {
+    "adv3": "adv_only",
+    "scale3": "token_scale"
+  },
+  "no_baseline_retraining": true,
+  "limitations": [
+    "Single training seed; sequential runs do not guarantee bitwise replay.",
+    "adv3 changes credit sharing only; scale3 changes policy-loss scale only.",
+    "Legacy Block3 also changes the PPO ratio; these two arms are not a complete factorial."
+  ]
+}

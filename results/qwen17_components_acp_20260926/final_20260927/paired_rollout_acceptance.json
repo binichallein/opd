@@ -1,0 +1,5 @@
+{
+  "passed": true,
+  "steps": 100,
+  "trajectories_per_arm": 3200
+}

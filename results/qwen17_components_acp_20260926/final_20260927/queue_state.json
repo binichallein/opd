@@ -1,0 +1,14 @@
+{
+  "status": "complete",
+  "updated_at": "2026-09-26T15:07:32.819374+00:00",
+  "models": [
+    "adv3_step100",
+    "adv3_step75",
+    "adv3_step50",
+    "adv3_step25",
+    "scale3_step100",
+    "scale3_step75",
+    "scale3_step50",
+    "scale3_step25"
+  ]
+}
