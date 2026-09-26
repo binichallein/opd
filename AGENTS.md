@@ -12,8 +12,14 @@
 - Existing Token/Block3 controls at1867093 must NOT be rerun or overwritten.
   New root: AFS `runs/20260926v3_qwen8_to17_instruct_components_n1_seed21_acp`.
   Controller: `scripts/run_acp_component_ablation.py`; inspect live state.
-- CPU implementation/tests are being prepared. This note is NOT evidence
-  of GPU probe/formal startup. Each arm needs its own save1/resume2 gate.
+- Frozen code ba83e69025fcc0f2e533416328f041dd23304afb, detached controller155322.
+  ACP CPU tests227passed; student/teacher GPU smoke passed with thinking off.
+  At15:53 Beijing adv3 formal step8 verified; save1/resume2 passed. First192
+  formal trajectories match both controls' inputs; cap/think/periodic-tail0.
+  Step1/5 scalar and position audits passed. Each arm needs its own resume gate;
+  scale3 and all ablation evaluations remain queued. Formal PID176726.
+  Evidence lives in `results/qwen17_components_acp_20260926/`; read live state
+  before reporting/relaunching. Do NOT hot-edit the immutable deployment.
 - scale3 is NOT shared-advantage OPD or learning-rate x3. Credit diagnostic
   width1 and ratio width1; adv3 credit width3 and ratio width1. Loss scaling
   is distinct from actual Adam parameter-update scaling. No claim of a full

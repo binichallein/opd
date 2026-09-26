@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "states": [
+    {
+      "step": 1,
+      "rank": 0,
+      "scheduler_step": 1
+    },
+    {
+      "step": 1,
+      "rank": 1,
+      "scheduler_step": 1
+    },
+    {
+      "step": 1,
+      "rank": 2,
+      "scheduler_step": 1
+    },
+    {
+      "step": 1,
+      "rank": 3,
+      "scheduler_step": 1
+    },
+    {
+      "step": 2,
+      "rank": 0,
+      "scheduler_step": 2
+    },
+    {
+      "step": 2,
+      "rank": 1,
+      "scheduler_step": 2
+    },
+    {
+      "step": 2,
+      "rank": 2,
+      "scheduler_step": 2
+    },
+    {
+      "step": 2,
+      "rank": 3,
+      "scheduler_step": 2
+    }
+  ],
+  "limitation": "Checks saved rank RNG and restored training state, not bitwise vLLM replay"
+}

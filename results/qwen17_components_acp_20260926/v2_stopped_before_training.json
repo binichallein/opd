@@ -1,0 +1,7 @@
+{
+  "status": "failed",
+  "job": "/mnt/afs/202609/tyf-qwen-opd/runs/20260926v2_qwen8_to17_instruct_components_n1_seed21_acp/queue_jobs/gpu_smoke_student",
+  "pid": 153871,
+  "updated_at": "2026-09-26T06:49:14.308081+00:00",
+  "error": "SystemExit(143)"
+}

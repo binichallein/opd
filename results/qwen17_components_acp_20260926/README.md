@@ -20,3 +20,23 @@
 
 新测试执行真实trainer的位置展开代码，覆盖4种模式和3种长度；先复现6项错误，
 修复后相关70项测试通过。v3的GPU保存恢复、正式训练和完整评测状态将随验收更新。
+
+## v3已核验进展
+
+- 冻结运行代码 `ba83e69025fcc0f2e533416328f041dd23304afb`，控制器PID155322。
+- ACP上227项测试通过，1项仅依赖Git历史的测试在本地通过；不改服务器依赖。
+- 师生实际GPU smoke各4条均通过，新增think标签均为0。
+- 15:31北京时间：adv3保存探针正常退出（exit0），Step1四rank完整状态和32条轨迹审计通过；
+  截断0/32、生成think标签0/32、周期重复尾段0/32，梯度范数约0.760，非有限诊断为0。
+  这些是探针结果，不是正式训练或benchmark成绩。恢复进程已启动，正式更新尚未开始。
+- 保存探针退出时出现DataLoader worker清理警告；旧对照探针也有此警告，
+  当前退出码为0且cgroup的oom/oom_kill计数为0。后续恢复验收仍必须通过。
+- v3配置证据单独存为 `v3_queue_manifest.json` 和 `v3_baseline_alignment.json`，
+  不覆盖v2的启动前检查记录。AFS运行目录为
+  `/mnt/afs/202609/tyf-qwen-opd/runs/20260926v3_qwen8_to17_instruct_components_n1_seed21_acp`。
+- 15:53保存恢复与正式启动验收均已通过，正式进度8/100。前192条输入匹配两组旧对照，
+  截断/生成think标签/周期重复尾段均为0；Step1/5标量和位置诊断通过。
+  证据为 `v3_startup_acceptance.json` 及 `v3_adv3_*gate.json`；尚无新benchmark成绩。
+- 位置图沿用历史字段名 `post_update_block_*`，但adv3/scale3的实际ratio宽度为1。
+  不将这些ratio数值直接与历史Block3的宽度3指标横比；熵、重合度、长度等指标口径不变。
+  scale3的共享信用指标为零，不表示没有损失缩放，也不证明其信用分配更正确。

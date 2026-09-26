@@ -1,0 +1,35 @@
+{
+  "source_commit": "ba83e69025fcc0f2e533416328f041dd23304afb",
+  "created_at": "2026-09-26T06:56:31.991812+00:00",
+  "host": "pt-5a50d1567d77437c94035024288a327f-worker-0",
+  "hardware": "4xH100-80GB; 32 cgroup CPUs",
+  "total_training_steps": 100,
+  "train_batch_size": 32,
+  "rollout_group_size": 1,
+  "seed": 21,
+  "request_seed_rule": "legacy",
+  "student": "/mnt/afs/202609/tyf-qwen-opd/models/Qwen3-1.7B",
+  "teacher": "/mnt/afs/202609/tyf-qwen-opd/models/Qwen3-8B",
+  "prompt_protocol": "qwen3_native_chat_no_thinking_boxed_v1",
+  "checkpoint_steps": [
+    25,
+    50,
+    75,
+    100
+  ],
+  "evaluation_steps": [
+    100,
+    75,
+    50,
+    25
+  ],
+  "initial_student_reevaluated": false,
+  "ordering": "adv3 probe/train/eval100,75,50,25 -> scale3 probe/train/eval100,75,50,25",
+  "independent_original_initialization": true,
+  "retain_all_checkpoints": true,
+  "retain_all_rollouts": true,
+  "no_automatic_retries": true,
+  "full_eval_autostart": true,
+  "environment": "/mnt/afs/202609/tyf-qwen-opd/envs/verl-cu128-v1",
+  "lifetime": "Detached from SSH; not immune to ACP scheduling/runtime expiry"
+}
