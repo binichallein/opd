@@ -24,7 +24,7 @@ Step200四项Avg@8差值为正，但配对题目区间均包含零，Pass@8有�
 - `background_*`、`method_*`：必要背景、Block3目标和更新分析。
 - `protocol_*`、`results_*`、`analysis_*`：实验设置、完整主结果和分主题分析。
 - `related_*`、`conclusion_*`：相关工作定位与结论。
-- `appendix_*`、`limitations_*`：局限、完整推导、配置、全部结果及诊断。
+- `appendix_*`、`limitations_*`：实验范围、完整推导、配置、全部结果及诊断。
 - `references.bib`：核验后的参考文献。
 - `data/`、`generated/`、`figures/`：紧凑证据、自动表格和图；不存完整rollout或权重。
 - `internal/`：内部来源映射、证据审计、合规记录。**不得放入匿名投稿包。**
@@ -47,6 +47,10 @@ Block3的四项Avg@8高于Block5，相对Token三项提高、一项下降；因�
 表题在上，表下注明硬件、评测seed和Block5重启及来源边界；完整协议仍见附录E.6，
 未与后续同机复跑合并。`history_block_sizes.tex`从同一历史数据生成，不手填分数。
 更早k=2的clean-room先导实验在附录单列，明确其非PPO损失和不同师生身份。
+
+附录A以“实验范围与拓展分析”组织叙述，说明完整Block3更新的比较对象与归因范围，
+合并历史附录中重复的未完成实验清单。单seed、区间定义、数据覆盖和基线范围等事实保留，
+不将整体更新收益写成仅由advantage平均造成，也不更改任何实验数值。
 
 ## 构建
 
