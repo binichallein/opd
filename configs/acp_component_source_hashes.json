@@ -1,0 +1,14 @@
+{
+  "opd_ext/diagnostics.py": [
+    "9d7c5a97d5a81fc688d56e972e0ffd21b46120cfe504fd7807f7873ae1a3eafe",
+    "ecf4c8d91507f4013eef942a4aea082d66e0cb3430403ae9cf26701e42cfe14a"
+  ],
+  "external/revisiting_opd/verl/trainer/ppo/core_algos.py": [
+    "fab0c839d5561df47aae12c261c628863813d31811ec55f8483da37940900cdf",
+    "115c0bf9baf51922e8429af5b6c8b66e4b9701f69fa3270c4ad2194e72e6c86a"
+  ],
+  "external/revisiting_opd/verl/trainer/ppo/ray_trainer_multitask.py": [
+    "a6cb22d26d7a35049afb2ee925c172cf8b489d23c0b8e8254fbff575f701e631",
+    "b11252de4b4d411478ada11ff8f70d3c95465251024b17b1431bca6b6994d5d8"
+  ]
+}

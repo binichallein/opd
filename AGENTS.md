@@ -1,5 +1,24 @@
 # Agent Instructions
 
+## NEW: ACP Component Ablations Authorized (2026-09-26)
+
+- User authorizes two loss-only ablations on ACP, not new ml2 jobs. Read
+  `docs/plans/2026-09-26-acp-component-ablation.md`.
+- Official Qwen3-8B -> Qwen3-1.7B instruct, exact completed ACP100/32x1
+  recipe, seed21, nonthinking matched prompt, save25/50/75/100 full states.
+- New methods: adv3 (only shared mean advantages, token ratios/reduction),
+  then scale3 (own advantages, token ratios, policy loss scaled by valid n_j).
+  Each trains100steps then full eval100/75/50/25 before the next method.
+- Existing Token/Block3 controls at1867093 must NOT be rerun or overwritten.
+  New root: AFS `runs/20260926v2_qwen8_to17_instruct_components_n1_seed21_acp`.
+  Controller: `scripts/run_acp_component_ablation.py`; inspect live state.
+- CPU implementation/tests are being prepared. This note is NOT evidence
+  of GPU probe/formal startup. Each arm needs its own save1/resume2 gate.
+- scale3 is NOT shared-advantage OPD or learning-rate x3. Credit diagnostic
+  width1 and ratio width1; adv3 credit width3 and ratio width1. Loss scaling
+  is distinct from actual Adam parameter-update scaling. No claim of a full
+  three-factor factorial experiment. Preserve raw trajectories and all states.
+
 ## Latest: Both Queues Complete (2026-09-26 13:56 Beijing)
 
 - ACP connectivity restored by user; same verified Worker/host key. Read-only

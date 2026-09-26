@@ -14,6 +14,14 @@ import numpy as np
 import torch
 
 
+def component_diagnostic_sizes(block_size: int, ablation: str) -> tuple[int, int]:
+    """Credit-sharing width and actual PPO-ratio width (not loss multiplier)."""
+    if ablation not in {"legacy", "adv_only", "joint_tokenmean", "token_scale"}:
+        raise ValueError("Unknown block ablation mode")
+    return (1 if ablation == "token_scale" else block_size,
+            1 if ablation in {"adv_only", "token_scale"} else block_size)
+
+
 def preserve_module_training_mode(method):
     """Restore ``self.actor_module.training`` after an inference-style method."""
 

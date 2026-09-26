@@ -172,7 +172,7 @@ index dcff326..5b1d392 100644
      invalid_action_penalty_coef: 0.1
      use_kl_loss: False # True for GRPO
 diff --git a/verl/trainer/ppo/core_algos.py b/verl/trainer/ppo/core_algos.py
-index f754f25..c62b2b4 100644
+index f754f25..c3acbd6 100644
 --- a/verl/trainer/ppo/core_algos.py
 +++ b/verl/trainer/ppo/core_algos.py
 @@ -428,6 +428,98 @@ def agg_loss(loss_mat: torch.Tensor, loss_mask: torch.Tensor, loss_agg_mode: str
@@ -287,13 +287,13 @@ index f754f25..c62b2b4 100644
  ):
      """
      Compute the clipped policy objective and related metrics for PPO.
-@@ -467,8 +565,54 @@ def compute_policy_loss(
+@@ -467,8 +565,61 @@ def compute_policy_loss(
          loss_agg_mode (str, optional):
              Aggregation mode for `agg_loss`. Defaults to "token-mean".
      """
 +    token_mask = response_mask
 +    if opd_block_ablation != "legacy":
-+        if opd_block_ablation not in {"adv_only", "joint_tokenmean"}:
++        if opd_block_ablation not in {"adv_only", "joint_tokenmean", "token_scale"}:
 +            raise ValueError("Unknown block ablation mode")
 +        if (opd_window_mode != "fixed" or opd_block_advantage_mode != "mean"
 +                or opd_block_size <= 1 or loss_agg_mode != "token-mean"):
@@ -308,6 +308,13 @@ index f754f25..c62b2b4 100644
 +                block_size=opd_block_size, block_advantage_mode="mean",
 +            )
 +            advantages = means.repeat_interleave(opd_block_size, dim=-1)[..., :log_prob.size(-1)]
++            opd_block_size = 1
++        elif opd_block_ablation == "token_scale":
++            # Positive n_j scaling commutes with both PPO clips; no credit sharing.
++            counts = _pad_last_dim_to_multiple(response_mask.to(log_prob.dtype), opd_block_size)
++            counts = counts.reshape(log_prob.size(0), -1, opd_block_size).sum(dim=-1)
++            scales = counts.repeat_interleave(opd_block_size, dim=-1)[..., :log_prob.size(-1)]
++            advantages = advantages * scales
 +            opd_block_size = 1
 +
 +    if opd_window_mode != "fixed":
@@ -342,7 +349,7 @@ index f754f25..c62b2b4 100644
      negative_approx_kl = log_prob - old_log_prob
      ratio = torch.exp(negative_approx_kl)
      ppo_kl = verl_F.masked_mean(-negative_approx_kl, response_mask)
-@@ -487,7 +631,12 @@ def compute_policy_loss(
+@@ -487,7 +638,12 @@ def compute_policy_loss(
      pg_clipfrac_lower = verl_F.masked_mean(torch.gt(clip_pg_losses1, pg_losses3) * (advantages < 0).float(), response_mask)
  
      pg_losses = torch.where(advantages < 0, clip_pg_losses2, clip_pg_losses1)
@@ -356,7 +363,7 @@ index f754f25..c62b2b4 100644
  
      return pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower
  
-@@ -502,6 +651,9 @@ def compute_policy_loss_gspo(
+@@ -502,6 +658,9 @@ def compute_policy_loss_gspo(
      cliprange_high=None,
      clip_ratio_c=3.0,
      loss_agg_mode: str = "seq-mean-token-mean",
@@ -366,7 +373,7 @@ index f754f25..c62b2b4 100644
  ):
      """
      Compute the clipped policy objective and related metrics for GSPO.
-@@ -522,6 +674,11 @@ def compute_policy_loss_gspo(
+@@ -522,6 +681,11 @@ def compute_policy_loss_gspo(
      """
  
      assert clip_ratio_c > 1.0, "The lower bound of the clip_ratio_c for dual-clip PPO should be greater than 1.0," + f" but get the value: {clip_ratio_c}."
@@ -378,13 +385,13 @@ index f754f25..c62b2b4 100644
      if cliprange_low is None:
          cliprange_low = cliprange
      if cliprange_high is None:
-@@ -1048,4 +1205,3 @@ def compute_memory_efficient_kl(
+@@ -1048,4 +1212,3 @@ def compute_memory_efficient_kl(
  
      
      return L1, L2, not_in_topk_ratio
 -
 diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
-index cbf1a4f..7368101 100644
+index cbf1a4f..9eaa898 100644
 --- a/verl/trainer/ppo/ray_trainer_multitask.py
 +++ b/verl/trainer/ppo/ray_trainer_multitask.py
 @@ -21,8 +21,10 @@ FSDP PPO Trainer with Ray-based single controller.
@@ -398,12 +405,13 @@ index cbf1a4f..7368101 100644
  import uuid
  from collections import defaultdict
  from contextlib import contextmanager
-@@ -65,7 +67,31 @@ from verl.utils.tracking import ValidationGenerationsLogger
+@@ -65,7 +67,32 @@ from verl.utils.tracking import ValidationGenerationsLogger
  from verl.workers.rollout.async_server import AsyncLLMServerManager
  from gigpo import core_gigpo
  
 +from opd_ext.diagnostics import (
 +    compute_block_credit_diagnostics,
++    component_diagnostic_sizes,
 +    compute_block_ratio_diagnostics,
 +    compute_entropy_diagnostics,
 +    expand_block_values_to_tokens,
@@ -430,7 +438,7 @@ index cbf1a4f..7368101 100644
  
  WorkerType = Type[Worker]
  
-@@ -1129,6 +1155,46 @@ class RayPPOTrainer:
+@@ -1129,6 +1156,46 @@ class RayPPOTrainer:
                  worker_group=self.actor_rollout_wg,
              )
  
@@ -477,7 +485,7 @@ index cbf1a4f..7368101 100644
      def _save_checkpoint(self):
          # path: given_path + `/global_step_{global_steps}` + `/actor`
          local_global_step_folder = os.path.join(self.config.trainer.default_local_dir, f"global_step_{self.global_steps}")
-@@ -1155,6 +1221,7 @@ class RayPPOTrainer:
+@@ -1155,6 +1222,7 @@ class RayPPOTrainer:
          dataloader_local_path = os.path.join(local_global_step_folder, "data.pt")
          dataloader_state_dict = self.train_dataloader.state_dict()
          torch.save(dataloader_state_dict, dataloader_local_path)
@@ -485,7 +493,7 @@ index cbf1a4f..7368101 100644
  
          # latest checkpointed iteration tracker (for atomic usage)
          local_latest_checkpointed_iteration = os.path.join(self.config.trainer.default_local_dir, "latest_checkpointed_iteration.txt")
-@@ -1194,6 +1261,7 @@ class RayPPOTrainer:
+@@ -1194,6 +1262,7 @@ class RayPPOTrainer:
  
          print(f"Setting global step to {self.global_steps}")
          print(f"Resuming from {global_step_folder}")
@@ -493,7 +501,7 @@ index cbf1a4f..7368101 100644
  
          actor_path = os.path.join(global_step_folder, "actor")
          critic_path = os.path.join(global_step_folder, "critic")
-@@ -1209,7 +1277,13 @@ class RayPPOTrainer:
+@@ -1209,7 +1278,13 @@ class RayPPOTrainer:
          if os.path.exists(dataloader_local_path):
              dataloader_state_dict = torch.load(dataloader_local_path, weights_only=False)
              self.train_dataloader.load_state_dict(dataloader_state_dict)
@@ -507,7 +515,7 @@ index cbf1a4f..7368101 100644
              print(f"Warning: No dataloader state found at {dataloader_local_path}, will start from scratch")
  
      def _balance_batch(self, batch: DataProto, metrics, logging_prefix="global_seqlen"):
-@@ -1225,6 +1299,138 @@ class RayPPOTrainer:
+@@ -1225,6 +1300,141 @@ class RayPPOTrainer:
          global_balance_stats = log_seqlen_unbalance(seqlen_list=global_seqlen_lst, partitions=global_partition_lst, prefix=logging_prefix)
          metrics.update(global_balance_stats)
  
@@ -524,6 +532,9 @@ index cbf1a4f..7368101 100644
 +        advantages = batch.batch["advantages"]
 +        response_length = response_mask.size(1)
 +        block_size = int(self.config.actor_rollout_ref.actor.get("opd_block_size", 1))
++        credit_size, _ = component_diagnostic_sizes(
++            block_size, self.config.actor_rollout_ref.actor.get("opd_block_ablation", "legacy")
++        )
 +        sign_epsilon = float(diagnostic_config.get("sign_epsilon", 1e-4))
 +
 +        actor_positions = actor_diagnostics.batch["diagnostic_topk_positions"]
@@ -552,7 +563,7 @@ index cbf1a4f..7368101 100644
 +        credit = credit_fn(
 +            advantages=advantages,
 +            response_mask=response_mask,
-+            block_size=block_size,
++            block_size=credit_size,
 +            sign_epsilon=sign_epsilon,
 +            **window_kwargs,
 +        )
@@ -646,7 +657,7 @@ index cbf1a4f..7368101 100644
      def fit(self):
          """
          The training loop of PPO.
-@@ -1242,8 +1448,31 @@ class RayPPOTrainer:
+@@ -1242,8 +1452,31 @@ class RayPPOTrainer:
              default_backend=self.config.trainer.logger,
              config=OmegaConf.to_container(self.config, resolve=True),
          )
@@ -678,7 +689,7 @@ index cbf1a4f..7368101 100644
  
          # load checkpoint before doing anything
          self._load_checkpoint()
-@@ -1269,7 +1498,17 @@ class RayPPOTrainer:
+@@ -1269,7 +1502,17 @@ class RayPPOTrainer:
              for batch_dict in self.train_dataloader:
                  metrics = {}
                  timing_raw = {}
@@ -696,7 +707,7 @@ index cbf1a4f..7368101 100644
  
                  # pop those keys for generation
                  batch_keys_to_pop = ["input_ids", "attention_mask", "position_ids"]
-@@ -1291,6 +1530,12 @@ class RayPPOTrainer:
+@@ -1291,6 +1534,12 @@ class RayPPOTrainer:
                  )
  
                  is_last_step = self.global_steps >= self.total_training_steps
@@ -709,7 +720,7 @@ index cbf1a4f..7368101 100644
  
                  with _timer("step", timing_raw):
                      # generate a batch
-@@ -1331,6 +1576,16 @@ class RayPPOTrainer:
+@@ -1331,6 +1580,16 @@ class RayPPOTrainer:
                      # batch = batch.union(gen_batch_output)
                      del batch
                      batch = gen_batch_output
@@ -726,7 +737,7 @@ index cbf1a4f..7368101 100644
  
                      if self.config.algorithm.adv_estimator == AdvantageEstimator.GiGPO:
                          step_rewards_tensor = core_gigpo.compute_step_discounted_returns(
-@@ -1342,6 +1597,10 @@ class RayPPOTrainer:
+@@ -1342,6 +1601,10 @@ class RayPPOTrainer:
                      batch = adjust_batch(self.config, batch)
  
                      batch.batch["response_mask"] = compute_response_mask(batch)
@@ -737,7 +748,7 @@ index cbf1a4f..7368101 100644
                      # balance the number of valid tokens on each dp rank.
                      # Note that this breaks the order of data inside the batch.
                      # Please take care when you implement group based adv computation such as GRPO and rloo
-@@ -1481,6 +1740,27 @@ class RayPPOTrainer:
+@@ -1481,6 +1744,27 @@ class RayPPOTrainer:
                                      else:
                                          ref_log_prob = self.actor_rollout_wg.compute_ref_log_prob(batch)
                              batch = batch.union(ref_log_prob)
@@ -765,7 +776,7 @@ index cbf1a4f..7368101 100644
                          
                          # Compute student's log probs for teacher's top-k indices if using OPD topk
                          if use_opd_topk and "teacher_topk_indices" in batch.batch:
-@@ -1606,6 +1886,19 @@ class RayPPOTrainer:
+@@ -1606,6 +1890,19 @@ class RayPPOTrainer:
                                  clip_log_ratio=self.config.actor_rollout_ref.actor.get("clip_log_ratio", False), # this config is not that naturally related to OPD, but we keep it here for compatibility
                              )
  
@@ -785,7 +796,7 @@ index cbf1a4f..7368101 100644
                          if self.config.trainer.get("rollout_data_dir", None):
                              self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
  
-@@ -1625,6 +1918,123 @@ class RayPPOTrainer:
+@@ -1625,6 +1922,125 @@ class RayPPOTrainer:
                          actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                          metrics.update(actor_output_metrics)
  
@@ -797,13 +808,15 @@ index cbf1a4f..7368101 100644
 +                                    if self.window_mode != "fixed" else {}
 +                                )
 +                                ratio_fn = window_ratio_diagnostics if window_kwargs else compute_block_ratio_diagnostics
++                                _, ratio_size = component_diagnostic_sizes(
++                                    int(self.config.actor_rollout_ref.actor.get("opd_block_size", 1)),
++                                    self.config.actor_rollout_ref.actor.get("opd_block_ablation", "legacy"),
++                                )
 +                                block_ratio = ratio_fn(
 +                                    old_log_prob=batch.batch["old_log_probs"],
 +                                    current_log_prob=post_update_output.batch["old_log_probs"],
 +                                    response_mask=batch.batch["response_mask"],
-+                                    block_size=int(
-+                                        self.config.actor_rollout_ref.actor.get("opd_block_size", 1)
-+                                    ),
++                                    block_size=ratio_size,
 +                                    cliprange_low=float(
 +                                        self.config.actor_rollout_ref.actor.get(
 +                                            "clip_ratio_low",
@@ -909,7 +922,7 @@ index cbf1a4f..7368101 100644
                      # Log rollout generations if enabled
                      rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
                      if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
-@@ -1638,10 +2048,6 @@ class RayPPOTrainer:
+@@ -1638,10 +2054,6 @@ class RayPPOTrainer:
                                  last_val_metrics = val_metrics
                          metrics.update(val_metrics)
  
@@ -920,7 +933,7 @@ index cbf1a4f..7368101 100644
                  # training metrics
                  metrics.update(
                      {
-@@ -1656,10 +2062,96 @@ class RayPPOTrainer:
+@@ -1656,10 +2068,96 @@ class RayPPOTrainer:
                  n_gpus = self.resource_pool_manager.get_n_gpus()
                  metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
  

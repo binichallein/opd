@@ -30,6 +30,10 @@ SAVE_STEPS = '25,50,75,100'
 OLD_ROOT = Path('/limx_embap/tos/user/Yaleon/opd_block_experiments_20260709/opd')
 REFERENCE = ROOT / 'deployments/7bf5420d69d5e3ce23cb79882a0ceb6c391b1cf5'
 execute_ordered = n1.execute_ordered
+ENTRYPOINT = Path(__file__).resolve()
+LOSS_OVERRIDES = {}
+ORDERING = 'Block3 probe/train/eval100,75,50,25 -> Token probe/train/eval100,75,50,25'
+write_comparison = n1.write_comparison
 
 
 def validate_location(host, root, fstype):
@@ -129,7 +133,7 @@ def audit_rollouts(folder, plan, steps, probe=False):
 
 
 def preflight(runtime):
-    protected = q.common_preflight(runtime)
+    protected = q.common_preflight(runtime, LOSS_OVERRIDES)
     for key in ('instruct_student', 'instruct_teacher'):
         protected.update(q.assets.ensure_asset(key))
     gate = q.qualify.old.read_sealed(q.QUALIFICATION / 'gate_acceptance.json')
@@ -181,7 +185,7 @@ def gpu_smoke(root, label):
 
 def train_variant(root, variant, runtime, commit, runner, protected, plan):
     probe = root / 'probes' / variant
-    runner([q.base.PYTHON, Path(__file__).resolve(), '--ray-gate', variant],
+    runner([q.base.PYTHON, ENTRYPOINT, '--ray-gate', variant],
            root / f'queue_jobs/{variant}_ray_gate', job_env={'CUDA_VISIBLE_DEVICES':''},
            deadline_epoch=time.time()+600)
     if not q.base.read_json(root / f'{variant}_ray_gate.json').get('passed'):
@@ -211,9 +215,9 @@ def train_variant(root, variant, runtime, commit, runner, protected, plan):
     n1.audit_training(q, folder, sorted(STEPS), (1, *range(5, 101, 5)))
     result = audit_rollouts(folder, plan, range(1, 101))
     q.jobs.write_json(folder / 'rollout_acceptance.json', result)
-    if variant == 'token_opd':
+    if variant == VARIANTS[-1]:
         q.jobs.write_json(root / 'paired_rollout_acceptance.json', n1.validate_paired_rollouts(
-            q.base.read_json(root / 'block3_mean/rollout_acceptance.json'), result))
+            q.base.read_json(root / VARIANTS[0] / 'rollout_acceptance.json'), result))
     runner([q.base.PYTHON, runtime / 'scripts/analyze_single_opd_diagnostics.py', '--run-dir', folder,
             '--output-dir', folder / 'figures', '--label', f'ACP Qwen1.7 Instruct n1 {variant} seed21'],
            root / f'queue_jobs/{variant}_figures', job_env={'CUDA_VISIBLE_DEVICES':''})
@@ -229,7 +233,7 @@ def main():
     mount = subprocess.run(['findmnt', '-T', str(ROOT), '-n', '-o', 'FSTYPE'],
                            check=True, capture_output=True, text=True).stdout.strip()
     validate_location(socket.gethostname(), ROOT, mount)
-    runtime = Path(__file__).resolve().parents[1]
+    runtime = ENTRYPOINT.parents[1]
     commit = (runtime / 'DEPLOYED_COMMIT').read_text().strip()
     if runtime != ROOT / 'deployments' / commit:
         raise ValueError('An immutable AFS deployment is required')
@@ -237,7 +241,7 @@ def main():
     root = RUN_ROOT
     if args.ray_gate:
         import recover_qwen17_instruct_token as warmup
-        warmup.CACHE = CACHE / ('b' if args.ray_gate == 'block3_mean' else 't')
+        warmup.CACHE = CACHE / ('b' if args.ray_gate == VARIANTS[0] else 't')
         warmup.ray_gate(root / f'{args.ray_gate}_ray_gate.json')
         return
     if args.gpu_smoke:
@@ -259,7 +263,7 @@ def main():
             train_batch_size=32, rollout_group_size=1, seed=21, request_seed_rule='legacy',
             student=str(q.STUDENT), teacher=str(q.TEACHER), prompt_protocol=PROTOCOL,
             checkpoint_steps=sorted(STEPS), evaluation_steps=STEPS, initial_student_reevaluated=False,
-            ordering='Block3 probe/train/eval100,75,50,25 -> Token probe/train/eval100,75,50,25',
+            ordering=ORDERING,
             independent_original_initialization=True, retain_all_checkpoints=True, retain_all_rollouts=True,
             no_automatic_retries=True, full_eval_autostart=True, environment=str(VENV),
             lifetime='Detached from SSH; not immune to ACP scheduling/runtime expiry'))
@@ -304,7 +308,7 @@ def main():
             q.jobs.write_json(root / 'input_plan.json', plan)
             protected[str(root / 'input_plan.json')] = q.assets.sha256(root / 'input_plan.json')
             for label in ('student', 'teacher'):
-                runner([q.base.PYTHON, Path(__file__).resolve(), '--gpu-smoke', label],
+                runner([q.base.PYTHON, ENTRYPOINT, '--gpu-smoke', label],
                        root / f'queue_jobs/gpu_smoke_{label}', gpu=True, job_env={'CUDA_VISIBLE_DEVICES':'0'})
                 if q.base.read_json(root / f'gpu_smoke/{label}/acceptance.json').get('passed') is not True:
                     raise ValueError('GPU nonthinking gate failed')
@@ -317,7 +321,7 @@ def main():
                 for name in ('run_card.json','command.sh','artifact_hashes.sha256','script_hashes.sha256'):
                     protected[str(root / v / name)] = q.assets.sha256(root / v / name)
             allowed = {'variant','opd_block_size','opd_block_advantage_mode','experiment_name',
-                       'diagnostic_output_dir','lossless_rollout_dir'}
+                       'diagnostic_output_dir','lossless_rollout_dir','opd_block_ablation'}
             left, right = cards.values()
             require_equal_card({k:v for k,v in left.items() if k not in allowed}, right)
             q.jobs.write_json(root / 'paired_preflight.json', dict(passed=True, cards=cards))
@@ -331,7 +335,7 @@ def main():
                     t:{n:r['per_task'][t] for n,r in results.items()} for t in q.shared.TASK_COUNTS})
                 return result
             execute_ordered(lambda v: train_variant(root, v, runtime, commit, runner, protected, plan), evaluate)
-            n1.write_comparison(q, root, results)
+            write_comparison(q, root, results)
             report = q.base.read_json(root / 'paired_comparison.json')
             report['evaluation_protocol'] = PROTOCOL
             q.jobs.write_json(root / 'paired_comparison.json', report)

@@ -74,7 +74,7 @@ def test_joint_ratio_can_clip_when_each_token_ratio_does_not():
     assert (grads[1] == 0).all()
 
 
-@pytest.mark.parametrize('mode', ['adv_only', 'joint_tokenmean'])
+@pytest.mark.parametrize('mode', ['adv_only', 'joint_tokenmean', 'token_scale'])
 def test_masked_nonfinite_inputs_and_empty_rows(mode):
     old = torch.tensor([[0., float('-inf'), 0.], [float('-inf')]*3])
     cur = old.clone().requires_grad_()
@@ -94,3 +94,37 @@ def test_unknown_mode_and_incompatible_window_fail_closed():
         compute_policy_loss(values, values, values, mask, cliprange=.2,
             opd_block_size=3, opd_block_advantage_mode='mean',
             opd_block_ablation='adv_only', opd_window_mode='sliding')
+
+
+@pytest.mark.parametrize('at_old', [False, True])
+def test_scale_only_matches_token_loss_with_valid_block_counts(at_old):
+    old = torch.zeros((2, 5), dtype=torch.float64, requires_grad=True)
+    cur = torch.tensor([[.3, -.5, .1, .6, -.2], [-.2, .4, -.3, .2, -.1]],
+                       dtype=torch.float64) * (0 if at_old else 1)
+    cur.requires_grad_()
+    adv = torch.tensor([[1., -2., 4., -5., 9.], [-2., 1., -3., 7., 8.]],
+                       dtype=torch.float64, requires_grad=True)
+    mask = torch.tensor([[1., 1., 1., 1., 0.], [1., 0., 1., 1., 1.]])
+    counts = torch.tensor([[3., 3., 3., 1., 1.], [2., 2., 2., 2., 2.]])
+    expected = compute_policy_loss(old.detach(), cur, adv.detach() * counts, mask,
+                                   cliprange=.2, opd_block_size=1)[0]
+    actual = objective(cur, old, adv, mask, 'token_scale')
+    torch.testing.assert_close(actual, expected)
+    torch.testing.assert_close(torch.autograd.grad(actual, cur, retain_graph=True)[0],
+                               torch.autograd.grad(expected, cur, retain_graph=True)[0])
+    actual.backward()
+    assert old.grad is None and adv.grad is None
+    assert (cur.grad[~mask.bool()] == 0).all()
+
+
+def test_scale_only_does_not_broadcast_advantages():
+    old = torch.zeros((1, 3))
+    adv = torch.tensor([[3., -1., 1.]])
+    mask = torch.ones_like(old)
+    gradients = {}
+    for mode in ('adv_only', 'token_scale'):
+        cur = old.clone().requires_grad_()
+        objective(cur, old, adv, mask, mode).backward()
+        gradients[mode] = cur.grad
+    assert gradients['adv_only'][0, 1] < 0
+    assert gradients['token_scale'][0, 1] > 0

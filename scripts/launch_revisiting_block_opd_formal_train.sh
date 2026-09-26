@@ -47,6 +47,7 @@ case "${VARIANT}" in
   block3_mean) ;;
   adv3) OPD_BLOCK_ABLATION=adv_only ;;
   joint3) OPD_BLOCK_ABLATION=joint_tokenmean ;;
+  scale3) OPD_BLOCK_ABLATION=token_scale ;;
   block5_mean) OPD_BLOCK_SIZE=5 ;;
   block10_mean) OPD_BLOCK_SIZE=10 ;;
   block3_mixed_lam05) OPD_BLOCK_ADVANTAGE_MODE=mixed ;;

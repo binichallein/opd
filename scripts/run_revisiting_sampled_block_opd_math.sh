@@ -137,6 +137,12 @@ case "${VARIANT}" in
     block_mix_lambda=0.5
     block_ablation=joint_tokenmean
     ;;
+  scale3)
+    block_size=3
+    block_mode=mean
+    block_mix_lambda=0.5
+    block_ablation=token_scale
+    ;;
   random3|sliding3)
     block_size=3
     block_mode=mean

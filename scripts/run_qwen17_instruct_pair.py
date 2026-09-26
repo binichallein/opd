@@ -213,7 +213,7 @@ def preflight(runtime):
     return protected
 
 
-def common_preflight(runtime):
+def common_preflight(runtime, loss_overrides=None):
     protected = {}
     for path in [base.DATA/'train.parquet',base.DATA/'test.parquet',base.DATA/'manifest.json',base.GRADER,
                  *[base.DATA/'eval_jsonl'/f'{task}.jsonl' for task in jobs.TASKS]]:
@@ -228,8 +228,16 @@ def common_preflight(runtime):
                  'external/revisiting_opd/verl/trainer/ppo/core_algos.py',
                  'external/revisiting_opd/verl/workers/actor/dp_actor.py',
                  'external/revisiting_opd/verl/workers/fsdp_workers.py'):
-        if assets.sha256(runtime/name)!=assets.sha256(LOSS_REFERENCE/name):
+        actual, reference = assets.sha256(runtime/name), assets.sha256(LOSS_REFERENCE/name)
+        override = (loss_overrides or {}).get(name)
+        if override is not None:
+            if [reference, actual] != list(override):
+                raise ValueError(f'Unapproved ablation source hashes: {name}')
+        elif actual != reference:
             raise ValueError(f'Unexpected historical loss/diagnostics change: {name}')
+    for name, (reference, actual) in (loss_overrides or {}).items():
+        if assets.sha256(LOSS_REFERENCE/name) != reference or assets.sha256(runtime/name) != actual:
+            raise ValueError(f'Unapproved ablation source hashes: {name}')
     return protected
 
 
