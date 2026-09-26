@@ -1,5 +1,20 @@
 # Agent Instructions
 
+## Latest: Both Queues Complete (2026-09-26 13:56 Beijing)
+
+- ACP connectivity restored by user; same verified Worker/host key. Read-only
+  verification confirms original queue completed12:02:12 Beijing without a
+  restart: both100-step arms, all8 full n8 evaluations, full states and6400
+  training rollouts accepted. All4 H100 idle. Do NOT relaunch completed jobs.
+- All25/50/75/100 checkpoints retained on AFS; both arms' heatmaps generated.
+  Final results and per-arm audits/figures are backed up locally under
+  `results/qwen17_instruct_n1_acp_20260926/`. Numerical/paired-input audits pass.
+- ACP Step100 Avg@8 Token/Block3: MATH50072.60/71.975, AIME2414.1667/15.4167,
+  AIME2511.6667/12.0833, AMC2343.9759/42.4699 (percent). Results are mixed;
+  do not claim uniform improvement, significance, or merge benchmarks.
+- ml2 was already fully complete10:47:43 Beijing; all4 GPUs idle at last check.
+  The connection-failure observation below is historical and now resolved.
+
 ## Status Check 2026-09-26 13:51 Beijing
 
 - ml2 historical17 n1/save25 queue COMPLETE at10:47:43 Beijing. Both methods
