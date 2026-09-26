@@ -1,0 +1,52 @@
+\paragraph{模型与训练数据。}
+我们在Qwen、DeepSeek和Llama师生对上研究推理迁移。历史对照包括公开Qwen3-4B-Base-GRPO教师
+指导Qwen3-1.7B-Base和Qwen3-0.6B-Base学生、DeepSeek/JustRL 1.5B设置，以及Llama-3.2-3B-Instruct指导
+Llama-3.2-1B-Instruct。另有两组完整留存的对照：公开GRPO教师指导Qwen3-4B-Base，
+以及官方Qwen3-8B指导Qwen3-1.7B指令模型\citep{qwen3,llama3,llama32}。
+官方指令模型的仓库名称没有“Instruct”字样。模型身份与历史协议版本见
+附录\ref{app:config}、\ref{app:history}和\ref{app:instruct}。
+
+两组完整留存的对照共用DAPO衍生训练池\citep{dapo}：17,917行题答序列重复100次，
+包含17,237个精确唯一题面。训练使用题目生成学生响应，不加入结果奖励项。
+4B Base每组训练共遇到800次prompt、783个不同题面。
+回顾性重叠审计发现，实际输入中有一道规范化字符串匹配的MATH500题，两组各遇到一次；
+完整训练池审计和独立的496题敏感性分析见附录\ref{app:config}。
+
+\paragraph{基线与实现。}
+基线采用Revisiting OPD的sampled-token实现\citep{revisiting}。
+每组成对实验中，Token和Block3从相同原始学生分别初始化，共享教师、数据流、优化器、提示与评测。
+两组完整留存的对照采用seed21、200步、每步4题且每题8条响应、学习率$2\times10^{-6}$，
+每次更新1个PPO epoch。每组共6,400条轨迹，在Step50/100/150/200保存完整状态。
+生成使用temperature1.0、top-$p=0.9$、2,048-token输入上限和16,384-token响应上限。
+请求级seed由step及样本身份分别派生，输入配对检查覆盖全部6,400条轨迹。
+micro-batch、精度和裁剪设置详见附录\ref{app:config}。
+
+\paragraph{提示设置。}
+4B Base使用裸题目、boxed答案指令与\texttt{Solution:}后缀，不包含ChatML。
+官方指令版保留Qwen原生chat与同样的答案指令，显式关闭thinking，不添加\texttt{Solution:}。
+这两组各自保持训练与评测输入一致，并核验真实token ID。
+旧实验保留原协议，包括历史1.7B训练与评测的提示差异。
+精确提示字符串和停止token见附录\ref{app:config}、\ref{app:probes}和\ref{app:instruct}；
+跨模型对比不作为只改变prompt的消融。
+
+\paragraph{评测。}
+两组完整留存的对照采用下述统一评测设置；历史实验保留各自注明的协议。
+MATH500（500题）、AIME24（30题）、AIME25（30题）和AMC23（83题）分别报告。
+每个模型视图每题生成8条响应，共5,144条，采用seed21--28、temperature1.0、top-$p=0.9$
+与16,384-token响应上限。两种方法使用相同固定版本的历史数学grader。
+令$c_i$为第$i$题答对的响应数，则
+\begin{equation}
+ \avg=\frac{1}{N}\sum_{i=1}^N\frac{c_i}{8},\qquad
+ \pass=\frac{1}{N}\sum_{i=1}^N\mathbf{1}[c_i>0].
+ \label{eq:metrics}
+\end{equation}
+二者分别衡量平均采样准确率与八次尝试覆盖率，而非多数投票。
+本文报告计划内Step200终点及全部保存权重，不为每种方法单独挑选最优checkpoint。
+这一终点选择是回顾性的，并非预注册。95\%区间按配对题目重采样，条件固定为已训练权重，
+未作多重比较校正，也不估计训练seed之间的波动。8次评测采样不等于8次训练重复。
+
+\paragraph{训练诊断。}
+我们记录师生熵、熵差、top-16重合率与重合概率质量、重合token advantage、策略损失、
+裁剪前梯度范数、响应长度及触及上限比例。符号分歧和advantage重分配刻画共享对局部反馈的影响。
+缺失boxed标记与引擎length停止分别记录，不与正确性混同。
+指标定义和每步位置图见附录\ref{app:diagnostics}和\ref{app:positionfigures}。

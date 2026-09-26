@@ -1,6 +1,46 @@
-\paragraph{4B Base终点不支持普适优势。}
-在 Step200，Block3 相对 Token 的 Avg@8 在 MATH500、AIME24、AIME25 和 AMC23 上依次相差 $-0.52$、$-2.92$、$+0.42$ 和 $-3.01$ 个百分点。这些是各 benchmark 的描述性差异，而非四次独立的训练重复。所有逐项 95\% 配对题目区间均跨过零；本实验既没有在统计上明确区分出优势，也没有证明等效。Pass@8 提供互补的观察：AIME24 平均成功率下降，但 Block3 至少答对一次的题数增加一题（33.33\% 对 30.00\%）。不能把两种指标合并为单一的“提升”结论。
+\paragraph{不同师生对上的推理迁移。}
+表~\ref{tab:historyendpoints}汇总历史Step200对照。
+Qwen3-1.7B-Base学生与公开GRPO教师配对时，Block3的四项Avg@8均高于Token：
+MATH500从45.85升至54.75，AIME24从5.42升至8.75，AIME25从2.50升至5.42，
+AMC23从21.84升至27.26。这些观察推动我们进一步研究超出逐token更新的局部反馈共享。
+DeepSeek/JustRL 1.5B对照的终点差值也为正，MATH500和AMC23的变化小于AIME。
+
+同一表格也表明，这一模式并非适用于所有师生对。
+历史非thinking Qwen3-0.6B-Base的Block3几乎失去全部被测数学准确率，而Token相对原始学生有所提升；
+Llama同样更有利于Token。
+这些比较保留原有协议，教师适配、prompt、seed处理与实现版本存在差异，
+不能据此分离学生规模的因果作用。
+附录\ref{app:history}给出全部checkpoint结果及实验目录。
+
+\begin{table}[htbp]
+\centering\small
+\caption{历史Step200 Avg@8（\%）。仅在每个学生分层内比较，保留原始prompt和协议；这些不是两组匹配对照的额外训练seed。}
+\label{tab:historyendpoints}
+\input{generated/history_endpoints}
+\end{table}
+
+\paragraph{官方Qwen3-8B到1.7B指令版。}
+表~\ref{tab:qwen17endpoint}在原生非thinking chat、训推输入一致的设置下比较两种方法。
+相对Token，Block3的Step200 Avg@8在MATH500、AIME24、AIME25和AMC23上分别高
+$+0.10$、$+2.50$、$+0.83$和$+0.30$个百分点。
+两种方法的四项Avg@8均超过原始学生。
+方法差值的逐项95\%配对题目区间均包含零，因此正向点估计尚不能在该端点上明确区分统计优势。
+
+Pass@8区分平均成功率与题目覆盖。
+Block3相对Token的差值分别为$+0.20$、$-6.67$、$0.00$和$-1.20$个百分点，
+且两种方法的MATH500覆盖率均低于原始学生的91.20\%。
+因此，平均准确率提高可以与八次尝试覆盖率下降同时出现。
+附录\ref{app:instruct}报告原始学生、全部八个训练权重和对应行为指标。
+\input{\qweninstructresults/qwen17_step200_zh}
+
+\paragraph{Qwen3-4B Base与公开GRPO教师。}
+采用匹配completion提示的对照呈现不同的终点模式（表~\ref{tab:qwen4endpoint}）。
+Step200时，Block3的Avg@8差值依次为$-0.52$、$-2.92$、$+0.42$和$-3.01$个百分点。
+Token在三项任务上更高，但逐项95\%配对题目区间均跨零，既未确立优越性，也未证明等效。
+AIME24中，Block3的Avg@8更低，却有多一道题至少答对一次，Pass@8为33.33\%，Token为30.00\%。
+综合这些成对结果，信用粒度会影响学习轨迹，其收益与师生设置及所考察的指标有关。
 \input{\qwenresults/qwen4_step200_zh}
+
 \IfFileExists{\qwenfigures/qwen4_accuracy.pdf}{%
 \begin{figure}[t]
 \centering
@@ -9,27 +49,3 @@
 \label{fig:qwen4accuracy}
 \end{figure}
 }{}
-
-\paragraph{中间权重的收益随checkpoint反转。}
-终点不能概括整条训练轨迹。Step150时，Block3的MATH500 Avg@8提高1.85个百分点（逐点区间$[0.70,3.00]$），AIME24提高2.92个百分点（$[0.42,5.83]$），但AIME25下降4.17个百分点。Step100的MATH500差值则为$-1.40$个百分点（$[-2.57,-0.25]$）；Step50仅AMC23的Avg@8差值为正。这些条件化逐点区间未校正checkpoint/任务选择，也未重复训练seed。结果体现的是checkpoint依赖，而不是稳定收益或已经验证的最佳权重选择规则。
-
-\paragraph{新增官方指令版具有小幅平均准确率正差值。}
-Qwen3-8B教Qwen3-1.7B时，Block3的Step200 Avg@8差值为$+0.10$、$+2.50$、$+0.83$和$+0.30$个百分点（表\ref{tab:qwen17endpoint}），但逐点95\%配对题目区间均包含零。Pass@8差值为$+0.20$、$-6.67$、$0.00$和$-1.20$个百分点，平均准确率更高不意味着八次尝试覆盖率全面更高。两方法的四项Avg@8都超过原始学生，但MATH500 Pass@8均低于其91.20\%。权重间也有反转：Step50三项Avg@8有利于Token，Step150的AIME24也有利于Token。附录\ref{app:instruct}保留全部9个模型视图和行为指标。本组是独立的匹配分层，不是旧1.7B实验的新seed，也不能证明模型规模或提示导致了差异。
-\input{\qweninstructresults/qwen17_step200_zh}
-
-\paragraph{历史正向结果与迁移失败并存。}
-表~\ref{tab:historyendpoints} 在各自历史协议内列出 Step200 终点。1.7B 对照的四项 Avg@8 均明显有利于 Block3。1.5B DeepSeek/JustRL 设置在 MATH500 与 AMC23 上的差异较小，在 AIME 上较大，而不是一致的负向迁移。相反，非 thinking 的 0.6B Block3 模型几乎失去全部被测数学准确率，其 Token 对照却相对初始学生获得提升。Llama 师生对也更有利于 Token。模型规模本身不足以解释这种现象：不同分层的教师适配、初始策略、提示协议、随机种子处理和实现版本并不完全相同。这些实验支持“效果具有条件性”，而不支持因果性的规模规律。
-
-\paragraph{更长块与数值健康。}
-历史 Block10 在记录的优化器诊断仍为有限值时，出现严重生成退化与 Step200 失败。但其最大裁剪前梯度范数仍很大（867.50 和 865.21）；“有限”不能解读为“正常”。旧内置 grader 在四项任务均记录零分，但其 AMC23 兼容性问题使这个零分不能独立证明没有对应能力（附录~\ref{app:history}）。其余证据仍然排除了把“没有 NaN 或 Inf 梯度”作为充分验收条件的做法。它没有分离联合 ratio 裁剪、信用重分配、提示或 rollout 漂移各自的因果作用。随机偏移块和滑动窗口也曾在多个权重上评测。本文保留全部结果，而不是从缺少全新配对对照的自适应搜索中挑出一个“获胜窗口”。
-
-\paragraph{提示问题可以早于算法干预。}
-最初的 4B 尝试在首次优化器更新之前，就出现明显重复和频繁触及长度上限的行为，因而不能归因于 Block3 训练。修复后的对照使用不含 ChatML 的 completion 提示与独立的请求级种子；由于两项修复共同引入，这不是移除聊天边界符的单因素效应估计。不过，两种方法使用了同一套修复后协议。训练触及上限的比例分别为 Token 263/6,400（4.11\%）与 Block3 247/6,400（3.86\%）。这一训练统计量的微小差异，不构成回答格式或 benchmark 准确率普遍改善的证据。评测阶段的格式与长度终止计数单独保留。
-
-\paragraph{发生信用分歧，但未出现Block10式坍塌。}
-图\ref{fig:qwen4training}显示，当前4B对照在训练后期保持低熵，梯度范数大体降低。
-200个更新摘要中，Block3符号分歧率的中位数为15.57\%，按局部advantage绝对值加权后为6.68\%。
-相对重分配幅度的中位数为1.148；它不是概率，可以大于一。
-因此，非零重分配可与没有历史Block10式严重退化的行为同时出现，不能单独诊断坍塌。
-Token的块长为一，其重分配指标按定义为零，不是更好信用分配的独立证据。
-附录\ref{app:positionfigures}提供每个训练步的位置图及覆盖限制。

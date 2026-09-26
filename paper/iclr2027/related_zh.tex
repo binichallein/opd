@@ -1,0 +1,21 @@
+\paragraph{在线蒸馏与自蒸馏。}
+GKD将语言模型蒸馏推广至学习者生成的序列与多种散度\citep{gkd}，
+延续了DAgger在学习者状态上提供监督的思路\citep{dagger}。
+MiniLLM研究包含策略梯度与未来奖励信用的reverse-KL蒸馏\citep{minillm}。
+Revisiting OPD分析sampled-token失败模式及修复，并提供本文的基线实现\citep{revisiting}。
+OPSD让同一模型在特权解答条件下形成教师，在学生生成的轨迹上监督不具特权信息的学生\citep{opsd}。
+本文保留独立冻结教师，研究不同问题：如何在输出位置之间共享已有的采样反馈？
+
+\paragraph{教师反馈的选择与加权。}
+Rethinking OPD分析师生兼容性和训练动力学，为本文的熵与重合诊断提供依据\citep{rethinking}。
+FiRe-OPD结合轨迹过滤与token加权，TIP选择有信息量的token监督，
+R2-OPD依据推理进展估计过滤span\citep{fireopd,tip,r2opd}。
+这些方法调整哪些反馈被强调；Block3则将相邻师生log ratio聚合成共享信号。
+固定块不需要推理进展标签或额外验证器，但所得信号可能混合彼此冲突的局部偏好。
+
+\paragraph{块级与序列级策略更新。}
+Blockwise policy-drift gating汇总新旧学生的对数概率变化，构造停止梯度、均值归一化的权重，
+但保留token目标\citep{bpdg}。本文聚合的是教师反馈，同时改变目标中的重要性比率。
+GSPO使用长度归一化的序列ratio\citep{gspo}；本文block ratio则是未作几何均值归一化的token ratio乘积。
+因此，贡献在于具体的局部信用共享更新及其分析，而不是泛称首次使用block或非token策略比率。
+实验对照为sampled-token OPD，并未实现上述全部方法进行直接比较。

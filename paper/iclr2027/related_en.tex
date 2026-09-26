@@ -1,0 +1,8 @@
+\paragraph{On-policy and self-distillation.}
+GKD supports learner-generated sequences and multiple divergences \citep{gkd}, following learner-state supervision in DAgger \citep{dagger}. MiniLLM incorporates reverse KL and future-reward credit \citep{minillm}; Revisiting OPD analyzes sampled-token failures and supplies our baseline \citep{revisiting}. OPSD uses privileged solutions to construct a self-teacher \citep{opsd}. We retain an external teacher and study how its sampled feedback is shared across positions.
+
+\paragraph{Selecting and weighting teacher feedback.}
+Rethinking OPD motivates our compatibility diagnostics \citep{rethinking}. FiRe-OPD filters trajectories and weights tokens, TIP selects informative tokens, and R2-OPD filters spans by reasoning progress \citep{fireopd,tip,r2opd}. Block3 instead pools adjacent teacher--student log ratios, without progress labels or an extra verifier, potentially mixing conflicting preferences.
+
+\paragraph{Blockwise and sequence-level policy updates.}
+Blockwise policy-drift gating uses detached, mean-normalized old--current student drift weights with a token objective \citep{bpdg}. Block3 aggregates teacher feedback and changes the ratio itself. Unlike GSPO's length-normalized sequence ratio \citep{gspo}, it multiplies token ratios without geometric-mean normalization. Our contribution is this specified credit-sharing update and its analysis, not the generic use of blocks. Experiments compare against sampled-token OPD, not all these methods.

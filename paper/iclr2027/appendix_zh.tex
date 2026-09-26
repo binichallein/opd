@@ -1,3 +1,7 @@
+\section{局限与后续方向}
+\label{sec:limits}
+\input{limitations_zh}
+
 \section{补充推导}
 \label{app:proofs}
 \paragraph{实际归一化。}
@@ -101,12 +105,7 @@ PPO裁剪可以处于激活状态，因为它已包含在每个$L_r$内部；之
 \section{历史证据及协议边界}
 \label{app:history}
 \input{history_notes_zh}
-\begin{table}[htbp]
-\centering\small
-\caption{历史Step200 Avg@8（\%）。仅同一学生分层内部直接比较，保留原始提示和协议；它们不是任一匹配对照的额外训练seed。}
-\label{tab:historyendpoints}
-\input{generated/history_endpoints}
-\end{table}
+历史终点对比见表~\ref{tab:historyendpoints}，以下图表保留全部checkpoint变化。
 \begin{figure}[p]
 \centering
 \includegraphics[width=\linewidth]{figures/history_20260921/history_avg_at_8.pdf}

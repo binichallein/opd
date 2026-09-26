@@ -10,76 +10,44 @@
 \end{figure}
 
 \section{Introduction}
-Transferring reasoning behavior from a capable teacher is an important approach to improving language models. On-policy distillation (OPD) lets the student generate its own responses and receive teacher feedback at the prefixes it actually visits \citep{gkd,minillm}. This brings supervision to the states induced by the learner, addressing the mismatch that can arise when training only on expert demonstrations \citep{dagger}. Teacher probabilities additionally provide feedback throughout a response, rather than only at its final answer.
+Transferring reasoning behavior from a capable teacher is an important route to improving language models. On-policy distillation (OPD) trains a student on its own responses, with teacher feedback at the prefixes the student actually visits \citep{gkd,minillm}. This brings supervision to learner-induced states rather than relying only on expert demonstrations \citep{dagger}. Teacher probabilities provide a dense learning signal throughout the response, making OPD a useful setting for studying how reasoning behavior is acquired during post-training.
 
-An important choice remains: how should this feedback be assigned to the generated text? In sampled-token OPD, each token receives its own teacher--student log-probability difference \citep{revisiting}. This gives dense supervision, but density alone does not determine the appropriate unit of credit assignment. We ask: \textbf{can a short block of adjacent tokens serve as a useful feedback unit for on-policy distillation?}
+The availability of dense feedback leaves a central design choice open: what should be the unit of credit assignment? A common sampled-token implementation assigns each token its own teacher--student log-probability difference \citep{revisiting}. This treats feedback at neighboring positions separately, even when several tokens jointly express a short mathematical operation or a transition in a solution. We ask: \textbf{can sharing teacher feedback across a short token block improve on-policy reasoning distillation?}
 
-Our intuition is that parts of a local reasoning decision, such as a short mathematical expression or transition, may span several tokens. Their individual probability differences can reflect both the underlying choice and its particular textual realization. Sharing a local signal could reduce sensitivity to such fluctuations while retaining finer granularity than a response-level reward.
+Our intuition is that a local decision can have several textual components. Their individual probability differences may fluctuate with the realization of the expression, while their aggregate can capture a shared preference. A short block provides an intermediate unit between a single token and a complete response: it allows neighboring choices to learn together while retaining local supervision.
 
-Motivated by this perspective, we introduce \method{} (Figure~\ref{fig:overview}). The student samples a response, and a frozen teacher scores the same prefixes. We partition the response into disjoint three-token blocks, average the distillation advantages within each block, and use the shared advantage with a joint block importance ratio and a valid-length-weighted objective. This reuses the existing teacher scores without adding a reward model or process annotations. Training still collects complete trajectories before each update.
+We introduce \method{}, a block-level update that reuses the feedback already produced by an OPD teacher. After the student generates a response, we divide it into disjoint three-token blocks, average the distillation advantages within each block, and optimize a clipped objective with a joint block importance ratio and valid-length weighting (Figure~\ref{fig:overview}). The procedure requires no additional reward model or process annotations. It changes how teacher scores guide the update, while retaining full-response sampling and the same teacher-scoring pipeline.
 
-We evaluate on MATH500, AIME24, AIME25 and AMC23, reporting each benchmark separately. Within each matched comparison, the two methods share initialization, data, prompting and evaluation settings. The historical Qwen3-1.7B comparison improves Step200 Avg@8 by 8.90 points on MATH500 and 5.42 on AMC23; the official Qwen3-8B-to-1.7B Instruct pair has positive Step200 differences on all four benchmarks.
+We evaluate on MATH500, AIME24, AIME25 and AMC23, with matched Token OPD controls and checkpoint-level reporting. In the historical Qwen3-1.7B comparison, Block3 improves Step200 Avg@8 by 8.90 percentage points on MATH500 and 5.42 on AMC23. The official Qwen3-8B-to-1.7B Instruct comparison also yields positive Step200 Avg@8 differences on all four benchmarks. To understand the update beyond endpoint scores, we connect its algebraic structure to training trajectories, including entropy, token overlap, gradient norms and local credit redistribution.
 
-Our contributions are threefold. First, we formulate a block-level OPD update that combines local advantage sharing with a joint importance ratio. Second, we derive its cross-token credit terms and gradient scale, and give conditions under which averaging improves a local signal estimate. Third, we provide checkpoint-level comparisons and trajectory diagnostics covering entropy, token overlap, credit redistribution and generation behavior. Together, these analyses relate the method's observed behavior to its optimization structure.
+Our contributions are threefold. We formulate a local block-level OPD objective combining shared teacher feedback and a joint importance ratio. We derive its cross-token credit terms, gradient scale and clipping behavior, and characterize when local averaging improves a signal estimate. We then evaluate reasoning performance across teacher--student pairs and saved checkpoints, using trajectory diagnostics to connect the observed results to credit allocation and generation behavior.
 
-\section{Related Work}
-\label{sec:related}
-GKD trains on student-generated sequences and permits multiple choices of divergence; on-policy sampling therefore does not uniquely require reverse KL \citep{gkd}. MiniLLM studies reverse-KL-based distillation for language generation \citep{minillm}. Our baseline follows the sampled-token OPD implementation in Revisiting OPD, which studies weaknesses of local distillation signals and practical corrections \citep{revisiting}. We do not equate this baseline with an unbiased estimator of the full sequence-level KL gradient.
+\section{Background}
+\label{sec:background}
+\input{background_en}
 
-Rethinking OPD examines teacher--student compatibility and training dynamics, motivating our entropy, top-token overlap and position diagnostics \citep{rethinking}. Blockwise policy-drift gating aggregates old--current student log-probability shifts into detached, mean-normalized weights while retaining the token objective \citep{bpdg}. FiRe-OPD filters trajectories and reweights tokens; TIP selects informative token supervision \citep{fireopd,tip}. Our intervention instead shares teacher feedback and changes the PPO ratio itself. R2-OPD filters spans using independent reasoning-progress estimates \citep{r2opd}; GSPO uses a length-normalized sequence ratio, unlike our product of token ratios \citep{gspo}. These precedents preclude a generic claim of first introducing blockwise, selective, or multi-step OPD. We have not benchmarked their best recipes head to head.
-
-\section{Local Credit Assignment}
+\section{Methods}
 \label{sec:method}
 \input{method_en}
 
-\section{Experimental Protocol}
+\section{Experiments}
+We organize the experiments around three questions: how block-level updates affect mathematical reasoning relative to sampled-token OPD; how the comparison changes across teacher--student pairs and checkpoints; and what trajectory diagnostics reveal about credit sharing, block length and generation quality.
+
+\subsection{Experimental Setup}
 \label{sec:protocol}
-\paragraph{Evidence units.}
-We treat each model pair, prompt version, data pool, grader, and training seed as a separate experimental stratum. Within a stratum, Token and Block3 start independently from the same original student. They do not continue from each other's weights. For each evaluated checkpoint, we report the four mathematical benchmarks separately. Results from older small evaluations and different grading implementations are exploratory evidence, not extra repetitions of the main comparison. Appendix~\ref{app:history} inventories all located experimental series, including interrupted attempts and missing evidence.
+\input{protocol_en}
 
-\paragraph{Matched 4B Base training.}
-The student is Qwen3-4B-Base, not the similarly named instruction-tuned model \citep{qwen3}. The teacher is the public Qwen3-4B-Base-GRPO checkpoint identified in Appendix~\ref{app:config}. Both arms retain the same DAPO-derived pool and frozen implementation. The local parquet repeats a 17,917-row question--answer sequence 100 times, totaling 1,791,700 rows with 17,237 exact unique question strings. Each of 200 updates uses four prompts and eight responses per prompt: 800 prompt occurrences, 783 exact distinct questions and 6,400 trajectories per arm. We use training seed 21, learning rate $2\times10^{-6}$, one PPO epoch per update, and four A100 GPUs. Complete states are retained at Steps 50, 100, 150, and 200. One normalized-string MATH500 overlap is encountered once per arm; Appendix~\ref{app:config} discloses pool/exposure audits and a separate sensitivity analysis.
-
-Both arms use temperature 1.0, top-$p=0.9$, a 2,048-token prompt limit and a 16,384-token response cap. The generation seed is derived per request from the global seed, step, source identity, sample index and turn; it is not reset to the same seed for all eight responses. A post-training audit verifies all 6,400 paired input identities and sampling settings. Equal input streams do not imply equal later responses: diverging policies are supposed to generate different on-policy data. Training, generation and teacher-log-probability micro-batches are specified separately in Appendix~\ref{app:config}.
-
-\paragraph{Prompt control.}
-The current Base-model comparison bypasses ChatML. Training and evaluation use exactly the same function:
-\begin{quote}\small
-\texttt{[question]}\\
-\texttt{Please solve the problem step by step and put the final answer in}\ \verb|\boxed{}.|\\
-\texttt{Solution:}
-\end{quote}
-Blank lines separate these components, with a final newline after \texttt{Solution:}. Thinking is explicitly disabled; ordinary step-by-step reasoning remains permitted. Input token IDs, rather than only prompt text, are checked after checkpoint merging. The EOS token is 151643, with no additional stop-token IDs. Older Qwen and Llama experiments deliberately retain their historical prompting and are labeled accordingly, rather than silently reclassified as this matched completion protocol.
-
-\paragraph{Evaluation and endpoints.}
-The additional official Instruct pair retains the same data, optimizer settings, seed21, 200 updates and four checkpoints. Its prompt has the same boxed-answer instruction but uses native Qwen chat, explicitly disables thinking, and omits \texttt{Solution:}. EOS is 151645 with stop IDs $\{151645,151643\}$. The original student is also evaluated. Appendix~\ref{app:instruct} specifies its model revisions, input checks and recovery history; it is not a repeat of the older 1.7B/public-GRPO stratum.
-
-Each checkpoint is evaluated on MATH500 (500 questions), AIME24 (30), AIME25 (30), and AMC23 (83), for 643 questions and 5,144 responses. Evaluation uses eight sampling seeds, 21 through 28, temperature 1.0, top-$p=0.9$, and the same 16,384-token cap for both arms. Four independent tensor-parallel-size-one workers run the inference workload. We retain the pinned historical mathematical grader and every raw response, input token sequence, sampling seed and engine stopping reason. The inference memory fraction is 0.9, distinct from the 0.6 training rollout setting. CPU checkpoint merging does not modify the training weights.
-
-For question $i$, let $c_i\in\{0,\ldots,8\}$ count correctly graded responses. We compute
-\begin{equation}
- \avg=\frac{1}{N}\sum_{i=1}^N\frac{c_i}{8},\qquad
- \pass=\frac{1}{N}\sum_{i=1}^N\mathbf{1}[c_i>0].
- \label{eq:metrics}
-\end{equation}
-The first measures mean sampled accuracy; the second measures success with eight attempts. Neither is a vote over eight answers. We use the scheduled final Step200 as the primary reporting endpoint, a retrospective reporting choice rather than a preregistration. Intermediate checkpoints characterize the trajectory; none is selected as a method's best result. We do not aggregate the four benchmarks. Where reported, intervals resample paired questions within a benchmark, conditional on the trained checkpoints. They do not measure variation across independent training seeds.
-
-\paragraph{Behavioral and numerical diagnostics.}
-We retain student and teacher entropy, signed and absolute entropy differences, top-16 overlap and overlap probability mass, overlap-token advantage, pre-clipping gradient norm, policy-gradient loss, response length and cap incidence. Position heatmaps summarize on-policy prefixes visited during training, not a fixed evaluation set. Block-specific sign disagreement and advantage redistribution statistics supplement these metrics. Missing literal \verb|\boxed| markers and engine length stops are reported separately: neither is synonymous with mathematical error, and the absence of a marker is only a specific format-failure indicator. Definitions and mask handling are given in Appendix~\ref{app:diagnostics}.
-
-\section{Results}
+\subsection{Main Results}
 \label{sec:results}
 \input{results_en}
 
-\section{Discussion and Limitations}
-\label{sec:limits}
-Local aggregation presents a bias--variance trade-off, but the historical implementation presents more than one such change at once. A block shares rewards, multiplies importance ratios, and changes the reduction denominator. The gradient calculation in Section~\ref{sec:method} rules out attributing every gain solely to semantic agreement between adjacent tokens. A decisive follow-up would hold the token ratio and token normalization fixed while changing only the averaging operator, then separately vary ratio granularity and learning-rate scale. We have not run that complete factorial study and do not report it as established evidence.
+\subsection{Analysis and Discussion}
+\label{sec:analysis}
+\input{analysis_en}
 
-The evidence is also limited by training replication. A single trained seed with thousands of evaluation responses is still one optimization trajectory; eight evaluation samples do not create eight independent training runs. AIME results have especially coarse question-level resolution: one additional solved question changes Pass@8 by 3.33 percentage points. Window variants, checkpoints and pilot weights were explored adaptively. Their best observed scores cannot be interpreted as unbiased estimates of a selected method's advantage.
-
-Prompt diagnostics reveal another limitation of transferring an implementation across models. Base and instruction-tuned models need not react similarly to role delimiters or thinking instructions. A difference present before the first optimizer update cannot have been caused by the block loss. Conversely, a short prompt probe does not establish that the new protocol eliminates repetition throughout training. We therefore keep prompt validation, optimizer health, generation quality and benchmark correctness as distinct checks. Position-wise entropy is useful for locating changes, but on-policy occupancy changes across training, so such heatmaps alone do not identify a causal mechanism.
-
-Finally, these are comparisons against a sampled-token baseline, not every recent OPD method. We establish neither efficiency gains, reduced teacher computation nor universal format correctness. The 4B completion table supports method-to-method differences, without a matched original-student result. The new Instruct pair includes that control, but its shared data pool is not an independent dataset replication. More training seeds, component ablations and new task distributions remain necessary.
+\section{Related Work}
+\label{sec:related}
+\input{related_en}
 
 \section{Conclusion}
 \input{conclusion_en}
@@ -87,10 +55,10 @@ Finally, these are comparisons against a sampled-token baseline, not every recen
 \label{mainend}
 
 \section*{Reproducibility Statement}
-The loss definitions and derivation appear in Section~\ref{sec:method} and Appendix~\ref{app:proofs}. Appendices~\ref{app:config} and~\ref{app:instruct} record the paired protocols; Appendix~\ref{app:history} distinguishes historical versions and evidence gaps. Both matched pairs retain complete states, all trajectories and input checks. Tables and figures use provenance-linked summaries. This does not imply equivalent retention for every pilot or an already public anonymous artifact release.
+Section~\ref{sec:method} and Appendix~\ref{app:proofs} specify the objectives and derivations. Appendices~\ref{app:config} and~\ref{app:instruct} give model identities, training and evaluation settings, data checks and retention details; Appendix~\ref{app:history} documents the historical experiments. Complete states, raw trajectories and input checks are retained for the two fully archived comparisons. Tables and figures are generated from provenance-linked summaries. The accompanying manuscript source contains the rendered-result inputs; it is not a substitute for a complete anonymous release of the experimental code and data.
 
 \section*{Ethics Statement}
-The study uses mathematical reasoning benchmarks and pretrained language models rather than human-subject data collection. Better imitation of a teacher does not by itself establish truthfulness or safety. We retain negative outcomes and avoid converting formatting success, finite gradients or benchmark-specific gains into general capability claims. Any distributed artifacts must respect the upstream model and dataset licenses and omit credentials, identifying infrastructure paths and private checkpoints.
+This study uses mathematical reasoning benchmarks and pretrained language models, without collecting human-subject data. Teacher imitation does not itself establish truthfulness or safety. We report both improvements and degraded outcomes, and distinguish mathematical accuracy from formatting and numerical diagnostics. Distribution of artifacts must respect upstream model and dataset licenses and exclude credentials, private model weights and identifying infrastructure information.
 
 \section*{AI Use Statement}
-Generative AI assistants were used to discuss and refine hypotheses; assist with experimental design, mathematical arguments and implementation; debug and monitor experiments; search and summarize related work; process evidence and interpret results; and draft, revise and translate this manuscript and its figures. The student and teacher models additionally generate the on-policy training trajectories that constitute the method itself. Automated tests and artifact audits check specified implementation and data contracts; they do not substitute for independent replication or the authors' responsibility for the final submission. No claim is made that the research, proofs, writing or translation were produced without AI assistance.
+Generative AI assistants were used to refine hypotheses, help design experiments and mathematical arguments, implement and debug methods, monitor experiments, retrieve and summarize literature, process evidence, interpret results, and draft, revise and translate the manuscript. AI tools also assisted with conceptual figures; numerical result plots were generated from retained experimental data. Language models generate the on-policy training trajectories as part of the method. Automated tests and artifact checks verify specified contracts, but do not constitute independent replication. The authors remain responsible for checking all AI-assisted claims, proofs, code, citations and disclosures in the final submission.

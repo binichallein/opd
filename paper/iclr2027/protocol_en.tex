@@ -1,0 +1,22 @@
+\paragraph{Models and training data.}
+Historical pairs include Qwen3-1.7B-Base and Qwen3-0.6B-Base students with a public Qwen3-4B-Base-GRPO teacher, DeepSeek/JustRL 1.5B, and Llama-3.2-3B-Instruct teaching Llama-3.2-1B-Instruct. Two further comparisons have fully retained trajectories: Qwen3-4B-Base with the public GRPO teacher, and official Qwen3-8B teaching Qwen3-1.7B instruction-tuned models \citep{qwen3,llama3,llama32}. The latter repositories omit ``Instruct'' from their names. Exact identities and protocol versions appear in Appendices~\ref{app:config}, \ref{app:history} and~\ref{app:instruct}.
+
+The two fully retained comparisons share a DAPO-derived pool \citep{dapo}: 17,917 question--answer rows repeated 100 times, with 17,237 exact unique questions. Training uses the questions without outcome reward. The 4B Base arms each encounter 800 prompt occurrences and 783 distinct questions, including one normalized-string MATH500 match once per arm. Appendix~\ref{app:config} gives the overlap audit and a separate 496-question sensitivity analysis.
+
+\paragraph{Baseline and implementation.}
+The baseline follows sampled-token OPD in Revisiting OPD \citep{revisiting}. Paired arms independently initialize the same student and share teacher, inputs, optimizer and evaluation. The fully retained pairs use seed 21, 200 updates, four prompts with eight responses each, learning rate $2\times10^{-6}$ and one PPO epoch per update: 6,400 trajectories per arm, with full states at Steps 50/100/150/200. Generation uses temperature 1.0, top-$p=0.9$, prompt limit 2,048 tokens and response cap 16,384. Separately derived request seeds and input identities are checked for all trajectories. Appendix~\ref{app:config} gives micro-batch, precision and clipping settings.
+
+\paragraph{Prompting.}
+The 4B Base comparison uses the bare question, a boxed-answer instruction and a \texttt{Solution:} suffix, without ChatML. The official Instruct pair uses native Qwen chat with the same answer instruction, explicit non-thinking mode and no \texttt{Solution:} suffix. Each of these pairs uses matching training and evaluation inputs, checked at the token-ID level. Older experiments retain their original protocols, including the historical 1.7B train--evaluation prompt difference. Exact prompt strings and stop tokens are given in Appendices~\ref{app:config}, \ref{app:probes} and~\ref{app:instruct}; changing model families is not treated as a prompt-only ablation.
+
+\paragraph{Evaluation.}
+The two fully retained pairs use MATH500 (500 questions), AIME24 (30), AIME25 (30) and AMC23 (83), reported separately. Each model view generates 5,144 responses: eight per question, seeds 21--28, temperature 1.0, top-$p=0.9$ and response cap 16,384. Both arms share the pinned historical grader; earlier studies retain their individually documented protocols. For question $i$, let $c_i$ count correct responses. We compute
+\begin{equation}
+ \avg=\frac{1}{N}\sum_{i=1}^N\frac{c_i}{8},\qquad
+ \pass=\frac{1}{N}\sum_{i=1}^N\mathbf{1}[c_i>0].
+ \label{eq:metrics}
+\end{equation}
+These are mean sampled accuracy and eight-attempt coverage, not majority voting. We report Step200 and all saved checkpoints rather than separate best checkpoints; the endpoint choice is retrospective. The 95\% paired-question intervals are conditional on trained checkpoints, without multiple-comparison correction or training-seed variability. Eight evaluation samples do not constitute eight training replications.
+
+\paragraph{Training diagnostics.}
+We record student and teacher entropy, entropy gaps, top-16 overlap and overlap mass, overlap-token advantage, policy loss, pre-clipping gradient norm, response length and cap incidence. Sign disagreement and advantage redistribution measure the effect of sharing on local feedback. Missing boxed-answer markers and engine length stops are recorded separately from correctness. Definitions and every-step position maps appear in Appendices~\ref{app:diagnostics} and~\ref{app:positionfigures}.

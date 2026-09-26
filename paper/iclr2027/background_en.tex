@@ -1,0 +1,15 @@
+\subsection{On-Policy Distillation for Autoregressive Models}
+A language model factorizes a response as $\pi(y\mid x)=\prod_t\pi(y_t\mid x,y_{<t})$. Unlike distillation on fixed responses, OPD asks the teacher to evaluate student-generated prefixes \citep{dagger,gkd}. This choice of prefix distribution is distinct from the choice of divergence: student prefixes can support forward KL, reverse KL or other matching losses.
+
+Full-vocabulary distillation compares next-token distributions; sampled-token distillation uses probabilities only at the generated tokens, supplying scalar feedback for policy-gradient optimization \citep{minillm,revisiting}. We study the allocation of these sampled signals across neighboring positions with a fixed external teacher.
+
+\subsection{Sampled Feedback and Clipped Policy Updates}
+For prompt $x$, let the rollout student $\pi_{\mathrm{old}}$ generate $y=(y_1,\ldots,y_T)$, and write $h_t=(x,y_{<t})$. The teacher feedback and the current-to-old student ratio are
+\begin{equation}
+ a_t=\log\pi_{\mathrm{T}}(y_t\mid h_t)-\log\pi_{\mathrm{old}}(y_t\mid h_t),
+ \quad r_t(\theta)=\frac{\pi_\theta(y_t\mid h_t)}{\pi_{\mathrm{old}}(y_t\mid h_t)}.
+ \label{eq:token}
+\end{equation}
+The distillation advantage $a_t$ compares teacher and rollout-student probabilities, not verified mathematical correctness. Both $a_t$ and the old probabilities are detached during optimization.
+
+Let $\mathcal C(r,a)$ be the PPO clipped surrogate \citep{ppo}, with negative-advantage dual clipping specified in Appendix~\ref{app:proofs}. The baseline averages $-\mathcal C(r_t,\sg(a_t))$ over valid tokens, assigning each position its own signal and ratio. We replace this unit with a short block. Here $T$ counts valid tokens in one response; padding is masked and production reduction occurs within each actor micro-batch.

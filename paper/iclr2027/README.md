@@ -20,11 +20,20 @@ Step200四项Avg@8差值为正，但配对题目区间均包含零，Pass@8有�
 ## 结构
 
 - `main_en.tex`、`main_zh.tex`：两个入口，共用官方2027模板及同源结果。
-- `content_*`、`method_*`、`results_*`、`appendix_*`：正文、推导、结果和附录。
+- `content_*`：摘要、引言和全文编排；按OPSD的叙事顺序重组为引言、背景、方法、实验、相关工作、结论。
+- `background_*`、`method_*`：必要背景、Block3目标和更新分析。
+- `protocol_*`、`results_*`、`analysis_*`：实验设置、完整主结果和分主题分析。
+- `related_*`、`conclusion_*`：相关工作定位与结论。
+- `appendix_*`、`limitations_*`：局限、完整推导、配置、全部结果及诊断。
 - `references.bib`：核验后的参考文献。
 - `data/`、`generated/`、`figures/`：紧凑证据、自动表格和图；不存完整rollout或权重。
 - `internal/`：内部来源映射、证据审计、合规记录。**不得放入匿名投稿包。**
 - `build/`：编译中间件、PDF、文本与验收结果，不入Git。
+
+2026-09-26全文重组保留已有图文件、生成表和分数，历史端点表移至主文；
+未加入仍在进行的组件消融或后续100步实验。主文保留正负结果和关键统计边界，
+逐字prompt、运行审计、详细限制等放在对应附录。官方模板已重新下载并核对一致，
+核验来源和hash见`internal/compliance.md`。
 
 ## 构建
 

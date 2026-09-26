@@ -40,6 +40,19 @@ Block符号阈值 & $10^{-4}$ \\
 \end{tabular}
 \end{table}
 
+\paragraph{精确completion提示与停止设置。}
+4B Base的训练与评测使用同一completion函数，不含ChatML：
+\begin{quote}\small
+\texttt{[question]}\\
+\texttt{Please solve the problem step by step and put the final answer in}\ \verb|\boxed{}.|\\
+\texttt{Solution:}
+\end{quote}
+各部分之间保留空行，\texttt{Solution:}后保留末尾换行。
+显式关闭thinking，但允许普通逐步推理文本。EOS为151643，无额外stop-token ID。
+合并checkpoint后检查实际输入token ID。评测使用四个独立TP=1 worker，显存比例0.9，
+区别于训练rollout的0.6。CPU合并不改动源训练权重。
+原始响应、输入token、请求seed和引擎停止原因均保留。
+
 \paragraph{实际batch与seed。}
 数据batch沿用冻结的seed-21 loader。成对验收比较采集后真实source与prompt身份；
 若两组以不同方式消耗RNG，仅seed标签相同并不足够。

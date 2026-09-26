@@ -1,0 +1,26 @@
+\subsection{自回归模型的在线策略蒸馏}
+语言模型将响应概率分解为$\pi(y\mid x)=\prod_t\pi(y_t\mid x,y_{<t})$。
+知识蒸馏通过匹配教师预测迁移行为，所用响应既可以来自固定数据，也可以由学生生成。
+后一种设置下，教师在学生实际访问的前缀上评分。这种由学习者生成监督状态的方式，
+是OPD的核心特征\citep{dagger,gkd}。前缀分布与散度方向是两个不同选择：
+在学生前缀上同样可以计算forward KL、reverse KL或其他分布匹配损失。
+
+全词表蒸馏比较每个前缀下的下一token分布；sampled-token蒸馏则使用学生实际生成token的概率。
+后者在每个位置提供标量反馈，可直接用于策略梯度训练\citep{minillm,revisiting}。
+本文保持外部教师固定，研究如何在相邻位置之间分配这些采样反馈。
+
+\subsection{采样反馈与裁剪策略更新}
+给定prompt $x$，采样学生$\pi_{\mathrm{old}}$生成$y=(y_1,\ldots,y_T)$，记$h_t=(x,y_{<t})$。
+教师反馈与当前学生相对旧学生的重要性比率为
+\begin{equation}
+ a_t=\log\pi_{\mathrm{T}}(y_t\mid h_t)-\log\pi_{\mathrm{old}}(y_t\mid h_t),
+ \quad r_t(\theta)=\frac{\pi_\theta(y_t\mid h_t)}{\pi_{\mathrm{old}}(y_t\mid h_t)}.
+ \label{eq:token}
+\end{equation}
+蒸馏advantage $a_t$表示教师为采样token分配的概率高于还是低于采样学生，
+而非经过验证的数学正确性增量。优化时对$a_t$与旧策略概率停止梯度。
+
+令$\mathcal C(r,a)$为PPO裁剪代理目标\citep{ppo}，其中继承的负advantage dual-clip规则见附录\ref{app:proofs}。
+sampled-token基线在有效响应token上平均$-\mathcal C(r_t,\sg(a_t))$，
+因而每个位置使用自己的教师信号和重要性比率。本文将这一单位改为连续的短token块。
+推导中的$T$为单条响应的有效token数；实现中屏蔽padding，并在actor micro-batch内归一化。

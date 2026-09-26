@@ -1,16 +1,10 @@
-\paragraph{Sampled local feedback.}
-For prompt $x$, an old student $\pi_{\mathrm{old}}$ generates $y=(y_1,\ldots,y_T)$.
-At prefix $h_t=(x,y_{<t})$, let
-\begin{equation}
- a_t=\log\pi_{\mathrm{T}}(y_t\mid h_t)-\log\pi_{\mathrm{old}}(y_t\mid h_t),
- \quad r_t(\theta)=\frac{\pi_\theta(y_t\mid h_t)}{\pi_{\mathrm{old}}(y_t\mid h_t)}.
- \label{eq:token}
-\end{equation}
-We stop gradients through $a_t$ and the old probabilities. An ``advantage'' here is a distillation log ratio, not a verified increment in task correctness. Teacher scoring remains autoregressive and can score an already generated sequence in a batched forward pass; grouping tokens does not remove the need to evaluate their conditional probabilities.
+\subsection{From Individual Feedback to Local Credit}
+Token-wise updates follow each teacher preference independently; block-wise updates aggregate the preferences and update the expression's components with one signal. In Figure~\ref{fig:credit}, averaging $(2,-1,2)$ gives positive feedback at all three positions. This couples adjacent updates. A fixed-width block is an operational unit, not an annotated reasoning step.
 
-Write $\mathcal C(r,a)$ for the PPO clipped surrogate \citep{ppo}, with the inherited negative-advantage dual-clipping rule specified in Appendix~\ref{app:proofs}. Ignoring separately configured regularizers, the baseline averages $-\mathcal C(r_t,\sg(a_t))$ over valid response tokens. For exposition we use a single response with $T$ valid tokens; the implementation masks padding and reduces over valid entries in each micro-batch.
+The student generates a complete response; the frozen teacher scores its prefixes; detached feedback is aggregated locally; and gradients update only the current student. No new teacher responses, reward model or process labels are needed. Teacher scoring can process the generated sequence in a batched forward pass, but grouping does not reduce the number of conditional probabilities scored.
 
-\paragraph{The implemented block intervention.}
+\subsection{Block-Level On-Policy Distillation}
+\paragraph{Shared feedback and joint ratio.}
 Group consecutive response tensor positions into disjoint blocks $B_j$ of width $k$, without packing across mask holes. Below, sums within a block select valid positions, $n_j$ is their count, and $T=\sum_j n_j$. Empty blocks have zero weight. The ideal real-arithmetic reduction, omitting the implementation's $10^{-8}$ denominator stabilizer, is
 \begin{align}
  \bar a_j&=\frac{1}{\max(1,n_j)}\sum_{t\in B_j}a_t,
@@ -18,7 +12,10 @@ Group consecutive response tensor positions into disjoint blocks $B_j$ of width 
  \mathcal L_{\mathrm{block}}&=-\frac1T\sum_{j:n_j>0}n_j\mathcal C(R_j,\sg(\bar a_j)),
  &\mathcal L_{\mathrm{token}}&=-\frac1T\sum_{t=1}^T\mathcal C(r_t,\sg(a_t)).\label{eq:loss}
 \end{align}
-\method{} uses $k=3$. Importantly, $R_j=\prod_{t\in B_j}r_t$ is not an average of token ratios. In code, the block mask has weight $n_j/k$ and the denominator is the sum of these fractional weights; Equation~\ref{eq:loss} is its equivalent token-count form when the stabilizer is omitted. Full blocks reduce to an average over blocks; a two-token tail has weight $2/3$, not one. This objective uses sampled blocks, not enumeration of a $|V|^k$ distribution. Both arms generate complete trajectory batches before updating, rather than taking an optimizer step every three tokens.
+\method{} uses $k=3$. Its joint ratio $R_j=\prod_{t\in B_j}r_t$ measures the product of policy changes across the sampled block, rather than their average. Valid-length weighting gives a two-token tail weight $2/3$ relative to a full block. The code implements the same reduction using fractional block masks $n_j/k$; Appendix~\ref{app:proofs} gives the exact stabilized denominator and micro-batch convention.
+
+\paragraph{Optimization.}
+Each collected batch supplies shared advantages and current-to-old block ratios for the clipped update. This uses sampled blocks, not enumeration of a $|V|^k$ distribution or optimizer steps after every three tokens. Relative to Token OPD, the intervention changes advantage sharing, ratio granularity and loss reduction together.
 
 \begin{figure}[t]
 \centering
@@ -27,7 +24,8 @@ Group consecutive response tensor positions into disjoint blocks $B_j$ of width 
 \label{fig:credit}
 \end{figure}
 
-\paragraph{Cross-credit and scale.}
+\subsection{Understanding the Block Update}
+\paragraph{Cross-token credit.}
 Consider equal-sized blocks, $T=kJ$, at the old policy, where every ratio is one and clipping is inactive. Let $g_t=\nabla_\theta\log\pi_\theta(y_t\mid h_t)$. The policy-gradient components satisfy
 \begin{align}
  \nabla\mathcal L_{\mathrm{token}}&=-\frac1T\sum_t a_tg_t,\nonumber\\
@@ -41,7 +39,10 @@ The additional terms send token $i$'s signal to token $t$'s score gradient. They
 At $\theta=\theta_{\mathrm{old}}$, with inactive clipping, full blocks of size $k$, and $a_t=a$ for all valid tokens, both policy losses equal $-a$, but
 $\nabla\mathcal L_{\mathrm{block}}=k\nabla\mathcal L_{\mathrm{token}}$.
 \end{proposition}
-The statement follows immediately by substituting $\bar a_j=a$ in Equation~\ref{eq:loss}. It concerns the policy-loss derivative, not a claim of a $k$-fold Adam parameter update or a $k$-fold total gradient after other terms and gradient clipping. It explains why a loss-value-only unit test can miss an implementation difference. As the policy moves, the joint ratio also changes the clipping region: for three token ratios of 1.1, the block ratio is $1.1^3=1.331$. A token ratio can therefore remain within a conventional 0.2 clipping band while its block ratio leaves it. Rescaling the learning rate alone cannot generally remove this difference.
+Substituting $\bar a_j=a$ in Equation~\ref{eq:loss} proves the statement. The factor concerns the policy-loss derivative, not the subsequent Adam update after gradient clipping and other terms. It reveals a scale change even when all local feedback agrees.
+
+\paragraph{Clipping geometry.}
+Away from the old policy, the joint ratio also changes which updates are clipped. Three token ratios of 1.1 produce a block ratio of $1.1^3=1.331$: each token can remain inside a conventional 0.2 clipping band while the block leaves it. Learning-rate rescaling alone therefore cannot generally recover the token-level update.
 
 \paragraph{When averaging could help.}
 To separate the averaging hypothesis from the implementation above, consider a hypothetical token-ratio, token-normalized intervention using $Wa$ instead of $a$, where $W$ is deterministic and each row sums to one. Suppose, only as a local signal model, $a=\mu+\varepsilon$, $\E\varepsilon=0$, and $\Cov(\varepsilon)=\Sigma$. Then
@@ -49,4 +50,4 @@ To separate the averaging hypothesis from the implementation above, consider a h
  \E\|Wa-\mu\|_2^2=\|(W-I)\mu\|_2^2+\operatorname{tr}(W\Sigma W^\top).
  \label{eq:mse}
 \end{equation}
-Averaging reduces this error relative to the unsmoothed signal only if its bias cost is smaller than its noise reduction. With a constant signal and independent equal-variance noise within a block, the per-position variance becomes $\sigma^2/k$. With different latent signals or strongly correlated noise, this advantage may vanish. Equation~\ref{eq:mse} is not a theorem that Block3 or a sliding window improves reward: it concerns signal estimation, assumes a latent decomposition, and holds gradient features fixed. It also does not isolate the historical method's ratio and normalization changes. Appendix~\ref{app:proofs} gives the derivation and a counterexample to unconditional smoothing benefit.
+Averaging helps this estimator when noise reduction exceeds the bias introduced by combining different latent signals. With a constant signal and independent equal-variance noise within a block, the per-position variance becomes $\sigma^2/k$; correlated noise or heterogeneous signals can remove this benefit. This explains the motivation for short-range sharing, but is a statement about signal estimation, not a guarantee of higher task reward. The implemented objective additionally changes ratios and reduction. Appendix~\ref{app:proofs} provides the derivation, a counterexample to unconditional smoothing benefit, and a restricted interpretation in which block cross terms recover within-block future credit.

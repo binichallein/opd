@@ -38,6 +38,15 @@ Block sign threshold & $10^{-4}$ \\
 \end{tabular}
 \end{table}
 
+\paragraph{Exact completion prompt and stopping.}
+Training and evaluation in the 4B Base comparison use the same completion function, without ChatML:
+\begin{quote}\small
+\texttt{[question]}\\
+\texttt{Please solve the problem step by step and put the final answer in}\ \verb|\boxed{}.|\\
+\texttt{Solution:}
+\end{quote}
+Blank lines separate the components, with a final newline after \texttt{Solution:}. Thinking is explicitly disabled, while ordinary step-by-step text is allowed. EOS is 151643 with no additional stop-token IDs. Actual input token IDs are checked after checkpoint merging. Evaluation runs on four independent tensor-parallel-size-one workers, using memory fraction 0.9 rather than the training rollout fraction 0.6. CPU checkpoint merging does not modify the original training weights. Raw responses, input tokens, request seeds and engine stopping reasons are retained.
+
 \paragraph{Effective batching and seeds.}
 Data batching follows the frozen seed-21 loader. Pair validation compares the actual source and prompt identities after collection; relying on equal seed labels alone would be insufficient if the arms consumed RNG differently. The current request-seed rule uses a stable SHA-256 derivation including step and sample identity and does not consume the training RNG merely to log a response. Eight requests for one prompt have separate seed identities. Historical fixed-request-seed runs are explicitly separated in Appendix~\ref{app:history}. A separate window-seed value is retained in the run card but has no effect on a fixed-block treatment.
 

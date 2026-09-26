@@ -1,12 +1,19 @@
 # ICLR 2027合规核对
 
-官方要求核验日期：2026-09-21，北京时间。
+官方要求核验日期：2026-09-26，北京时间；本轮重新访问官方指南、AI政策并下载模板。
 
 ## 来源
 
 - 作者指南：https://iclr.cc/Conferences/2027/AuthorGuidelines
 - AI披露：https://iclr.cc/Conferences/2027/AIPolicyForAuthors
 - 原始模板：https://media.iclr.cc/Conferences/ICLR2027/iclr-2027-style-files.zip
+
+本次下载的模板与论文目录逐字节一致：
+- `iclr2027_conference.sty` SHA-256：`797deef41724e93761426ac0cbcca46279a91cc650dd1f0ce76a4f08d2098ea6`
+- `iclr2027_conference.bst` SHA-256：`2d67552db7ed38ccfccb5957b52f95656e25c249724761d3cf5f7922ad1844c5`
+
+OPSD仅作为结构和叙事参考，不使用其ICML双栏格式，也不照搬其自教师、特权信息、
+SFT/GRPO对照或最佳checkpoint报告口径。ICLR投稿继续使用匿名单栏官方模板。
 
 ## 应用
 

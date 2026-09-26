@@ -1,19 +1,16 @@
-\paragraph{采样局部反馈。}
-给定prompt $x$，旧学生$\pi_{\mathrm{old}}$生成$y=(y_1,\ldots,y_T)$。
-在前缀$h_t=(x,y_{<t})$上定义
-\begin{equation}
- a_t=\log\pi_{\mathrm{T}}(y_t\mid h_t)-\log\pi_{\mathrm{old}}(y_t\mid h_t),
- \quad r_t(\theta)=\frac{\pi_\theta(y_t\mid h_t)}{\pi_{\mathrm{old}}(y_t\mid h_t)}.
- \label{eq:token}
-\end{equation}
-对$a_t$和旧概率停止梯度。这里的advantage是蒸馏log ratio，不是经过验证的任务正确性增量。
-教师评分仍然自回归，且可在一次批量前向中评估已生成序列；将token分组不意味着无需计算各自的条件概率。
+\subsection{从独立反馈到局部信用}
+考虑一个短表达式，其token获得的教师偏好不完全一致。逐token更新分别跟随这些偏好，
+而块级更新先汇总教师对局部表达的偏好，再用共同信号更新其组成部分。
+图~\ref{fig:credit}给出例子：将$(2,-1,2)$平均后，三个位置都获得正反馈。
+这样便耦合了相邻更新，并显式定义信用分配单位。固定宽度的block是操作单位，而非标注的推理步骤。
 
-令$\mathcal C(r,a)$表示PPO裁剪代理目标\citep{ppo}，继承的负advantage dual-clip规则见附录\ref{app:proofs}。
-忽略独立配置的正则项，基线在有效响应token上平均$-\mathcal C(r_t,\sg(a_t))$。
-为便于说明，以下使用含$T$个有效token的单条响应；实现中mask padding，并在每个micro-batch的有效条目上归一化。
+我们在既有sampled-token流程中实现这一思路。采样学生生成完整响应，冻结教师评估相同前缀；
+随后局部聚合停止梯度的反馈，只对当前学生反向传播。
+无需新增教师响应、奖励模型或过程标签。
+教师评分仍然自回归，可在批量前向中评估已生成序列；该方法不减少需要评分的条件概率数量。
 
-\paragraph{实际block干预。}
+\subsection{块级在线策略蒸馏}
+\paragraph{共享反馈与联合比率。}
 将连续响应tensor位置划为不重叠、宽度为$k$的block $B_j$，不跨mask空洞重新打包。
 下式块内求和只选有效位置，$n_j$为其数量，$T=\sum_j n_j$，空块权重为零。
 省略实现中分母的$10^{-8}$稳定项后，理想实数归一化为
@@ -23,11 +20,15 @@
  \mathcal L_{\mathrm{block}}&=-\frac1T\sum_{j:n_j>0}n_j\mathcal C(R_j,\sg(\bar a_j)),
  &\mathcal L_{\mathrm{token}}&=-\frac1T\sum_{t=1}^T\mathcal C(r_t,\sg(a_t)).\label{eq:loss}
 \end{align}
-\method{}取$k=3$。$R_j=\prod_{t\in B_j}r_t$不是token ratio的平均值。
-代码的block mask权重为$n_j/k$，分母为这些分数权重之和；式\ref{eq:loss}是省略稳定项后等价的token计数形式。
-完整等长块退化为按block平均；含2个有效token的尾块权重是$2/3$，不是1。
-该目标作用于采样block，不枚举$|V|^k$联合分布。
-两组均先生成完整轨迹batch再更新，不是每3个token更新一次优化器。
+\method{}取$k=3$。联合比率$R_j=\prod_{t\in B_j}r_t$表示采样块内策略变化比率的乘积，而非均值。
+有效长度加权使两token尾块相对完整块的权重为$2/3$。
+代码通过分数block mask $n_j/k$实现同样的归一化；精确稳定分母与micro-batch约定见附录\ref{app:proofs}。
+
+\paragraph{优化流程。}
+对于每个已采样batch，计算共享advantage、构造新旧策略的block ratio、应用裁剪目标，再更新学生。
+该过程只处理采样block，不枚举$|V|^k$分布。
+两种方法都先收集完整轨迹再优化，三token信用单位不意味着每生成三个token便更新一次。
+相对Token OPD，完整干预同时改变advantage共享、ratio粒度和损失归一化。
 
 \begin{figure}[t]
 \centering
@@ -37,7 +38,8 @@
 \label{fig:credit}
 \end{figure}
 
-\paragraph{交叉信用项与尺度。}
+\subsection{理解块级更新}
+\paragraph{跨token信用。}
 考虑等长块、$T=kJ$，并在旧策略处计算，此时所有ratio为1且裁剪不生效。
 记$g_t=\nabla_\theta\log\pi_\theta(y_t\mid h_t)$，策略梯度部分满足
 \begin{align}
@@ -53,11 +55,15 @@
 在$\theta=\theta_{\mathrm{old}}$、裁剪不生效、完整等长块大小为$k$且所有有效token满足$a_t=a$时，
 两个策略损失均为$-a$，但$\nabla\mathcal L_{\mathrm{block}}=k\nabla\mathcal L_{\mathrm{token}}$。
 \end{proposition}
-将$\bar a_j=a$代入式\ref{eq:loss}即可得到该结论。
-它描述的是策略损失导数，不意味着Adam参数更新、加入其他项后的总梯度或梯度裁剪后的更新也是$k$倍。
-因此仅检查loss数值的单元测试可能漏掉实现差异。
-离开旧策略后，联合ratio还改变裁剪区域：三个token ratio均为1.1时，block ratio为$1.1^3=1.331$。
-token ratio仍可能在常见的0.2裁剪区间内，而block ratio已经越界，单独调整学习率一般无法消除此差异。
+将$\bar a_j=a$代入式\ref{eq:loss}即可证明。这个倍数描述策略损失导数，
+而非经过梯度裁剪、其他项和Adam处理后的参数更新。
+它表明即使局部反馈完全一致，目标仍然存在尺度变化。
+
+\paragraph{裁剪几何。}
+离开旧策略后，联合ratio还改变哪些更新会触发裁剪。
+三个token ratio均为1.1时，block ratio为$1.1^3=1.331$：
+每个token仍在常见的0.2裁剪区间内，但block已经越界。
+因此只缩放学习率一般无法恢复逐token更新。
 
 \paragraph{平均何时可能有帮助。}
 为了将平均假设与上述具体实现分离，考虑一个假想干预：保持token ratio和token归一化，只将$a$换成$Wa$，
@@ -67,9 +73,9 @@ $\Cov(\varepsilon)=\Sigma$，则
  \E\|Wa-\mu\|_2^2=\|(W-I)\mu\|_2^2+\operatorname{tr}(W\Sigma W^\top).
  \label{eq:mse}
 \end{equation}
-只有偏差代价小于降噪收益时，平均才比原始信号的估计误差更低。
-块内真实信号恒定、噪声独立同方差时，每位置方差变为$\sigma^2/k$。
-真实信号不同或噪声高度相关时，这一优势可能消失。
-式\ref{eq:mse}不是Block3或滑动窗口提升reward的定理：它研究信号估计，假定存在潜在分解，并固定梯度特征。
-它也没有隔离历史方法的ratio及归一化变化。
-附录\ref{app:proofs}给出推导，以及无条件平滑收益的反例。
+当降噪收益超过合并不同潜在信号产生的偏差时，平均能改善这一估计量。
+块内信号恒定且噪声独立同方差时，每位置方差为$\sigma^2/k$；噪声相关或信号异质可能消除此收益。
+这一分析解释短程共享的动机，但只涉及信号估计，不保证任务reward更高。
+实际目标还改变ratio及归一化。
+附录\ref{app:proofs}给出推导、无条件平滑收益的反例，
+以及block交叉项在受限条件下恢复块内未来信用的解释。

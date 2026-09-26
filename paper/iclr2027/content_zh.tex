@@ -10,145 +10,68 @@
 \end{figure}
 
 \section{引言}
-从能力较强的教师迁移推理行为，是提升语言模型能力的重要途径。
-在线策略蒸馏（On-Policy Distillation，OPD）让学生自主生成响应，并在其实际访问的前缀上接受教师反馈\citep{gkd,minillm}。
-这种方式把监督带到学习者自身诱导的状态上，缓解只从专家示范学习时可能出现的分布错配\citep{dagger}。
-教师概率还能够在整个响应中提供反馈，而不只在最终答案处给出信号。
+从能力较强的教师迁移推理行为，是提升语言模型的重要途径。
+在线策略蒸馏（On-Policy Distillation，OPD）让学生在自己生成的响应上学习，
+由教师在学生实际访问的前缀处提供反馈\citep{gkd,minillm}。
+这一过程将监督带到学习者诱导的状态上，而不只依赖专家示范\citep{dagger}。
+教师概率为整个响应提供密集学习信号，使OPD成为研究后训练中推理行为如何习得的一个重要场景。
 
-其中仍有一个重要选择：应当如何将反馈分配给生成文本？
-在sampled-token OPD中，每个token使用自身的师生对数概率差作为反馈\citep{revisiting}。
-这种监督是密集的，但信号密度本身并不能决定信用分配应采用什么单位。
-因此，我们提出问题：\textbf{由相邻token构成的短block，能否成为OPD中有效的反馈单位？}
+密集反馈的获得仍留下一个核心设计选择：信用分配应以什么为单位？
+常见sampled-token实现将每个token自身的师生对数概率差作为反馈\citep{revisiting}。
+这种方式分别处理相邻位置，即使若干token共同表达一个短数学运算或解题过程中的一次过渡。
+因此，我们提出问题：\textbf{在短token块内共享教师反馈，能否改善在线推理蒸馏？}
 
-我们的直觉是，一个局部推理决策的组成部分，例如短数学表达式或推理过渡，可能跨越多个token。
-逐token概率差既反映背后的选择，也可能受到具体文本表达方式的影响。
-共享局部信号有望降低对这些波动的敏感性，同时保留比整条响应奖励更细的粒度。
+我们的直觉是，一个局部决策可能包含多个文本组成部分。
+单个token的概率差可能随具体表达方式波动，而它们的聚合信号可以反映共同偏好。
+短block提供了介于单token和完整响应之间的监督单位：
+它允许相邻选择共同学习，同时保留局部反馈。
 
-基于这一视角，我们提出\method{}（图~\ref{fig:overview}）。
-学生采样响应，冻结教师在相同前缀上打分；随后将响应划分为不重叠的三token块，
-对块内蒸馏advantage求平均，并将共享advantage用于联合block重要性比率和按有效长度加权的目标。
-这一方法复用已有教师分数，不需要额外奖励模型或过程标注。训练仍然在每次更新前收集完整轨迹。
+我们提出\method{}，一种复用OPD已有教师反馈的块级更新方法。
+学生生成响应后，我们将其划分为不重叠的三token块，对块内蒸馏advantage求均值，
+再使用联合block重要性比率和有效长度权重优化裁剪目标（图~\ref{fig:overview}）。
+该过程不需要额外奖励模型或过程标注。
+它改变教师分数指导更新的方式，同时保留完整响应采样和原有教师评分流程。
 
-我们在MATH500、AIME24、AIME25和AMC23上进行评测，逐benchmark报告结果。
-每个匹配对照内，两种方法采用相同初始化、数据、提示和评测设置。
-历史Qwen3-1.7B对照的Step200在MATH500和AMC23上的Avg@8分别提升8.90和5.42个百分点；
-官方Qwen3-8B到1.7B指令版的Step200则在四项benchmark上均获得正向差值。
+我们在MATH500、AIME24、AIME25和AMC23上进行匹配Token OPD对照，并报告各checkpoint结果。
+历史Qwen3-1.7B对照中，Block3的Step200 Avg@8在MATH500和AMC23上分别提升8.90和5.42个百分点；
+官方Qwen3-8B到1.7B指令版的Step200 Avg@8也在四项benchmark上均获得正差值。
+为理解端点分数之外的更新过程，我们将目标的代数结构与训练轨迹联系起来，
+考察熵、token重合、梯度范数及局部信用重分配。
 
-本文有三项贡献。首先，我们构建结合局部advantage共享与联合重要性比率的block级OPD更新。
-其次，我们推导其中的跨token信用项与梯度尺度，并给出平均操作改善局部信号估计的条件。
-最后，我们提供逐checkpoint对照及覆盖熵、token重合、信用重分配和生成行为的轨迹诊断。
-这些分析将方法的观测表现与其优化结构联系起来。
+本文的贡献有三方面。
+首先，构建结合共享教师反馈和联合重要性比率的局部block级OPD目标。
+其次，推导其中的跨token信用项、梯度尺度与裁剪行为，并刻画局部平均改善信号估计的条件。
+最后，在不同师生对与保存权重上评测推理表现，
+通过轨迹诊断将观测结果与信用分配、生成行为联系起来。
 
-\section{相关工作}
-\label{sec:related}
-GKD使用学生生成序列，并允许不同散度，因此on-policy采样并不唯一要求reverse KL\citep{gkd}。
-MiniLLM研究语言生成中的reverse-KL蒸馏\citep{minillm}。
-本文基线沿用Revisiting OPD的sampled-token实现；该研究分析局部蒸馏信号的不足与实用修复\citep{revisiting}。
-我们不将这个基线等同于完整序列KL梯度的无偏估计。
+\section{背景}
+\label{sec:background}
+\input{background_zh}
 
-Rethinking OPD研究师生兼容性及训练动力学，为本文监控熵、top-token重合和位置变化提供依据\citep{rethinking}。
-这些是诊断工作的前例，不代表我们已复现该论文的全部最佳算法配置。
-Blockwise policy-drift gating聚合学生新旧log-probability变化，构造停止梯度、均值归一化的权重，
-但保留原有token目标\citep{bpdg}；本文则聚合教师反馈并改变PPO ratio本身。
-FiRe-OPD过滤轨迹并对token重加权，TIP选择有信息量的token监督\citep{fireopd,tip}。
-R2-OPD根据独立估计的推理进展过滤span\citep{r2opd}；GSPO采用长度归一化的序列ratio，不同于本文token ratio的乘积\citep{gspo}。
-这些前例不支持泛称本文首次提出blockwise、选择性或多步OPD；我们也未直接评测它们的最佳方案。
-
-\section{局部信用分配}
+\section{方法}
 \label{sec:method}
 \input{method_zh}
 
-\section{实验协议}
+\section{实验}
+实验围绕三个问题展开：相对sampled-token OPD，块级更新如何影响数学推理；
+不同师生对和checkpoint之间的对比如何变化；
+轨迹诊断能够揭示哪些与信用共享、块长和生成质量有关的现象。
+
+\subsection{实验设置}
 \label{sec:protocol}
-\paragraph{证据单位。}
-每个模型对、提示版本、数据池、grader和训练seed构成独立实验层。
-同一层内，Token与Block3分别从同一个原始学生独立初始化，不从彼此权重继续训练。
-每个checkpoint分别报告四个数学benchmark。
-旧小规模评测和其他grader的结果只作为探索证据，不视为主对照的额外重复。
-附录\ref{app:history}列出找到的全部实验系列，包括中止尝试和证据缺口。
+\input{protocol_zh}
 
-\paragraph{匹配的4B Base训练。}
-学生为Qwen3-4B-Base，而非同名指令模型\citep{qwen3}；教师为公开的Qwen3-4B-Base-GRPO，
-具体身份见附录\ref{app:config}。两组复用既有DAPO衍生训练池和相同冻结训练实现。
-本地parquet将17,917行题答序列重复100次，共1,791,700行，精确唯一题面为17,237个。
-每步4个prompt，每个prompt采样8个回答，共200步；因此每组包含800次prompt出现、783个精确不同题面和6,400条轨迹。
-训练seed为21，学习率$2\times10^{-6}$，每次更新1个PPO epoch，使用4张A100。
-Step50、100、150、200均保存完整训练状态。
-两组均实际遇到一次经字符串规范化后与MATH500重叠的题；附录\ref{app:config}报告训练池与实际暴露审计，以及单独的敏感性分析。
-
-两组均使用temperature=1.0、top-$p=0.9$、2,048-token输入上限和16,384-token响应上限。
-每个请求的生成seed由全局seed、step、数据身份、sample index和turn派生，不将同一seed重置后用于所有8个回答。
-训练后审计核对全部6,400对输入身份与采样设置。
-输入流相同不意味着后期输出相同：策略分化后生成不同on-policy数据是预期行为。
-训练、生成和教师log-prob的micro-batch设置分别记录于附录\ref{app:config}。
-
-\paragraph{提示控制。}
-最新Base模型对照绕过ChatML，训练和评测使用完全相同的函数：
-\begin{quote}\small
-\texttt{[question]}\\
-\texttt{Please solve the problem step by step and put the final answer in}\ \verb|\boxed{}.|\\
-\texttt{Solution:}
-\end{quote}
-各部分间保留空行，\texttt{Solution:}后有最终换行。
-显式关闭thinking，但允许普通逐步推理。合并checkpoint后检查真实输入token ID，而非仅比较文字。
-EOS为151643，不增加其他stop-token ID。
-旧Qwen和Llama实验保留并注明当时的提示协议，不把它们重新归类为最新统一completion设置。
-
-\paragraph{评测与端点。}
-新增官方指令版复用同一数据、优化器配置、seed21、200步及四个checkpoint。
-提示保留相同boxed答案指令，但采用Qwen原生chat、显式关闭thinking、不加\texttt{Solution:}。
-EOS为151645，停止集合为$\{151645,151643\}$，并增加原始学生对照。
-附录\ref{app:instruct}说明模型revision、输入核验和恢复来源；它不是旧1.7B/公开GRPO分层的重复。
-
-每个checkpoint评测MATH500（500题）、AIME24（30题）、AIME25（30题）和AMC23（83题），
-共643题、5,144个回答。每题8次，采样seed为21至28，temperature=1.0、top-$p=0.9$，
-两组均采用16,384-token上限。使用4个独立TP=1推理worker。
-保留固定版本的历史数学grader，以及全部原始输出、输入token、采样seed和引擎停止原因。
-评测显存比例为0.9，与训练rollout的0.6不同。CPU合并不修改源训练权重。
-
-令$c_i\in\{0,\ldots,8\}$为第$i$题判对的回答数，则
-\begin{equation}
- \avg=\frac{1}{N}\sum_{i=1}^N\frac{c_i}{8},\qquad
- \pass=\frac{1}{N}\sum_{i=1}^N\mathbf{1}[c_i>0].
- \label{eq:metrics}
-\end{equation}
-前者为平均采样准确率，后者为8次尝试至少成功一次的题目比例，均不是8个答案多数投票。
-采用计划内最终Step200作为主要报告端点，这是回顾性的报告选择，而非预注册。中间checkpoint用于描述变化轨迹，不挑选某方法的最佳结果作为主结论。
-不合并四个benchmark。报告的区间在各benchmark内部按成对题目重采样，条件固定为这些已训练checkpoint，
-不代表不同训练seed之间的波动。
-
-\paragraph{行为与数值诊断。}
-保留学生/教师熵、带符号及绝对熵差、top-16重合率与重合概率质量、重合token advantage、
-裁剪前梯度范数、策略梯度损失、响应长度和达到长度上限的比例。
-位置热图汇总训练时实际访问的on-policy前缀，不是固定评测集。
-block专用的符号分歧与advantage重分配指标作为补充。
-缺失字面\verb|\boxed|标记和引擎length停止分别报告：二者都不等同于数学错误，缺少标记也只是特定格式失败指标。
-精确定义和mask处理见附录\ref{app:diagnostics}。
-
-\section{实验结果}
+\subsection{主要结果}
 \label{sec:results}
 \input{results_zh}
 
-\section{讨论与局限}
-\label{sec:limits}
-局部聚合存在偏差与方差的权衡，但历史实现同时改变了多个因素：共享奖励、概率比率相乘、归一化分母改变。
-第\ref{sec:method}节的梯度计算说明，不能将所有涨点仅归因于相邻token语义一致。
-关键后续对照应固定token ratio与token归一化，只改变平均算子，再独立改变ratio粒度及学习率尺度。
-我们尚未完成这一完整析因实验，不将它描述为已有证据。
+\subsection{分析与讨论}
+\label{sec:analysis}
+\input{analysis_zh}
 
-训练重复也是重要限制。单个训练seed即使评测数千个回答，仍然只有一条优化轨迹；
-8次采样并不产生8次独立训练。AIME的题目分辨率尤其粗：多解决1题就会使Pass@8变化3.33个百分点。
-窗口、checkpoint和先导权重经过适应性探索，不能将其中最高分当成选定方法优势的无偏估计。
-
-提示诊断暴露了跨模型迁移实现的另一项限制：Base与指令模型对角色边界和thinking要求的反应未必相同。
-首次优化更新之前已经存在的差异，不可能由block损失造成；但短提示probe也不能证明新协议在整个训练过程中消除了重复。
-因此提示验收、优化器健康、生成质量和benchmark正确率分别检查。
-位置熵有助于定位变化，但训练中on-policy状态分布也会变化，单凭热图不能识别因果机制。
-
-最后，本文是与sampled-token基线的对照，不是对所有近期OPD算法的比较。
-我们没有证明效率提升、教师计算减少或格式普遍正确。
-4B completion表支持方法间差异，但没有匹配的原始学生结果；新增指令版具有这一对照，
-却仍复用相同数据池，不构成独立数据集复现。更广泛的结论仍需要更多训练seed、组件消融和新任务分布。
+\section{相关工作}
+\label{sec:related}
+\input{related_zh}
 
 \section{结论}
 \input{conclusion_zh}
@@ -156,20 +79,23 @@ block专用的符号分歧与advantage重分配指标作为补充。
 \label{mainend}
 
 \section*{可复现性声明}
-损失与推导见第\ref{sec:method}节和附录\ref{app:proofs}，两组成对协议见附录\ref{app:config}和\ref{app:instruct}，
-历史版本与证据缺口见附录\ref{app:history}。
-两组匹配对照均保留完整状态、全部轨迹和输入核验；表格与图由带来源的摘要生成。
-这不意味着所有早期先导实验都有相同留存，也不意味着已公开匿名实验材料。
+第\ref{sec:method}节与附录\ref{app:proofs}给出目标及推导；
+附录\ref{app:config}和\ref{app:instruct}记录模型身份、训练评测设置、数据检查及留存情况；
+附录\ref{app:history}说明历史实验。
+两组完整归档的对照保留完整状态、原始轨迹和输入核验。
+表格与图由关联来源的摘要生成。随稿源码包含生成论文所需的结果输入，
+但不等同于完整实验代码和数据的匿名发布。
 
 \section*{伦理声明}
-本文使用数学推理benchmark与预训练语言模型，没有进行人类受试者数据收集。
-更好地模仿教师本身不证明真实性或安全性。
-我们保留负结果，不将格式成功、有限梯度或特定benchmark增益泛化为通用能力结论。
-分发材料必须遵守上游模型与数据许可，并排除凭证、可识别身份的基础设施路径以及私有权重。
+本研究使用数学推理benchmark和预训练语言模型，没有收集人类受试者数据。
+模仿教师本身不证明真实性或安全性。
+我们同时报告提升和退化，并区分数学正确率、格式与数值诊断。
+分发材料须遵守上游模型和数据许可，排除凭证、私有权重和可识别身份的基础设施信息。
 
 \section*{AI使用声明}
-本研究使用生成式AI助手讨论和细化假设，辅助实验设计、数学论证及方法实现，调试和监控实验，
-检索与总结相关文献，处理证据及解释结果，并起草、修订和翻译论文与图表。
-学生和教师模型还生成构成方法本身的on-policy训练轨迹。
-自动测试和材料审计检查特定实现与数据契约，但不能替代独立复现，也不能替代作者对最终投稿的责任。
-本文不宣称研究、证明、写作或翻译未使用AI辅助。
+生成式AI助手用于细化假设，辅助实验及数学论证设计，实现和调试方法，监控实验，
+检索与总结文献，处理证据、解释结果，以及起草、修订和翻译论文。
+AI工具也辅助制作概念图；数值结果图由保留的实验数据程序化生成。
+语言模型生成on-policy训练轨迹是方法本身的一部分。
+自动测试和材料检查验证特定契约，但不构成独立复现。
+作者仍须对最终投稿中AI辅助形成的论断、证明、代码、引用与披露承担核验责任。
