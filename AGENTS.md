@@ -10,7 +10,7 @@
   then scale3 (own advantages, token ratios, policy loss scaled by valid n_j).
   Each trains100steps then full eval100/75/50/25 before the next method.
 - Existing Token/Block3 controls at1867093 must NOT be rerun or overwritten.
-  New root: AFS `runs/20260926v2_qwen8_to17_instruct_components_n1_seed21_acp`.
+  New root: AFS `runs/20260926v3_qwen8_to17_instruct_components_n1_seed21_acp`.
   Controller: `scripts/run_acp_component_ablation.py`; inspect live state.
 - CPU implementation/tests are being prepared. This note is NOT evidence
   of GPU probe/formal startup. Each arm needs its own save1/resume2 gate.
@@ -18,6 +18,10 @@
   width1 and ratio width1; adv3 credit width3 and ratio width1. Loss scaling
   is distinct from actual Adam parameter-update scaling. No claim of a full
   three-factor factorial experiment. Preserve raw trajectories and all states.
+- v2/84d95e4 was deliberately stopped during student GPU smoke, before any
+  training, after review found ratio-width/position-expansion mismatch. No
+  weights trained. Preserve its evidence; v3 fixes diagnostics only and uses
+  a new frozen deployment, with an actual trainer snapshot regression test.
 
 ## Latest: Both Queues Complete (2026-09-26 13:56 Beijing)
 

@@ -12,7 +12,7 @@ import run_acp_qwen17_n1 as original
 
 BASELINE_ROOT = original.RUN_ROOT
 BASELINE_COMMIT = '1867093b21799c36be22bb2fd167c87e5aaa039e'
-RUN_ROOT = original.ROOT / 'runs/20260926v2_qwen8_to17_instruct_components_n1_seed21_acp'
+RUN_ROOT = original.ROOT / 'runs/20260926v3_qwen8_to17_instruct_components_n1_seed21_acp'
 MODES = {'adv3': 'adv_only', 'scale3': 'token_scale'}
 
 

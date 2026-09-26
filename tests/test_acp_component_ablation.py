@@ -81,3 +81,45 @@ def test_component_evaluation_paths_and_protocol(module):
             command = run.q.evaluation_command(Path('/runtime'), model, Path('/out'))
             assert command[command.index('--prompt-protocol')+1] == run.PROTOCOL
             assert '--retain-rollouts' in command
+
+
+@pytest.mark.parametrize('mode', ['adv_only', 'token_scale', 'legacy', 'joint_tokenmean'])
+@pytest.mark.parametrize('length', [5, 6, 16384])
+def test_actual_trainer_ratio_snapshot_expansion(mode, length):
+    import ast
+    from types import SimpleNamespace
+    import torch
+    from opd_ext.diagnostics import (component_diagnostic_sizes,
+        compute_block_ratio_diagnostics, expand_block_values_to_tokens)
+
+    path = ROOT / 'external/revisiting_opd/verl/trainer/ppo/ray_trainer_multitask.py'
+    tree = ast.parse(path.read_text())
+    segment = None
+    for node in ast.walk(tree):
+        body = getattr(node, 'body', None)
+        if not isinstance(body, list):
+            continue
+        for index, item in enumerate(body[:-1]):
+            following = body[index+1]
+            if (isinstance(item, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'block_size' for t in item.targets)
+                    and isinstance(following, ast.If) and isinstance(following.test, ast.Name)
+                    and following.test.id == 'window_kwargs'
+                    and 'expand_block_values_to_tokens' in ast.unparse(following)):
+                segment = ast.Module(body=[item, following], type_ignores=[])
+    assert segment is not None, 'Must exercise the real trainer snapshot expansion'
+    mask = torch.ones(2, length)
+    mask[1, -2:] = 0
+    old = torch.zeros_like(mask)
+    current = torch.ones_like(mask) * .1
+    _, ratio_size = component_diagnostic_sizes(3, mode)
+    ratio = compute_block_ratio_diagnostics(old, current, mask, ratio_size, .2, .2)
+    env = dict(torch=torch, int=int, ratio_size=ratio_size, window_kwargs={}, block_ratio=ratio,
+        batch=SimpleNamespace(batch={'response_mask':mask}),
+        self=SimpleNamespace(config=SimpleNamespace(actor_rollout_ref=SimpleNamespace(actor={'opd_block_size':3}))),
+        expand_block_values_to_tokens=expand_block_values_to_tokens)
+    exec(compile(ast.fix_missing_locations(segment), str(path), 'exec'), env)
+    expected, valid = expand_block_values_to_tokens(ratio['block_log_ratio'].abs(), mask, ratio_size)
+    torch.testing.assert_close(env['expanded_log_ratio'], expected)
+    assert env['expanded_finite'].shape == mask.shape
+    assert env['expanded_outside_clip'].shape == mask.shape
+    assert torch.equal(env['response_valid'], valid)

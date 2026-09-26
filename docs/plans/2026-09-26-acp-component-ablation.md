@@ -37,6 +37,24 @@ scale3的信用重分配零值只反映没有共享，不代表任务信用更�
 
 - [x] ACP四卡空闲与原对照8项完整评测核验。
 - [x] 新loss和控制器测试先失败，进入实现。
-- [ ] CPU回归、不可变部署和ACP实际环境验收。
+- [x] CPU回归、不可变部署和ACP实际环境验收。
 - [ ] adv3 GPU保存恢复门禁与正式训练启动。
 - [ ] 两组全部训练、8项完整评测、归档。
+
+## v2启动与审查记录（已停止）
+
+- 冻结代码 `84d95e408a493389bdee5cc52e76717a722cfcf1`，已推送GitHub。
+- ACP实际环境215项测试通过，包括固定真实tokenizer；一项依赖完整Git历史的测试
+  只在本地运行并通过，AFS不可变部署不携带Git数据库。
+- 24组与1867093的Token/完整Block3数值回归：loss、辅助指标和梯度逐值完全一致。
+- 模型、数据、完整pip freeze、Python版本与旧运行一致；3200题目位置计划一致。
+  实际collector核对643道评测题和64道验收题，训练评测prompt token一致，thinking关闭。
+- 控制器PID153434于2026-09-26 14:45北京时间以nohup/独立session启动。
+  此时只代表自动队列已启动，尚未证明GPU保存恢复门禁或正式训练已完成。
+- 运行根目录 `/mnt/afs/202609/tyf-qwen-opd/runs/20260926v2_qwen8_to17_instruct_components_n1_seed21_acp`。
+  CPU证据在 `preparation/`，动态进度读 `queue_state.json` 与各子任务日志。
+- 独立复核发现逐token ratio的诊断值被按3-token块展开，会在首步诊断报维度错误。
+  于student GPU smoke阶段主动停止控制器153434，未进入训练，也未产生训练权重。
+  新增执行真实trainer展开代码的12项测试，先复现6项失败，再修复展开宽度。
+- v3运行根目录为 `runs/20260926v3_qwen8_to17_instruct_components_n1_seed21_acp`。
+  保留v2现场，不覆盖旧部署。算法、数据和训练超参数不变，只修复诊断与重建独立队列。

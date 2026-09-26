@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "checks": 24,
+  "compared": "frozen 1867093 Token and full Block3 loss, metrics and gradients",
+  "exact": true
+}

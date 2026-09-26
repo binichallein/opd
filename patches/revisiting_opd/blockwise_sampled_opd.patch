@@ -391,7 +391,7 @@ index f754f25..c3acbd6 100644
      return L1, L2, not_in_topk_ratio
 -
 diff --git a/verl/trainer/ppo/ray_trainer_multitask.py b/verl/trainer/ppo/ray_trainer_multitask.py
-index cbf1a4f..9eaa898 100644
+index cbf1a4f..a5b9510 100644
 --- a/verl/trainer/ppo/ray_trainer_multitask.py
 +++ b/verl/trainer/ppo/ray_trainer_multitask.py
 @@ -21,8 +21,10 @@ FSDP PPO Trainer with Ray-based single controller.
@@ -796,7 +796,7 @@ index cbf1a4f..9eaa898 100644
                          if self.config.trainer.get("rollout_data_dir", None):
                              self._attach_rollout_dump_infos(batch, reward_extra_infos_dict)
  
-@@ -1625,6 +1922,125 @@ class RayPPOTrainer:
+@@ -1625,6 +1922,121 @@ class RayPPOTrainer:
                          actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                          metrics.update(actor_output_metrics)
  
@@ -868,11 +868,7 @@ index cbf1a4f..9eaa898 100644
 +                                        "post-update OPD diagnostics require a pre-update snapshot"
 +                                    )
 +                                diagnostic_snapshot[0].update(post_update_ratio_metrics)
-+                                block_size = int(
-+                                    self.config.actor_rollout_ref.actor.get(
-+                                        "opd_block_size", 1
-+                                    )
-+                                )
++                                block_size = ratio_size
 +                                if window_kwargs:
 +                                    response_valid = batch.batch["response_mask"].bool()
 +                                    expanded_log_ratio = block_ratio["token_log_ratio_abs"]
@@ -922,7 +918,7 @@ index cbf1a4f..9eaa898 100644
                      # Log rollout generations if enabled
                      rollout_data_dir = self.config.trainer.get("rollout_data_dir", None)
                      if rollout_data_dir and (self.global_steps == 1 or self.global_steps % self.config.trainer.get("log_rollout_freq", 50) == 0):
-@@ -1638,10 +2054,6 @@ class RayPPOTrainer:
+@@ -1638,10 +2050,6 @@ class RayPPOTrainer:
                                  last_val_metrics = val_metrics
                          metrics.update(val_metrics)
  
@@ -933,7 +929,7 @@ index cbf1a4f..9eaa898 100644
                  # training metrics
                  metrics.update(
                      {
-@@ -1656,10 +2068,96 @@ class RayPPOTrainer:
+@@ -1656,10 +2064,96 @@ class RayPPOTrainer:
                  n_gpus = self.resource_pool_manager.get_n_gpus()
                  metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
  

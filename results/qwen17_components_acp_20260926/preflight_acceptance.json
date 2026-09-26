@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "protected_files": 67,
+  "input_contract": {
+    "passed": true,
+    "actual_collector_exercised": true,
+    "eval_questions_checked": {
+      "math500": 500,
+      "aime24": 30,
+      "aime25": 30,
+      "amc23": 83
+    },
+    "qualification_questions_checked": 64,
+    "prompt_ids_sha256": "6d71d295bdad757cff7ee1eb43bd6295448a64ca0e3e7b5f39d202fe0fb75fbd",
+    "protocol": "qwen3_native_chat_no_thinking_boxed_v1",
+    "enable_thinking": false,
+    "stop_token_ids": [
+      151645,
+      151643
+    ]
+  }
+}
