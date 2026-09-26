@@ -437,6 +437,12 @@ reproducibility, data safety, and clear experiment lineage.
 
 ## Completed Qwen4 Evaluation and Paper (2026-09-21)
 
+- Writing preference (2026-09-26): abstracts and introductions should lead with
+  the problem, method, supported results and contributions. Do not insert routine
+  audit-style caveats about single seeds, non-replication, pending controlled tests,
+  or fixed blocks not being annotated reasoning steps into these opening sections.
+  Keep protocol details, uncertainty and negative outcomes in the appropriate
+  methods/results/discussion sections; never broaden a result beyond its evidence.
 - Token evaluation completed03:43:15 Beijing, all200/150/100/50 accepted; root
   acceptance passed/complete and protected inputs verified. Four GPUs were idle
   at14:52 Beijing. Do not relaunch evaluation or infer authorization for new jobs.
