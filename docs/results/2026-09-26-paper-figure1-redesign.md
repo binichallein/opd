@@ -29,3 +29,6 @@
 包含英文PDF、中文PDF、图1PNG、匿名源码ZIP及SHA-256清单；9月23日交付不覆盖。
 Windows路径：`\\wsl.localhost\Ubuntu\home\tyf\paper\outputs\iclr2027_20260926_figure1`。
 最近100步实验及正在运行的消融尚未纳入该PDF。
+
+同日按用户反馈补齐Block3分支到当前学生的`gradient update`标签，仅局部调整右侧连线，
+不重做图的结构。直接覆盖此交付目录中的图、双语PDF和源码包，并刷新SHA-256清单。
