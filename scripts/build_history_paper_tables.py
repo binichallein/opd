@@ -142,6 +142,24 @@ def endpoint_table(rows, *, series_ids=None):
     return '\n'.join(lines + [r'\bottomrule\end{tabular}', ''])
 
 
+def block_size_table(rows):
+    lines = [r'\begin{tabular}{@{}lrrrr@{}}', r'\toprule',
+             r'Method ($k$) & MATH500 & AIME24 & AIME25 & AMC23 \\', r'\midrule']
+    for arm, label in [('token_opd', 'Token (1)'),
+                       ('block3_mean', r'\textbf{Block3 (3)}'),
+                       ('block5_mean', 'Block5 (5)'),
+                       ('block10_mean', 'Block10 (10)')]:
+        matches = [row for row in rows if row['series'] == 'qwen17_sweep'
+                   and row['view'] == 'legacy_external_no_explicit_eval_seeds'
+                   and row['checkpoint_step'] == 200 and row['training_seed'] == 21
+                   and row['n'] == 8 and row['arm'] == arm]
+        if len(matches) != 1:
+            raise ValueError(f'Expected one block-size endpoint: {arm}; got {len(matches)}')
+        lines.append(' & '.join([label] + [metric_cell(matches[0]['per_task'][task])
+                                          for task in TASKS[1:]]) + r' \\')
+    return '\n'.join(lines + [r'\bottomrule\end{tabular}', ''])
+
+
 def probe_rows(evidence):
     rows = []
     for study in evidence:
@@ -207,6 +225,7 @@ def main():
     (generated / 'history_endpoints.tex').write_text(endpoint_table(rows))
     (generated / 'history_highlights.tex').write_text(
         endpoint_table(rows, series_ids=('qwen17_ml2', 'deepseek_justrl')))
+    (generated / 'history_block_sizes.tex').write_text(block_size_table(rows))
     (generated / 'history_probes.tex').write_text(probe_tex(probes))
     collapse_lines = [r'\begin{tabular}{@{}lrrrrrr@{}}', r'\toprule',
                       r'Hardware & $H_S$ & $H_T$ & Overlap & $M_S$ & $M_T$ & Max. grad \\', r'\midrule']

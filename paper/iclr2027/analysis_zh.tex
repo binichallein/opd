@@ -9,46 +9,40 @@ Step100的MATH500差值则为$-1.40$（$[-2.57,-0.25]$）；Step50仅AMC23有利
 
 \subsubsection{为什么选择三个token？块长实验}
 \label{sec:blockchoice}
-我们通过Qwen3-1.7B-Base与4B-GRPO教师的$k\in\{1,3,5,10\}$探索性比较保留$k=3$：
-使用DAPO数据训练200步、seed21，每题评测8条响应（附录\ref{history:qwen17_sweep}）。
-Step200时，Block3在四项Avg@8上均高于Block5：MATH500、AIME24、AIME25和AMC23
-分别高$1.88$、$0.42$、$0.83$和$5.72$个百分点。
-相对Token，Block3有三项Avg@8提高，但AIME24下降，Pass@8也有升有降；Block10则发生严重退化。
-因此，三个token是依据实验保留的短窗口默认值，不是所有任务上的理论最优块长。
-该扫描属于探索性实验：Block10使用不同硬件，旧评测未显式固定请求seed，
-不能将其分数与后续同机配对实验混为一组。
+表~\ref{tab:blocksizes}直接给出保留$k=3$所依据的探索性扫描。
+Block3在四项Avg@8上均高于Block5，Block10则发生严重退化。
+相对Token，Block3有三项Avg@8提高，但AIME24下降，Pass@8也有升有降。
+因此，三个token是依据实验保留的短窗口默认值，而非普遍最优块长。
 
-更大的块会增加交叉信用项，并改变联合ratio裁剪（式\ref{eq:cross}）。
-后续Block10诊断复跑在严重退化时仍记录有限梯度，最大裁剪前范数为867.50和865.21；
-其内置AMC23判分存在兼容性限制，详见附录\ref{app:history}。
-这些观察说明需要联合监控生成行为，但尚未分离坍塌的单一原因。
-Random3和Sliding3的结果也保留在该附录；它们比较的是分区方式，并非新增固定块长或完整组件消融。
+\begin{table}[htbp]
+\centering\small
+\caption{历史块长扫描：Qwen3-1.7B-Base学生、4B-GRPO教师，DAPO训练200步、seed21。单元格为Avg@8 / Pass@8（\%）；不是后续同机配对实验。}
+\label{tab:blocksizes}
+\input{generated/history_block_sizes}
+\par\smallskip\footnotesize
+Token/Block3/Block5使用A800，Block10使用A100；旧评测未显式固定请求seed。
+Block5降低rollout显存预算后重启，其分数来自保留的curated摘要；协议详见附录\ref{history:qwen17_sweep}。
+\end{table}
+
+更大的块增加交叉信用项并改变裁剪（式\ref{eq:cross}）。
+后续Block10复跑严重退化时仍记录有限梯度，最大范数为867.50和865.21；
+其内置AMC23判分存在限制（附录\ref{app:history}）。这些观察未分离坍塌的单一原因。
+Random3/Sliding3比较分区方式，并非新增固定块长或独立组件消融。
 
 \subsubsection{提示与局部反馈适配}
-最初的4B尝试在首次优化器更新前已大量重复并频繁达到长度上限，
-因此这些初始缺陷不可能由block损失造成。
-随后的匹配对照使用不含ChatML的completion提示和分别派生的请求seed。
-两项改变共同引入，不能单独识别聊天边界符的作用。
-附录\ref{app:probes}中的有限样本提示probe也说明，Base与指令模型需要分别检查输入适配。
+最初的4B尝试在更新前已重复并触及长度上限，排除了block损失作为这些初始缺陷的成因。
+修复同时移除ChatML并分离请求seed，不是聊天边界符的单因素消融。
+各模型输入适配probe见附录\ref{app:probes}。
 
-修复后的4B协议中，训练触及上限比例为Token 263/6,400（4.11\%）、Block3 247/6,400（3.86\%）。
-官方指令版的引擎length停止分别为94/6,400（1.47\%）和77/6,400（1.20\%），且没有生成thinking标签。
-这些低比例与历史严重退化形成对比，但不意味着格式普遍改善：
-评测中的boxed缺失和length停止差异仍依赖benchmark（附录\ref{app:instruct}）。
-提示适配、长度控制和数学正确率是训练系统的不同维度。
+修复后的4B训练触及上限比例为Token 263/6,400（4.11\%）、Block3 247/6,400（3.86\%）。
+指令版引擎length停止分别为94/6,400（1.47\%）、77/6,400（1.20\%），未生成thinking标签。
+评测中的boxed缺失与length停止差异仍依赖benchmark（附录\ref{app:instruct}）；长度控制不等于正确率。
 
 \subsubsection{信用重分配与训练动态}
-4B对照的200个更新摘要中，Block3符号分歧率中位数为15.57\%，按局部advantage绝对值加权后为6.68\%。
-相对重分配幅度中位数为1.148；它是幅度比值而非概率，可以大于一。
-块宽为一的Token对应指标按定义为零。
-这些测量刻画干预本身，而非认定某种算法的反馈必然正确。
+4B的200个更新中，Block3符号分歧率中位数为15.57\%，按advantage绝对值加权后为6.68\%。
+相对重分配幅度中位数为1.148，是可超过一的幅度比值；Token对应指标按定义为零。
+这些量描述干预，不判断反馈是否正确。
 
-图~\ref{fig:qwen4training}显示后期熵较低、梯度范数总体下降，未出现历史Block10式严重退化。
-因此，非零信用重分配本身不构成坍塌诊断。
-附录\ref{app:positionfigures}的位置图定位熵及师生重合的变化，并用覆盖mask区分已测与未覆盖位置。
-由于on-policy前缀随训练变化，这些图描述实际访问状态，而不是固定输入的因果检验。
-
-综合分析可区分三个作用：共享什么局部信号、如何裁剪策略偏移、如何缩放所得损失。
-当前结果评测的是三者结合的Block3实现。
-独立组件对照、重复训练与新任务分布迁移是进一步定位收益来源所需的实验；
-现有证据范围详见附录\ref{sec:limits}。
+图~\ref{fig:qwen4training}显示后期低熵与梯度下降，未出现Block10式退化，说明重分配本身不诊断坍塌。
+附录\ref{app:positionfigures}用覆盖mask辅助展示熵与重合位置图；变化的on-policy前缀使其不能作为固定输入因果检验。
+分离共享信号、裁剪与损失尺度的作用，仍需组件对照及重复实验（附录\ref{sec:limits}）。

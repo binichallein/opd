@@ -99,3 +99,35 @@ def test_manuscript_keeps_complete_table_and_labels_highlights():
         assert r'\input{generated/history_endpoints}' in appendix
         assert r'\label{tab:historyendpointsfull}' in appendix
         assert 'Rethinking' in protocol and r'\citep{rethinking}' in protocol
+
+
+def test_block_size_table_uses_original_sweep_and_both_metrics():
+    m = module()
+    text = m.block_size_table(rows())
+    assert '69.12 / 88.60' in text
+    assert '69.27 / 87.80' in text
+    assert '67.40 / 87.60' in text
+    assert text.count('0.00 / 0.00') == 4
+    assert '45.85' not in text and '54.75' not in text
+    assert all(name in text for name in ('Token', 'Block3', 'Block5', 'Block10'))
+    assert 'macro' not in text.lower()
+    assert text == (PAPER / 'generated/history_block_sizes.tex').read_text()
+
+
+def test_block_size_table_rejects_missing_or_duplicate_arms():
+    m = module()
+    records = rows()
+    sweep = [r for r in records if r['series'] == 'qwen17_sweep']
+    with pytest.raises(ValueError, match='Expected one block-size endpoint'):
+        m.block_size_table([r for r in records if r not in sweep[:1]])
+    with pytest.raises(ValueError, match='Expected one block-size endpoint'):
+        m.block_size_table(records + sweep[:1])
+
+
+def test_block_size_table_is_in_main_analysis_with_caption_above():
+    for language in ('en', 'zh'):
+        text = (PAPER / f'analysis_{language}.tex').read_text()
+        table = text.split(r'\begin{table}', 1)[1].split(r'\end{table}', 1)[0]
+        assert r'\label{tab:blocksizes}' in table
+        assert table.index(r'\caption{') < table.index(r'\input{generated/history_block_sizes}')
+        assert r'\ref{tab:blocksizes}' in text
