@@ -1,5 +1,23 @@
 # Agent Instructions
 
+## NEW: ACP Evaluation-Only Recovery Authorized (2026-09-28)
+
+- User now requests recovery and accepted scores, superseding the read-only
+  inspection below. Both trainings are DONE; never retrain or re-evaluate the
+  seven accepted checkpoints.
+- New controller `scripts/recover_acp_base17_evaluation.py` imports the original
+  frozen runtime781df30 and targets the verified replacement H100 worker only.
+  Planned continuation root is source v2 run's `recoveries/20260928v1_token25`.
+- Copies/hash-checks Token25 MATH500/AIME24 outputs and native archives into a
+  fresh view; generates only AIME25/AMC23 with identical decoder/prompt/grader.
+  Then grades/audits all5144 responses and writes the eight-model comparison,
+  followed by imported Block3 figures. No original output/runtime edits.
+- New recovery queue state is authoritative after launch; original v2 queue
+  state remains stale historical evidence. Read live status before claiming
+  generation or completion. New attempt is one-shot, detached, AFS-backed.
+- Mixed A100/H100 training remains explicit. Step100 Token currently exceeds
+  Block3 Avg@8 on all four tasks. Do not alter the submitted paper.
+
 ## NEW: ACP Restart Inspection, Seven of Eight Evals Accepted (2026-09-28)
 
 - User reports ACP task closed/restarted and asks whether work completed. This
