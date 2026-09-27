@@ -12,8 +12,8 @@ The original seven accepted evaluations and all training states remain intact.
   migration environment and completed training/partial generation evidence.
 - [x] Add a separately versioned controller and failing-then-passing tests.
   Focused suite:136 passed locally, including archive and queue regressions.
-- [ ] Deploy controller separately from frozen evaluation runtime781df30.
-- [ ] Verify frozen source/model/data/accepted-output hashes and package alignment.
+- [x] Deploy controller6c70f35 separately from frozen evaluation runtime781df30.
+- [x] Verify frozen source/model/data/accepted-output hashes and package alignment.
   Copy and audit existing4000 MATH500 and240 AIME24 raw responses and archives.
 - [ ] Detached generation of240 AIME25 and664 AMC23 responses, same prompt,
   historical grader,8 samples,seeds21-28,temperature1,top_p0.9,max_tokens16384.
@@ -25,3 +25,8 @@ accepted evaluations or queue states are overwritten. Unexpected partial data
 or hash mismatch stops recovery. No automatic retries, pruning or training.
 Worker replacement is recorded, not claimed as bitwise reproducible generation.
 Block3 training was on A100; Token training was on H100.
+
+V2 detached controller1304 started02:45 Beijing. Its preflight passed; missing-task
+evaluation1651 started02:46:18. V1 was deliberately stopped before inference to
+align the native think-token diagnostic with the frozen evaluation definition.
+Local relevant suite137 passed; five recovery tests passed on the actual ACP venv.

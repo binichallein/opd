@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "schema_version": 1,
+  "num_examples": 530,
+  "num_rollouts": 4240,
+  "num_archive_files": 16,
+  "per_task": {
+    "math500": {
+      "num_examples": 500,
+      "num_rollouts": 4000,
+      "num_archive_files": 8
+    },
+    "aime24": {
+      "num_examples": 30,
+      "num_rollouts": 240,
+      "num_archive_files": 8
+    }
+  },
+  "sha256": {
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/math500_t1.0_p0.9_n8-MNT16384.jsonl": "f145a77f60ee5ed037a9e8122764dd49290b7c735a007e0ccdb1e987eca3a56b",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_0.jsonl": "32722ad7a5a54712a786ff92469bd8903aa34de6567bb868306d0a6138f68ab5",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_1.jsonl": "c5fb9f00e54ad64d8df5d5112ac8c747320074e2d57b9d6633d632c4b21378d2",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_2.jsonl": "caf56d10385869f4b0f27314505e8b2501f9debbbdcdf0d8b5097fd4f2297147",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_3.jsonl": "a34386c86afebd489b27e4ceff5d9e7aa70966286b1fe15f41d7e7d90f839928",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_4.jsonl": "134e2198031100d53ed8f308627c5464c49efbccab8b07ad124875e94b958037",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_5.jsonl": "39935ad2fb5a07c3be40d09927640a70680c2da597df05ea95dffc0e5b36caa8",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_6.jsonl": "bc0ebb1114ac1805960babfef6d36c4eed4ed506d60fb58f9a040e27799fb0d6",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/math500/rollout_7.jsonl": "4ff00b3174059a82e603cf3302e7debffbf45c0e3d30bae7350c73cf0df40371",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/aime24_t1.0_p0.9_n8-MNT16384.jsonl": "2fcacdac6a7beb9528edbf514972ed02feaee53e2cf5fe1007ae0bbc8a65c300",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_0.jsonl": "8a927928238189be60d90c2f8f7a44f0756a5fd2dd793fe53013f072fb2a6b20",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_1.jsonl": "af19b684ab819b573702f9616ba841459b396b8c61fd7838fa112916cbc322a0",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_2.jsonl": "896c38e325582e41f240b631acd70e17bbced8a6063081dd3b6c71ac46263b11",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_3.jsonl": "f64d484809b3132e31f3c267745bfa2d006cb0be628a8affacd3eedc1d796954",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_4.jsonl": "1ce9cb2813f629d22c82b1fb2453e96021eb87d0275f2797d4eb873a6a2d66b1",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_5.jsonl": "748892a881d107dccd7069666f191f4f4c2cae29ab2584011ffdf0e656da0fc7",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_6.jsonl": "1bd71526ecb859ee3c3302506810f15018c18ea656dfc5ba855fadb449370cc7",
+    "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/evaluations/token_opd_step25/outputs/rollout_archive/aime24/rollout_7.jsonl": "685833ff38b8f9ee81faee1f1b8993ad11cd99c530bc68e00740df86d6eb082e"
+  }
+}

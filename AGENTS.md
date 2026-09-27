@@ -20,6 +20,11 @@
   generation or completion. New attempt is one-shot, detached, AFS-backed.
 - Mixed A100/H100 training remains explicit. Step100 Token currently exceeds
   Block3 Avg@8 on all four tasks. Do not alter the submitted paper.
+- Recovery controller1304 is detached/PPID1, started02:45 Beijing; 319 protected
+  file hashes and4240 existing native rollouts passed. Evaluation1651 started
+  02:46:18 and initializes AIME25 workers, then AMC23 and automatic finalization.
+  Runtime6c70f35; source runtime781df30 unchanged. Local137 tests/ACP5 passed.
+  Scores/startup evidence: `results/base17_migration_acp_20260927/recovery_20260928/`.
 
 ## NEW: ACP Restart Inspection, Seven of Eight Evals Accepted (2026-09-28)
 

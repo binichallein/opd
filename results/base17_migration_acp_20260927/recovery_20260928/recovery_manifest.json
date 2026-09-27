@@ -1,0 +1,27 @@
+{
+  "source_run": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp",
+  "source_runtime": "/mnt/afs/202609/tyf-qwen-opd/deployments/781df3021f8b84936921e068aa2251e38e686bfd",
+  "source_commit": "781df3021f8b84936921e068aa2251e38e686bfd",
+  "recovery_runtime": "/mnt/afs/202609/tyf-qwen-opd/analysis_deployments/6c70f35ed079a022d532ff2dc2d33e49fe321c5d",
+  "host": "pt-2562f77e00cd4f92b6880471e90635f3-worker-0",
+  "created_at": "2026-09-27T18:46:18.528238+00:00",
+  "reused_tasks": [
+    "math500",
+    "aime24"
+  ],
+  "regenerated_tasks": [
+    "aime25",
+    "amc23"
+  ],
+  "training": false,
+  "source_outputs_unchanged": true,
+  "no_automatic_retries": true,
+  "sampling_unchanged": true,
+  "hardware": {
+    "block3_training": "4xA100-80GB",
+    "token_training": "4xH100-80GB",
+    "evaluation": "4xH100-80GB"
+  },
+  "limitation": "Block3 trained on ml2 A100/64 CPUs; Token on ACP H100/32 CPUs. No same-hardware or bitwise equivalence claim.",
+  "note": "A replacement H100 worker may change floating-point generation; this is not bitwise replay."
+}
