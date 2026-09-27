@@ -1,0 +1,114 @@
+{
+  "passed": true,
+  "checkpoint_steps": [
+    25,
+    50,
+    75,
+    100
+  ],
+  "diagnostic_steps": [
+    1,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85,
+    90,
+    95,
+    100
+  ],
+  "states": [
+    {
+      "step": 25,
+      "rank": 0,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 25,
+      "rank": 1,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 25,
+      "rank": 2,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 25,
+      "rank": 3,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 50,
+      "rank": 0,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 50,
+      "rank": 1,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 50,
+      "rank": 2,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 50,
+      "rank": 3,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 75,
+      "rank": 0,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 75,
+      "rank": 1,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 75,
+      "rank": 2,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 75,
+      "rank": 3,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 100,
+      "rank": 0,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 100,
+      "rank": 1,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 100,
+      "rank": 2,
+      "rng_scheduler_sampler_valid": true
+    },
+    {
+      "step": 100,
+      "rank": 3,
+      "rng_scheduler_sampler_valid": true
+    }
+  ]
+}

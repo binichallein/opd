@@ -1,5 +1,28 @@
 # Agent Instructions
 
+## NEW: ACP Restart Inspection, Seven of Eight Evals Accepted (2026-09-28)
+
+- User reports ACP task closed/restarted and asks whether work completed. This
+  turn is read-only inspection, no recovery launch or frozen-runtime edits.
+- New host `pt-2562f77e00cd4f92b6880471e90635f3-worker-0`; old host/PIDs in v2
+  queue metadata are STALE. No related processes, four H100 idle. AFS persisted.
+- Imported Block3 all4 full evaluations passed. Token100 training finished
+  Sep27 08:30:47 Beijing, exit0; all25/50/75/100 complete states/16ranks and3200
+  rollouts accepted. Paired actual-input audit passed100steps/3200 per arm.
+- Token Step100/75/50 full evaluations passed. Total7/8 `complete=false`.
+- Interruption in Token Step25: startedSep27 10:43:16 Beijing; last eval log
+  10:59:48 begins AIME25. MATH5004000 and AIME24240 complete raw outputs and
+  per-rollout archives exist; JSON rows/unique pairs checked. No completed
+  AIME25/AMC23 outputs, exit code, grading summary or Step25 acceptance found.
+- Final paired comparison and imported Block3 plotting remain pending. Do not
+  retrain either arm or repeat the seven accepted evals. Future recovery needs
+  new worker/env validation and a versioned continuation, preserving old files;
+  the old one-shot controller cannot simply restart (host/claim guards).
+- Preserve full-state success evidence despite a DataLoader worker shutdown
+  warning AFTER Token100 completion; do not conflate it with later interruption.
+- Backup/status at `results/base17_migration_acp_20260927/restart_check_20260928/`.
+  Submitted paper untouched. Do not report stale queue `running` as live progress.
+
 ## NEW: Migrated Block3 Step100 Evaluation Running (2026-09-27 03:14 Beijing)
 
 - Supervised v2 through full preflight, import audit, merge, and actual four-GPU
