@@ -1,0 +1,24 @@
+{
+  "checked_at": "2026-09-27T18:53:18.334170+00:00",
+  "queue_state": {
+    "status": "running",
+    "job": "/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25/missing_tasks",
+    "pid": 1651,
+    "updated_at": "2026-09-27T18:46:18.725569+00:00"
+  },
+  "gpu_csv": "0, 74307 MiB, 89 %\n1, 74307 MiB, 86 %\n2, 74307 MiB, 88 %\n3, 74307 MiB, 90 %\n",
+  "engine_warmup_completed_count": 4,
+  "has_traceback": false,
+  "has_oom": false,
+  "archive_rows": {
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_0.jsonl": 30,
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_1.jsonl": 30,
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_2.jsonl": 30,
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_3.jsonl": 30,
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_4.jsonl": 0,
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_5.jsonl": 0,
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_6.jsonl": 0,
+    "missing_tasks/outputs/rollout_archive/aime25/rollout_7.jsonl": 0
+  },
+  "log_tail": ".py:210] init engine (profile, create kv cache, warmup model) took 123.83 seconds\n\u001b[1;36m(EngineCore_DP0 pid=2093)\u001b[0;0m INFO 09-27 18:50:57 [gpu_model_runner.py:3480] Graph capturing finished in 6 secs, took -0.52 GiB\n\u001b[1;36m(EngineCore_DP0 pid=2093)\u001b[0;0m INFO 09-27 18:50:57 [core.py:210] init engine (profile, create kv cache, warmup model) took 124.04 seconds\n\u001b[1;36m(EngineCore_DP0 pid=2096)\u001b[0;0m The tokenizer you are loading from '/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/merged/token_opd_step25' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.\n\u001b[1;36m(EngineCore_DP0 pid=2092)\u001b[0;0m The tokenizer you are loading from '/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/merged/token_opd_step25' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.\n\u001b[1;36m(EngineCore_DP0 pid=2093)\u001b[0;0m The tokenizer you are loading from '/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/merged/token_opd_step25' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.\nINFO 09-27 18:50:58 [llm.py:306] Supported_tasks: ['generate']\nINFO 09-27 18:50:58 [llm.py:306] Supported_tasks: ['generate']\nINFO 09-27 18:50:58 [llm.py:306] Supported_tasks: ['generate']\nINFO 09-27 18:50:58 [llm.py:306] Supported_tasks: ['generate']\n"
+}

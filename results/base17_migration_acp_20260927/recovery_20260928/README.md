@@ -40,6 +40,9 @@ Token在ACP/H100；训练只有一个seed，不据此作显著性或完全受控
   319个受保护文件哈希通过，4240条已有轨迹与原生归档验收通过。
 - 02:46:18恢复评测进程1651启动，正在初始化四个AIME25推理worker；
   后续AMC23、完整计分、验收和汇总自动接续。生成完成量与最终分数以实时输出为准。
+- 02:53:18现场复核：四个引擎已完成warmup，四卡利用率86%-90%，无OOM/traceback。
+  AIME25前四份rollout各已落盘30条，共120/240条；其余四份正在生成。
+  完整现场快照见`gpu_generation_verified.json`。
 
 AFS恢复根目录：
 `/mnt/afs/202609/tyf-qwen-opd/runs/20260927v2_base17_grpo_migrated_n1_seed21_acp/recoveries/20260928v2_token25`。

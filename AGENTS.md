@@ -25,6 +25,11 @@
   02:46:18 and initializes AIME25 workers, then AMC23 and automatic finalization.
   Runtime6c70f35; source runtime781df30 unchanged. Local137 tests/ACP5 passed.
   Scores/startup evidence: `results/base17_migration_acp_20260927/recovery_20260928/`.
+- At02:53:18 all four engines initialized, H100 utilization86-90%, no OOM or
+  traceback. AIME25 rollout0-3 each archived30 rows (120/240); rollout4-7 active.
+  `gpu_generation_verified.json` is the validated startup snapshot. A separate
+  remote early `gpu_startup_verified.json` has an invalid zero engine counter
+  from shell-quote stripping; do not use that field (no experiment impact).
 
 ## NEW: ACP Restart Inspection, Seven of Eight Evals Accepted (2026-09-28)
 
