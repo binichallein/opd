@@ -15,9 +15,9 @@ The original seven accepted evaluations and all training states remain intact.
 - [x] Deploy controller6c70f35 separately from frozen evaluation runtime781df30.
 - [x] Verify frozen source/model/data/accepted-output hashes and package alignment.
   Copy and audit existing4000 MATH500 and240 AIME24 raw responses and archives.
-- [ ] Detached generation of240 AIME25 and664 AMC23 responses, same prompt,
+- [x] Detached generation of240 AIME25 and664 AMC23 responses, same prompt,
   historical grader,8 samples,seeds21-28,temperature1,top_p0.9,max_tokens16384.
-- [ ] Grade/audit all5144 Token25 responses, produce full eight-model comparison
+- [x] Grade/audit all5144 Token25 responses, produce full eight-model comparison
   and remaining imported Block3 diagnostics plots. Archive summaries locally/GitHub.
 
 All outputs use a new recovery subdirectory. No old source files, weights,
@@ -30,3 +30,8 @@ V2 detached controller1304 started02:45 Beijing. Its preflight passed; missing-t
 evaluation1651 started02:46:18. V1 was deliberately stopped before inference to
 align the native think-token diagnostic with the frozen evaluation definition.
 Local relevant suite137 passed; five recovery tests passed on the actual ACP venv.
+
+Completed03:03:28 Beijing on2026-09-28. Missing generation, finalizer and imported
+Block3 plotting all exited0. All eight evaluations accepted;11 downloaded summary
+and figure files match remote hashes. Completion archive:
+`results/base17_migration_acp_20260927/completed_20260928/`.

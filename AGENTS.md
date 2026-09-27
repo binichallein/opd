@@ -1,5 +1,23 @@
 # Agent Instructions
 
+## NEW: ACP Recovery Fully Completed (2026-09-28 03:03 Beijing)
+
+- Live inspection03:11 confirmed recovery v2 `status=completed`,8 accepted
+  evaluations, no retraining; controller gone and all four H100 GPUs idle.
+- Missing generation finished03:00:32, full historical grading/audit03:02:46,
+  imported Block3 figures03:02:54; all three exit codes0. Final protected-input
+  verification completed03:03:28. Do not rerun any training/evaluation.
+- Token25 Avg@8 (%) by MATH500/AIME24/AIME25/AMC23:
+  61.825 / 5.0 / 4.583333 / 29.668675. Pass@8:
+  84.6 / 20.0 / 13.333333 / 63.855422. All native think-tag counts0.
+- Every accepted checkpoint has5144 responses and passed native archive audit.
+  Eight-model comparison and five diagnostic PNGs plus HTML exist. Downloaded
+  11 summary/figure files match remote SHA256. Local completion evidence:
+  `results/base17_migration_acp_20260927/completed_20260928/`.
+- Original source queue remains stale by design; authoritative final state is
+  `recoveries/20260928v2_token25/queue_state.json`. Prior startup snapshots are
+  historical, not current. Mixed A100/H100 caveat remains. Submitted paper untouched.
+
 ## NEW: ACP Evaluation-Only Recovery Authorized (2026-09-28)
 
 - User now requests recovery and accepted scores, superseding the read-only
