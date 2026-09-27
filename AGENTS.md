@@ -7,7 +7,10 @@
   seven accepted checkpoints.
 - New controller `scripts/recover_acp_base17_evaluation.py` imports the original
   frozen runtime781df30 and targets the verified replacement H100 worker only.
-  Planned continuation root is source v2 run's `recoveries/20260928v1_token25`.
+  Continuation root is source v2 run's `recoveries/20260928v2_token25`.
+- Recovery v1 controller1050 was intentionally stopped during CPU preflight,
+  before any inference. Review caught a think-tag diagnostic mismatch; v2 uses
+  the frozen predicate over native token IDs151667/151668. V1 is retained.
 - Copies/hash-checks Token25 MATH500/AIME24 outputs and native archives into a
   fresh view; generates only AIME25/AMC23 with identical decoder/prompt/grader.
   Then grades/audits all5144 responses and writes the eight-model comparison,

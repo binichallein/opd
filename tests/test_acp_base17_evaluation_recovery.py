@@ -61,3 +61,10 @@ def test_copy_is_exclusive_and_hash_checked(tmp_path):
     source.write_bytes(b'changed')
     with pytest.raises(ValueError):
         recovery.copy_verified(source, tmp_path / 'another', digest)
+
+
+def test_think_diagnostic_matches_native_ids_not_decoded_text():
+    recovery = load()
+    assert recovery.has_native_think({'response_token_ids': [12, 151667, 8], 'response': 'hidden'})
+    assert recovery.has_native_think({'response_token_ids': [151668], 'response': ''})
+    assert not recovery.has_native_think({'response_token_ids': [12, 13], 'response': '<think>'})

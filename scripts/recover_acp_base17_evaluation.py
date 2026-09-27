@@ -17,7 +17,7 @@ ROOT = Path('/mnt/afs/202609/tyf-qwen-opd')
 SOURCE = ROOT / 'runs/20260927v2_base17_grpo_migrated_n1_seed21_acp'
 COMMIT = '781df3021f8b84936921e068aa2251e38e686bfd'
 RUNTIME = ROOT / 'deployments' / COMMIT
-RECOVERY = SOURCE / 'recoveries/20260928v1_token25'
+RECOVERY = SOURCE / 'recoveries/20260928v2_token25'
 HOST = 'pt-2562f77e00cd4f92b6880471e90635f3-worker-0'
 TASKS = ('math500', 'aime24', 'aime25', 'amc23')
 REUSE, MISSING = TASKS[:2], TASKS[2:]
@@ -63,6 +63,10 @@ def validate_partial_config(old, new):
     if {k: v for k, v in old.items() if k not in ignored} != {
             k: v for k, v in new.items() if k not in ignored}:
         raise ValueError('Recovery changed the evaluation protocol')
+
+
+def has_native_think(row):
+    return bool({151667, 151668}.intersection(row['response_token_ids']))
 
 
 def copy_verified(source, destination, expected):
@@ -125,6 +129,7 @@ def audit_rows(q, output, config, tasks):
 def preflight(migration, run):
     q = run.q
     for runtime in (RUNTIME, ENTRY.parents[1]):
+        print(f'{q.jobs.now()} verifying deployment {runtime}', flush=True)
         with (RECOVERY / f'verify_{runtime.name}.log').open('x') as log:
             subprocess.run(['sha256sum', '-c', '.expected.sha256'], cwd=runtime, stdout=log, check=True)
     if (RUNTIME / 'DEPLOYED_COMMIT').read_text().strip() != COMMIT:
@@ -176,8 +181,10 @@ def preflight(migration, run):
     if any((old / f'{task}_t1.0_p0.9_n8-MNT16384.jsonl').exists() for task in MISSING):
         raise ValueError('Missing-task outputs already exist; refusing regeneration')
     protected[str(old / 'eval_config.json')] = sha256(old / 'eval_config.json')
+    print(f'{q.jobs.now()} verifying {len(protected)} protected model/data/result files', flush=True)
     q.shared.verify_hashes(protected)
     output = RECOVERY / 'evaluations' / NAME / 'outputs'
+    print(f'{q.jobs.now()} copying and auditing 4240 existing rollouts', flush=True)
     copy_tasks(old, output, REUSE, config, protected)
     evidence = audit_rows(q, output, config, REUSE)
     q.jobs.write_json(RECOVERY / 'reused_rollouts_acceptance.json', evidence)
@@ -219,7 +226,7 @@ def finalize(migration, run):
         tags = 0
         for row in rows:
             q.validate_eval_row(row, tokenizer)
-            tags += int('<think>' in row['response'] or '</think>' in row['response'])
+            tags += int(has_native_think(row))
         accepted['per_task'][task]['generated_think_tag_count'] = tags
     accepted.update(train_eval_prompt_verified=True, evaluation_protocol_verified=True)
     accepted = q.historical.accept_archive(folder, accepted)
